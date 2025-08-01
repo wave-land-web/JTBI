@@ -1,5 +1,5 @@
 ---
-import { Font } from 'astro:assets'
+import { Font, getImage } from 'astro:assets'
 import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from '../consts'
 import CloudBackgroundSample from '../assets/images/textures/jtbi-cloud-background-sample.svg'
 import Footer from '../components/ui/Footer.astro'
@@ -13,8 +13,9 @@ export interface Props {
 
 const { title = SITE_TITLE, description = SITE_DESCRIPTION, socialImage } = Astro.props
 const canonicalURL = new URL(Astro.url.pathname, Astro.site)
-// TODO: replace with a proper social image
+// TODO: Social image
 const socialImageURL = new URL(socialImage || '/images/og.png', canonicalURL)
+const backgroundImage = await getImage({ src: CloudBackgroundSample, inferSize: true })
 ---
 
 <html lang="en" data-theme="corporate">
@@ -53,15 +54,26 @@ const socialImageURL = new URL(socialImage || '/images/og.png', canonicalURL)
     <Font cssVariable="--font-radio-canada" preload />
     <link rel="stylesheet" href="https://use.typekit.net/fym2duv.css" />
 
-    <!-- Favicon -->
+    <!-- TODO: Favicon -->
   </head>
 
-  <body class="relative min-h-screen">
-    <!-- TODO: needs to be full screen on all sizes -->
-    <CloudBackgroundSample
-      class="fixed inset-0 min-w-screen min-h-screen opacity-5 z-0 pointer-events-none"
-    />
-    <slot />
+  <body class="relative min-h-screen overflow-x-hidden">
+    <!-- Full screen cloud background -->
+    <div class="relative">
+      <div
+        class="fixed inset-0 w-full h-screen bg-cover bg-center bg-no-repeat pointer-events-none z-0 opacity-20"
+        style={`background-image: url('${backgroundImage.src}');`}
+        role="presentation"
+        aria-hidden="true"
+      >
+      </div>
+
+      <!-- Page content with proper z-index -->
+      <div class="relative z-10 min-h-screen">
+        <slot />
+      </div>
+    </div>
+
     <Footer />
   </body>
 </html>

@@ -46,6 +46,9 @@
   --site-padding-xl: clamp(4rem, 5vw, 5rem);
   --site-padding-2xl: clamp(5rem, 6vw, 6rem);
   --site-padding-3xl: clamp(6rem, 7vw, 7rem);
+  --site-padding-4xl: clamp(7rem, 8vw, 8rem);
+  --site-padding-5xl: clamp(8rem, 9vw, 9rem);
+  --site-padding-6xl: clamp(9rem, 10vw, 10rem);
 
   --font-radio-canada: var(--font-radio-canada);
   --font-factoria: 'factoria', serif;
@@ -230,7 +233,7 @@
   }
 
   /* Strong text styling - uncomment when you have the font */
-  /* strong {
-    @apply font-nuckle-semibold;
-  } */
+  strong {
+    @apply font-semibold;
+  }
 }
