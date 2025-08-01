@@ -1,11 +1,198 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import { Image } from 'astro:assets'
+import LogoPrimary from '../assets/images/logos/jtbi-logo-primary.svg'
+import CloudImage from '../assets/images/textures/jtbi-cloud1-80-opacity.png'
+import CloudImageTwo from '../assets/images/textures/jtbi-cloud2-80-opacity.png'
+import { SITE_DESCRIPTION } from '../consts'
+import Layout from '../layouts/Layout.astro'
 ---
 
 <Layout>
-	<Welcome />
+  <header
+    class="py-(--site-padding-3xl) px-(--site-padding-base) relative flex justify-center items-center"
+  >
+    <Image
+      src={CloudImage}
+      alt="Cloud texture background"
+      class="absolute top-1/2 left-1/2 w-auto h-auto max-w-md opacity-80 pointer-events-none cloud-drift-one"
+      role="presentation"
+    />
+    <Image
+      src={CloudImageTwo}
+      alt="Secondary cloud texture background"
+      class="absolute top-1/2 left-1/2 w-auto h-auto max-w-md opacity-80 pointer-events-none cloud-drift-two"
+      role="presentation"
+    />
+    <LogoPrimary class="relative z-10 max-w-xl h-auto" />
+  </header>
+
+  <main
+    class="max-w-screen-lg mx-auto py-(--site-padding-3xl) px-(--site-padding-base) text-center"
+  >
+    <section>
+      <div class="text-left">
+        <h2 class="h1 text-base-100 font-extrabold">
+          Time for a rebrand, so this site is under construction.
+        </h2>
+        <p class="h1">Your brand could be next.</p>
+      </div>
+    </section>
+
+    <!-- Description with yellow accent -->
+    <section class="w-full grid grid-cols-1 md:grid-cols-2">
+      <div></div>
+      <aside class="max-w-md text-left">
+        <p id="description">
+          {SITE_DESCRIPTION}
+        </p>
+      </aside>
+    </section>
+
+    <!-- Contact Form Section -->
+    <section>
+      <header class="mb-8 pt-0 text-left">
+        <h2 class="text-xl font-bold mb-2">
+          WANT TO DISCUSS YOUR BRAND? <span class="font-normal">Let's chat.</span>
+        </h2>
+        <p>
+          Whether you're considering refreshing your current branding, or are seeking support with
+          the launch of an entirely new business, we're here to help. Contact us for a free
+          45-minute consultation.
+        </p>
+      </header>
+
+      <!-- Contact Form -->
+      <form class="space-y-4" method="POST">
+        <fieldset class="grid grid-cols-2 gap-4">
+          <legend class="sr-only">Personal Information</legend>
+          <label class="sr-only" for="firstName">First Name (required)</label>
+          <input
+            type="text"
+            name="firstName"
+            id="firstName"
+            placeholder="First Name*"
+            class="w-full input input-primary"
+            required
+            aria-required="true"
+          />
+          <label class="sr-only" for="lastName">Last Name (required)</label>
+          <input
+            type="text"
+            name="lastName"
+            id="lastName"
+            placeholder="Last Name*"
+            class="w-full input input-primary"
+            required
+            aria-required="true"
+          />
+        </fieldset>
+
+        <fieldset>
+          <legend class="sr-only">Business Information</legend>
+          <label class="sr-only" for="businessName">Business Name (required)</label>
+          <input
+            type="text"
+            name="businessName"
+            id="businessName"
+            placeholder="Business Name*"
+            class="w-full input input-primary"
+            required
+            aria-required="true"
+          />
+        </fieldset>
+
+        <fieldset class="grid grid-cols-2 gap-4">
+          <legend class="sr-only">Contact Information</legend>
+          <label class="sr-only" for="email">Email Address (required)</label>
+          <input
+            type="email"
+            name="email"
+            id="email"
+            placeholder="Email*"
+            class="w-full input input-primary"
+            required
+            aria-required="true"
+            aria-describedby="email-help"
+          />
+          <label class="sr-only" for="phone">Phone Number (required)</label>
+          <input
+            type="tel"
+            name="phone"
+            id="phone"
+            placeholder="Phone*"
+            class="w-full input input-primary"
+            required
+            aria-required="true"
+          />
+        </fieldset>
+
+        <!-- Email Subscription Checkbox -->
+        <fieldset class="fieldset">
+          <label class="label uppercase text-sm font-bold">
+            <input
+              type="checkbox"
+              checked="checked"
+              class="checkbox checkbox-secondary border-primary bg-base-100"
+            />
+            Yes! Of course I want to join your email list.
+          </label>
+        </fieldset>
+
+        <!-- Submit Button -->
+        <div class="flex justify-end pt-4" role="group">
+          <button
+            type="submit"
+            class="btn btn-secondary flex items-center gap-2"
+            aria-describedby="submit-help"
+          >
+            <span>SEND INFO</span>
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+              <path
+                fill-rule="evenodd"
+                d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                clip-rule="evenodd"></path>
+            </svg>
+          </button>
+          <span id="submit-help" class="sr-only"
+            >Submit your contact information for a free consultation</span
+          >
+        </div>
+      </form>
+    </section>
+  </main>
 </Layout>
+
+<style>
+  /* Cloud drift animations */
+  @keyframes cloudDriftOne {
+    0% {
+      transform: translate(-50%, -50%) translateX(-25px);
+    }
+    50% {
+      transform: translate(-50%, -50%) translateX(25px);
+    }
+    100% {
+      transform: translate(-50%, -50%) translateX(-25px);
+    }
+  }
+
+  @keyframes cloudDriftTwo {
+    0% {
+      transform: translate(-50%, -50%) translateX(-25px);
+    }
+    50% {
+      transform: translate(-50%, -50%) translateX(25px);
+    }
+    100% {
+      transform: translate(-50%, -50%) translateX(-25px);
+    }
+  }
+
+  .cloud-drift-one {
+    animation: cloudDriftOne 12s ease-in-out infinite;
+  }
+
+  .cloud-drift-two {
+    animation: cloudDriftTwo 15s ease-in-out infinite 1s;
+  }
+</style>

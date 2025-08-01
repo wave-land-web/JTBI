@@ -1,0 +1,236 @@
+@import 'tailwindcss';
+@plugin "daisyui" {
+  themes: corporate;
+}
+
+@plugin "daisyui/theme" {
+  name: 'corporate';
+  default: false;
+  prefersdark: false;
+  color-scheme: 'light';
+  --color-base-100: #ffffff;
+  --color-base-200: #f1edea;
+  --color-base-300: #ded2ca;
+  --color-base-content: #736561;
+  --color-primary: #736561;
+  --color-primary-content: #ffffff;
+  --color-secondary: #ffdd00;
+  --color-secondary-content: #736561;
+  --color-accent: oklch(39% 0.095 152.535);
+  --color-accent-content: #ffffff;
+  --color-neutral: oklch(26% 0.007 34.298);
+  --color-neutral-content: #ffffff;
+  --color-info: oklch(60% 0.126 221.723);
+  --color-info-content: oklch(98% 0.019 200.873);
+  --color-success: oklch(39% 0.095 152.535);
+  --color-success-content: #ffffff;
+  --color-warning: oklch(66% 0.179 58.318);
+  --color-warning-content: #ffffff;
+  --color-error: oklch(50% 0.213 27.518);
+  --color-error-content: oklch(97% 0.013 17.38);
+  --radius-selector: 0rem;
+  --radius-field: 0rem;
+  --radius-box: 0rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.35rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 1;
+}
+
+@theme {
+  --site-padding-sm: clamp(0.5rem, 1vw, 1rem);
+  --site-padding-base: clamp(1rem, 2vw, 2rem);
+  --site-padding-md: clamp(2rem, 3vw, 3rem);
+  --site-padding-lg: clamp(3rem, 4vw, 4rem);
+  --site-padding-xl: clamp(4rem, 5vw, 5rem);
+  --site-padding-2xl: clamp(5rem, 6vw, 6rem);
+  --site-padding-3xl: clamp(6rem, 7vw, 7rem);
+
+  --font-radio-canada: var(--font-radio-canada);
+  --font-factoria: 'factoria', serif;
+
+  /* Form and content spacing */
+  --form-gap: clamp(1rem, 2vw, 1.5rem);
+  --content-max-width: 85ch;
+}
+
+/* Animations */
+
+@view-transition {
+  navigation: auto;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /**
+    * Required class: `lsa` (initializes animations and defaults to fade-in)
+    * Note: Add `no-repeat` class to prevent animations from repeating on scroll
+    */
+  .lsa {
+    @apply opacity-0 transform transition duration-700;
+
+    /* Slide animations */
+    &.lsa-slide-up {
+      @apply translate-y-4;
+    }
+    &.lsa-slide-down {
+      @apply -translate-y-4;
+    }
+    &.lsa-slide-left {
+      @apply -translate-x-4;
+    }
+    &.lsa-slide-right {
+      @apply translate-x-4;
+    }
+    &.lsa-slide-down-right {
+      @apply -translate-x-4 -translate-y-4;
+    }
+    &.lsa-slide-down-left {
+      @apply translate-x-4 -translate-y-4;
+    }
+    &.lsa-slide-up-right {
+      @apply -translate-x-4 translate-y-4;
+    }
+    &.lsa-slide-up-left {
+      @apply translate-x-4 translate-y-4;
+    }
+
+    /* Handle active state */
+    &.active {
+      @apply opacity-100 translate-x-0 translate-y-0;
+    }
+  }
+}
+
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary) var(--color-base-300) !important;
+  }
+
+  ::selection {
+    @apply bg-primary text-primary-content;
+  }
+
+  html {
+    @apply scroll-smooth break-words scroll-pt-[calc(var(--site-padding-3xl)+var(--nav-height))];
+  }
+
+  body {
+    @apply min-h-screen bg-base-300 font-radio-canada text-base-content antialiased;
+  }
+
+  main,
+  footer {
+    @apply py-(--site-padding-lg);
+  }
+
+  main {
+    @apply pb-0;
+  }
+
+  .wrapper {
+    @apply w-full max-w-screen-2xl mx-auto px-(--site-padding-base);
+  }
+
+  section {
+    @apply py-(--site-padding-2xl);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .h1,
+  .h2,
+  .h3,
+  .h4,
+  .h5,
+  .h6 {
+    @apply font-factoria text-balance leading-tight;
+  }
+
+  h1,
+  .h1 {
+    @apply text-5xl sm:text-6xl;
+  }
+
+  h2,
+  .h2 {
+    @apply text-4xl sm:text-5xl;
+  }
+
+  h3,
+  .h3 {
+    @apply text-3xl sm:text-4xl;
+  }
+
+  h4,
+  .h4 {
+    @apply text-2xl sm:text-3xl;
+  }
+
+  h5,
+  .h5 {
+    @apply text-xl sm:text-2xl;
+  }
+
+  h6,
+  .h6 {
+    @apply text-lg sm:text-xl;
+  }
+
+  p,
+  li:not(nav li),
+  .p {
+    @apply max-w-(--content-max-width) text-base sm:text-lg text-pretty leading-relaxed;
+  }
+
+  button,
+  a,
+  .a {
+    @apply text-balance transition-colors duration-200;
+  }
+
+  img,
+  svg {
+    @apply w-full h-auto;
+  }
+
+  img {
+    @apply w-full h-auto object-cover;
+  }
+
+  em {
+    @apply italic;
+  }
+
+  /* Form styling improvements */
+  .form-control .input {
+    @apply transition-colors duration-200;
+  }
+
+  .form-control .input:focus {
+    @apply border-primary;
+  }
+
+  .checkbox:checked {
+    @apply bg-primary border-primary;
+  }
+
+  /* Ensure proper contrast for form elements */
+  .input-bordered {
+    @apply border-base-content/20;
+  }
+
+  .input-bordered:focus {
+    @apply border-primary border-2;
+  }
+
+  /* Strong text styling - uncomment when you have the font */
+  /* strong {
+    @apply font-nuckle-semibold;
+  } */
+}

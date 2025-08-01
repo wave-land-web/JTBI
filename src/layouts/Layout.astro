@@ -1,22 +1,74 @@
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
-	</head>
-	<body>
-		<slot />
-	</body>
+---
+import { Font } from 'astro:assets'
+import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from '../consts'
+import CloudBackgroundSample from '../assets/images/textures/jtbi-cloud-background-sample.svg'
+import Footer from '../components/ui/Footer.astro'
+import '../styles/global.css'
+
+export interface Props {
+  title?: string
+  description?: string
+  socialImage?: string
+}
+
+const { title = SITE_TITLE, description = SITE_DESCRIPTION, socialImage } = Astro.props
+const canonicalURL = new URL(Astro.url.pathname, Astro.site)
+// TODO: replace with a proper social image
+const socialImageURL = new URL(socialImage || '/images/og.png', canonicalURL)
+---
+
+<html lang="en" data-theme="corporate">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- SEO -->
+    <title>{title}</title>
+    <meta name="title" content={title} />
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="canonical" href={canonicalURL} />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <!-- Facebook -->
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={socialImageURL} />
+    <meta property="og:image:width" content="1600" />
+    <meta property="og:image:height" content="840" />
+    <meta property="og:image:type" content="image/png" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:domain" content={SITE_URL} />
+    <meta name="twitter:url" content={canonicalURL} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImageURL} />
+
+    <!-- Preload Fonts -->
+    <Font cssVariable="--font-radio-canada" preload />
+    <link rel="stylesheet" href="https://use.typekit.net/fym2duv.css" />
+
+    <!-- Favicon -->
+  </head>
+
+  <body class="relative min-h-screen">
+    <!-- TODO: needs to be full screen on all sizes -->
+    <CloudBackgroundSample
+      class="fixed inset-0 min-w-screen min-h-screen opacity-5 z-0 pointer-events-none"
+    />
+    <slot />
+    <Footer />
+  </body>
 </html>
 
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>
+<script>
+  import lsa from '../lib/lsa.ts'
+
+  // Initialize LSA animations on page load
+  lsa()
+</script>
