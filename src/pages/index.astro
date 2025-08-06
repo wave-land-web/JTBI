@@ -35,9 +35,9 @@ import Layout from '../layouts/Layout.astro'
   <main
     class="max-w-screen-lg mx-auto pt-0 pb-(--site-padding-3xl) px-(--site-padding-base) text-center"
   >
-    <section id="hero" class="pt-0">
+    <section id="hero" class="pt-0 pb-(--site-padding-sm)">
       <div class="text-left">
-        <h2 class="h1 text-base-100 font-extrabold lsa no-repeat">
+        <h2 class="h1 text-pretty text-base-100 font-extrabold lsa no-repeat">
           Time for a rebrand, so this site is under construction.
         </h2>
         <p class="h1 lsa no-repeat">Your brand could be next.</p>
@@ -45,7 +45,7 @@ import Layout from '../layouts/Layout.astro'
     </section>
 
     <section id="description">
-      <div class="w-full grid grid-cols-1 md:grid-cols-2 justify-items-end">
+      <div class="w-full grid grid-cols-1 md:grid-cols-2 md:justify-items-end">
         <div>
           <!-- Empty Column -->
         </div>
@@ -61,7 +61,7 @@ import Layout from '../layouts/Layout.astro'
 
     <section id="contact">
       <header class="mb-8 text-left">
-        <h2 class="text-xl font-bold mb-2 lsa no-repeat">
+        <h2 class="h4 font-bold mb-2 lsa no-repeat">
           WANT TO DISCUSS YOUR BRAND? <span class="font-normal">Let's chat.</span>
         </h2>
         <p class="lsa no-repeat">
@@ -152,12 +152,17 @@ import Layout from '../layouts/Layout.astro'
         <div class="flex md:justify-end">
           <button
             type="submit"
-            class="btn btn-soft w-52 border-secondary flex justify-between px-0 z-10 group"
+            class="bg-base-100 border border-secondary focus:outline-none focus:bg-secondary hover:bg-secondary w-52 flex justify-between px-0 z-10 group cursor-pointer"
           >
-            <span class="p w-full p-4 font-extrabold">SEND INFO</span>
-            <div class="w-1/3 h-full p-2 flex items-center bg-secondary fill-secondary-content">
+            <span
+              class="p w-full p-4 font-extrabold group-hover:text-base-100 group-focus:text-base-100 transition-colors duration-200"
+              >SEND INFO</span
+            >
+            <div
+              class="w-1/3 h-full p-2 flex items-center bg-secondary fill-secondary-content group-hover:fill-base-100 group-focus:fill-base-100 transition-colors duration-200"
+            >
               <svg
-                class="-rotate-45 group-hover:rotate-0 transition-transform duration-200"
+                class="-rotate-45 group-hover:rotate-0 group-focus:rotate-0 transition-transform duration-200"
                 viewBox="0 0 20 20"
               >
                 <path
