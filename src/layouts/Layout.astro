@@ -59,19 +59,17 @@ const backgroundImage = await getImage({ src: CloudBackgroundSample, inferSize: 
 
   <body class="relative min-h-screen overflow-x-hidden">
     <!-- Full screen cloud background -->
-    <div class="relative">
-      <div
-        class="fixed inset-0 w-full h-screen bg-cover bg-center bg-no-repeat pointer-events-none z-0 opacity-20"
-        style={`background-image: url('${backgroundImage.src}');`}
-        role="presentation"
-        aria-hidden="true"
-      >
-      </div>
+    <div
+      class="absolute inset-0 w-full h-auto bg-cover bg-center pointer-events-none opacity-20 z-0"
+      style={`background-image: url('${backgroundImage.src}');`}
+      role="presentation"
+      aria-hidden="true"
+    >
+    </div>
 
-      <!-- Page content with proper z-index -->
-      <div class="relative z-10 min-h-screen">
-        <slot />
-      </div>
+    <!-- Page content with proper z-index -->
+    <div class="relative z-10 min-h-screen">
+      <slot />
     </div>
 
     <Footer />
