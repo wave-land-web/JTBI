@@ -13,7 +13,7 @@ export interface Props {
 
 const { title = SITE_TITLE, description = SITE_DESCRIPTION, socialImage } = Astro.props
 const canonicalURL = new URL(Astro.url.pathname, Astro.site)
-// TODO: Social image
+// TODO: Replace with real social image
 const socialImageURL = new URL(socialImage || '/images/og.png', canonicalURL)
 const backgroundImage = await getImage({ src: CloudBackgroundSample, inferSize: true })
 ---
