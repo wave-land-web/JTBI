@@ -1,7 +1,7 @@
 ---
 import { Font, getImage } from 'astro:assets'
 import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from '../consts'
-import CloudBackgroundSample from '../assets/images/textures/jtbi-cloud-background-sample.svg'
+import CloudBackground from '../assets/images/textures/jtbi-cloud-background-horizontal.png'
 import Footer from '../components/ui/Footer.astro'
 import '../styles/global.css'
 
@@ -15,7 +15,7 @@ const { title = SITE_TITLE, description = SITE_DESCRIPTION, socialImage } = Astr
 const canonicalURL = new URL(Astro.url.pathname, Astro.site)
 // TODO: Replace with real social image
 const socialImageURL = new URL(socialImage || '/images/og.png', canonicalURL)
-const backgroundImage = await getImage({ src: CloudBackgroundSample, inferSize: true })
+const backgroundImage = await getImage({ src: CloudBackground, inferSize: true })
 ---
 
 <html lang="en" data-theme="corporate">
@@ -60,7 +60,7 @@ const backgroundImage = await getImage({ src: CloudBackgroundSample, inferSize: 
   <body class="relative min-h-screen overflow-x-hidden">
     <!-- Full screen cloud background -->
     <div
-      class="absolute inset-0 w-full h-auto bg-cover bg-center pointer-events-none opacity-20 z-0"
+      class="absolute inset-0 w-full h-auto bg-center bg-contain pointer-events-none opacity-20 z-0"
       style={`background-image: url('${backgroundImage.src}');`}
       role="presentation"
       aria-hidden="true"
