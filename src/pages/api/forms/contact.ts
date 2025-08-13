@@ -67,7 +67,7 @@ export const POST: APIRoute = async ({ request }) => {
       }
     )
   } catch (error) {
-    console.error('Error saving contact form:', error)
+    console.error('Error sending message:', error)
 
     return new Response(
       JSON.stringify({
