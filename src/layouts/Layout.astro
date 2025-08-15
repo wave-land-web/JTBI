@@ -1,7 +1,7 @@
 ---
 import { Font, getImage } from 'astro:assets'
 import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from '../consts'
-import CloudBackground from '../assets/images/textures/jtbi-cloud-background-horizontal.png'
+import CloudBackground from '../assets/images/textures/jtbi-cloud-background-tan-variant.jpg'
 import Footer from '../components/ui/Footer.astro'
 import '../styles/global.css'
 
@@ -66,7 +66,7 @@ const backgroundImage = await getImage({ src: CloudBackground, inferSize: true }
   <body class="relative min-h-screen overflow-x-hidden">
     <!-- Full screen cloud background -->
     <div
-      class="absolute inset-0 w-full h-auto bg-center bg-contain pointer-events-none opacity-20 z-0"
+      class="fixed inset-0 w-full h-auto bg-center bg-cover pointer-events-none z-0"
       style={`background-image: url('${backgroundImage.src}');`}
       role="presentation"
       aria-hidden="true"
