@@ -1,7 +1,10 @@
-import type { APIRoute } from 'astro'
-import { sanityClient } from '../../../sanity/lib/client'
+export const prerender = false
 
-export const prerender = false // Disable prerendering for API route
+import { render } from '@react-email/render'
+import type { APIRoute } from 'astro'
+import Welcome from '../../../components/emails/Welcome'
+import { resend } from '../../../lib/resend'
+import { sanityClient } from '../../../sanity/lib/client'
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -52,12 +55,60 @@ export const POST: APIRoute = async ({ request }) => {
     // Save to Sanity
     const result = await sanityClient.create(userDoc)
 
+    // Add to Resend audience if subscribed
+    let resendContactId = null
+    if (userDoc.isSubscribed) {
+      try {
+        const resendResponse = await resend.contacts.create({
+          email: userDoc.email,
+          firstName: userDoc.firstName,
+          lastName: userDoc.lastName,
+          audienceId: import.meta.env.RESEND_AUDIENCE_ID,
+        })
+
+        // Handle successful response
+        if (resendResponse.data) {
+          resendContactId = resendResponse.data.id
+
+          // Create params for the welcome email
+          const emailParams = {
+            email,
+            firstName,
+          }
+
+          // Render the welcome email as plain text
+          const text = await render(Welcome(emailParams), {
+            plainText: true,
+          })
+
+          // Send welcome email
+          const { data: welcomeEmailData, error: welcomeEmailError } = await resend.emails.send({
+            from: 'JTBI <noreply@jtbimaginative.com>',
+            to: [userDoc.email],
+            subject: 'Welcome to JTB Imaginative LCC',
+            react: Welcome(emailParams),
+            text,
+          })
+
+          if (welcomeEmailError) {
+            console.error('Error sending welcome email:', welcomeEmailError)
+            // Don't fail the entire request if welcome email fails
+          }
+        }
+      } catch (resendError) {
+        console.error('Error adding contact to Resend audience:', resendError)
+        // Don't fail the entire request if Resend fails
+        // The contact is still saved in Sanity
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         message: 'We have received your message and will get back to you shortly.',
         id: result._id,
         isSubscribed: userDoc.isSubscribed,
+        resendContactId,
       }),
       {
         status: 201,

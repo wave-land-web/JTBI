@@ -7,8 +7,7 @@ import { defineConfig, envField, fontProviders } from 'astro/config'
 
 // https://astro.build/config
 export default defineConfig({
-  // TODO: replace with prod site URL
-  site: 'http://localhost:4321',
+  site: 'https://jtbimaginative.com',
   env: {
     schema: {
       PUBLIC_SANITY_STUDIO_PROJECT_ID: envField.string({
