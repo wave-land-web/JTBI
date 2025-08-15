@@ -2,6 +2,7 @@ export const prerender = false
 
 import { render } from '@react-email/render'
 import type { APIRoute } from 'astro'
+import Notification from '../../../components/emails/Notification'
 import Welcome from '../../../components/emails/Welcome'
 import { resend } from '../../../lib/resend'
 import { sanityClient } from '../../../sanity/lib/client'
@@ -131,7 +132,7 @@ export const POST: APIRoute = async ({ request }) => {
 
         // Send welcome email
         const { data: welcomeEmailData, error: welcomeEmailError } = await resend.emails.send({
-          from: 'JTBI <noreply@jtbimaginative.com>',
+          from: 'JTBI <hello@jtbimaginative.com>',
           to: [userData.email],
           subject: userData.isSubscribed
             ? 'Welcome to JTB Imaginative LLC'
@@ -148,6 +149,43 @@ export const POST: APIRoute = async ({ request }) => {
         console.error('Error sending welcome email:', emailError)
         // Don't fail the entire request if email fails
       }
+    }
+
+    // Send notification email to jtbimaginative@gmail.com
+    try {
+      const notificationParams = {
+        firstName,
+        lastName,
+        businessName,
+        email,
+        phone,
+        message,
+        isSubscribed: userData.isSubscribed,
+      }
+
+      // Render the notification email as plain text
+      const notificationText = await render(Notification(notificationParams), {
+        plainText: true,
+      })
+
+      // Send notification email
+      const { data: notificationEmailData, error: notificationEmailError } =
+        await resend.emails.send({
+          from: 'JTBI Website <noreply@jtbimaginative.com>',
+          // TODO: change to jtbimaginative@gmail.com
+          to: ['josh@wavelandweb.com'],
+          subject: `New contact form submission from ${firstName} ${lastName}`,
+          react: Notification(notificationParams),
+          text: notificationText,
+        })
+
+      if (notificationEmailError) {
+        console.error('Error sending notification email:', notificationEmailError)
+        // Don't fail the entire request if notification email fails
+      }
+    } catch (notificationError) {
+      console.error('Error sending notification email:', notificationError)
+      // Don't fail the entire request if notification email fails
     }
 
     return new Response(

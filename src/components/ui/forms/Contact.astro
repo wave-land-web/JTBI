@@ -2,7 +2,7 @@
   id="contact-form"
   class="space-y-(--site-padding-sm) lsa no-repeat"
   method="POST"
-  action="/api/forms/subscribe"
+  action="/api/forms/contact"
 >
   <!-- First and Last Name -->
   <fieldset class="grid grid-cols-2 gap-(--site-padding-sm)">
@@ -213,7 +213,7 @@
 
         try {
           const formData = new FormData(form)
-          const response = await fetch('/api/forms/subscribe', {
+          const response = await fetch('/api/forms/contact', {
             method: 'POST',
             body: formData,
           })

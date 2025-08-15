@@ -118,7 +118,7 @@ const button = {
   fontSize: '16px',
   textDecoration: 'none',
   textAlign: 'center' as const,
-  display: 'block',
+  display: 'inline-block',
   padding: '12px',
 }
 
