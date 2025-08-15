@@ -168,7 +168,7 @@ export const POST: APIRoute = async ({ request }) => {
       // Add notification email to batch
       emailsToSend.push({
         from: 'JTBI Website <noreply@jtbimaginative.com>',
-        to: ['josh@wavelandweb.com'],
+        to: ['jtbimaginative@gmail.com'],
         subject: `New contact form submission from ${firstName} ${lastName}`,
         react: Notification(notificationParams),
         text: notificationText,
