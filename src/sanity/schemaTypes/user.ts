@@ -38,6 +38,13 @@ export default defineType({
       validation: (Rule) => Rule.required().error('A valid phone number is required'),
     }),
     defineField({
+      name: 'message',
+      title: 'Message',
+      type: 'text',
+      description: 'Optional message from the user',
+      rows: 4,
+    }),
+    defineField({
       name: 'isSubscribed',
       title: 'Newsletter Subscription',
       type: 'boolean',

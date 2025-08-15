@@ -15,6 +15,7 @@ export const POST: APIRoute = async ({ request }) => {
     const businessName = formData.get('businessName')?.toString()
     const email = formData.get('email')?.toString()
     const phone = formData.get('phone')?.toString()
+    const message = formData.get('message')?.toString()
     const isSubscribed = formData.get('isSubscribed') === 'on' // Checkbox values are 'on' when checked
 
     // Validate required fields
@@ -48,6 +49,7 @@ export const POST: APIRoute = async ({ request }) => {
       businessName: businessName.trim(),
       email: email.trim().toLowerCase(),
       phone: phone.trim(),
+      message: message ? message.trim() : '',
       isSubscribed: isSubscribed || false,
       createdAt: new Date().toISOString(),
     }
