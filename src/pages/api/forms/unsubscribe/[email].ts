@@ -43,9 +43,10 @@ export const GET: APIRoute = async ({ params, redirect }) => {
   }
 
   // Handle unsubscription from the Resend audience
-  const { data: unsubscribeData, error: unsubscribeError } = await resend.contacts.remove({
+  const { data: unsubscribeData, error: unsubscribeError } = await resend.contacts.update({
     email: sanitizedEmail,
     audienceId: import.meta.env.RESEND_AUDIENCE_ID,
+    unsubscribed: true,
   })
 
   // Log the response from Resend

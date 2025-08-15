@@ -65,7 +65,7 @@ export default function Welcome({ email, firstName }: WelcomeProps) {
 
           <Hr style={hr} />
 
-          <Link href={`${SITE_URL}/api/email/unsubscribe/${email}`} target="_blank">
+          <Link href={`${SITE_URL}/api/forms/unsubscribe/${email}`} target="_blank">
             unsubscribe
           </Link>
 

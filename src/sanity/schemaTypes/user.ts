@@ -59,6 +59,13 @@ export default defineType({
       initialValue: () => new Date().toISOString(),
       readOnly: true,
     }),
+    defineField({
+      name: 'updatedAt',
+      title: 'Updated At',
+      type: 'datetime',
+      description: 'When the user was last updated',
+      readOnly: true,
+    }),
   ],
 
   preview: {

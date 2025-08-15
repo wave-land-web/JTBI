@@ -41,9 +41,14 @@ export const POST: APIRoute = async ({ request }) => {
       )
     }
 
-    // Create the user document in Sanity
-    const userDoc = {
-      _type: 'user',
+    // Check if user already exists by email
+    const existingUser = await sanityClient.fetch(`*[_type == "user" && email == $email][0]`, {
+      email: email.trim().toLowerCase(),
+    })
+
+    let result
+    let isNewUser = false
+    const userData = {
       firstName: firstName.trim(),
       lastName: lastName.trim(),
       businessName: businessName.trim(),
@@ -51,51 +56,76 @@ export const POST: APIRoute = async ({ request }) => {
       phone: phone.trim(),
       message: message ? message.trim() : '',
       isSubscribed: isSubscribed || false,
-      createdAt: new Date().toISOString(),
     }
 
-    // Save to Sanity
-    const result = await sanityClient.create(userDoc)
-
-    // Add to Resend audience if subscribed
-    let resendContactId = null
-    if (userDoc.isSubscribed) {
-      try {
-        const resendResponse = await resend.contacts.create({
-          email: userDoc.email,
-          firstName: userDoc.firstName,
-          lastName: userDoc.lastName,
-          audienceId: import.meta.env.RESEND_AUDIENCE_ID,
+    if (existingUser) {
+      // Update existing user
+      result = await sanityClient
+        .patch(existingUser._id)
+        .set({
+          ...userData,
+          updatedAt: new Date().toISOString(),
         })
+        .commit()
+    } else {
+      // Create new user
+      isNewUser = true
+      const userDoc = {
+        _type: 'user',
+        ...userData,
+        createdAt: new Date().toISOString(),
+      }
 
-        // Handle successful response
-        if (resendResponse.data) {
-          resendContactId = resendResponse.data.id
+      result = await sanityClient.create(userDoc)
+    }
 
-          // Create params for the welcome email
-          const emailParams = {
-            email,
-            firstName,
-          }
+    // Handle Resend audience management
+    let resendContactId = null
+    if (userData.isSubscribed) {
+      try {
+        // For existing users, check if they were previously subscribed
+        const shouldCreateContact = isNewUser || !existingUser?.isSubscribed
 
-          // Render the welcome email as plain text
-          const text = await render(Welcome(emailParams), {
-            plainText: true,
+        if (shouldCreateContact) {
+          const resendResponse = await resend.contacts.create({
+            email: userData.email,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            audienceId: import.meta.env.RESEND_AUDIENCE_ID,
           })
 
-          // Send welcome email
-          const { data: welcomeEmailData, error: welcomeEmailError } = await resend.emails.send({
-            from: 'JTBI <noreply@jtbimaginative.com>',
-            to: [userDoc.email],
-            subject: 'Welcome to JTB Imaginative LCC',
-            react: Welcome(emailParams),
-            text,
-          })
+          // Handle successful response
+          if (resendResponse.data) {
+            resendContactId = resendResponse.data.id
 
-          if (welcomeEmailError) {
-            console.error('Error sending welcome email:', welcomeEmailError)
-            // Don't fail the entire request if welcome email fails
+            // Create params for the welcome email
+            const emailParams = {
+              email,
+              firstName,
+            }
+
+            // Render the welcome email as plain text
+            const text = await render(Welcome(emailParams), {
+              plainText: true,
+            })
+
+            // Send welcome email
+            const { data: welcomeEmailData, error: welcomeEmailError } = await resend.emails.send({
+              from: 'JTBI <noreply@jtbimaginative.com>',
+              to: [userData.email],
+              subject: 'Welcome to JTB Imaginative LCC',
+              react: Welcome(emailParams),
+              text,
+            })
+
+            if (welcomeEmailError) {
+              console.error('Error sending welcome email:', welcomeEmailError)
+              // Don't fail the entire request if welcome email fails
+            }
           }
+        } else {
+          // User was already subscribed, no need to create new contact or send welcome email
+          console.log('User already subscribed to Resend audience')
         }
       } catch (resendError) {
         console.error('Error adding contact to Resend audience:', resendError)
@@ -109,8 +139,9 @@ export const POST: APIRoute = async ({ request }) => {
         success: true,
         message: 'We have received your message and will get back to you shortly.',
         id: result._id,
-        isSubscribed: userDoc.isSubscribed,
+        isSubscribed: userData.isSubscribed,
         resendContactId,
+        isNewUser,
       }),
       {
         status: 201,
