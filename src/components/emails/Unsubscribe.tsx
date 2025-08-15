@@ -105,5 +105,4 @@ const hr = {
 const footer = {
   color: '#8898aa',
   fontSize: '12px',
-  textAlign: 'center' as const,
 }

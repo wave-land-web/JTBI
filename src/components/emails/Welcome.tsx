@@ -74,7 +74,7 @@ export default function Welcome({ email, firstName, isSubscribed = true }: Welco
           <Hr style={hr} />
 
           {isSubscribed && (
-            <Link href={`${SITE_URL}/api/forms/unsubscribe/${email}`} target="_blank">
+            <Link style={link} href={`${SITE_URL}/api/forms/unsubscribe/${email}`} target="_blank">
               unsubscribe
             </Link>
           )}
@@ -122,6 +122,11 @@ const button = {
   padding: '12px',
 }
 
+const link = {
+  color: '#2b86a5',
+  textDecoration: 'none',
+}
+
 const hr = {
   borderColor: '#cccccc',
   margin: '20px 0',
@@ -130,5 +135,4 @@ const hr = {
 const footer = {
   color: '#8898aa',
   fontSize: '12px',
-  textAlign: 'center' as const,
 }
