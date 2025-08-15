@@ -115,7 +115,10 @@ export const POST: APIRoute = async ({ request }) => {
       }
     }
 
-    // Send welcome email if appropriate
+    // Prepare emails to send using batch API
+    const emailsToSend = []
+
+    // Prepare welcome email if appropriate
     if (shouldSendWelcomeEmail) {
       try {
         // Create params for the welcome email
@@ -126,32 +129,26 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         // Render the welcome email as plain text
-        const text = await render(Welcome(emailParams), {
+        const welcomeText = await render(Welcome(emailParams), {
           plainText: true,
         })
 
-        // Send welcome email
-        const { data: welcomeEmailData, error: welcomeEmailError } = await resend.emails.send({
+        // Add welcome email to batch
+        emailsToSend.push({
           from: 'JTBI <hello@jtbimaginative.com>',
           to: [userData.email],
           subject: userData.isSubscribed
             ? 'Welcome to JTB Imaginative LLC'
             : 'Thank you for contacting JTB Imaginative LLC',
           react: Welcome(emailParams),
-          text,
+          text: welcomeText,
         })
-
-        if (welcomeEmailError) {
-          console.error('Error sending welcome email:', welcomeEmailError)
-          // Don't fail the entire request if welcome email fails
-        }
       } catch (emailError) {
-        console.error('Error sending welcome email:', emailError)
-        // Don't fail the entire request if email fails
+        console.error('Error preparing welcome email:', emailError)
       }
     }
 
-    // Send notification email to jtbimaginative@gmail.com
+    // Prepare notification email to jtbimaginative@gmail.com
     try {
       const notificationParams = {
         firstName,
@@ -168,24 +165,33 @@ export const POST: APIRoute = async ({ request }) => {
         plainText: true,
       })
 
-      // Send notification email
-      const { data: notificationEmailData, error: notificationEmailError } =
-        await resend.emails.send({
-          from: 'JTBI Website <noreply@jtbimaginative.com>',
-          // TODO: change to jtbimaginative@gmail.com
-          to: ['josh@wavelandweb.com'],
-          subject: `New contact form submission from ${firstName} ${lastName}`,
-          react: Notification(notificationParams),
-          text: notificationText,
-        })
-
-      if (notificationEmailError) {
-        console.error('Error sending notification email:', notificationEmailError)
-        // Don't fail the entire request if notification email fails
-      }
+      // Add notification email to batch
+      emailsToSend.push({
+        from: 'JTBI Website <noreply@jtbimaginative.com>',
+        to: ['josh@wavelandweb.com'],
+        subject: `New contact form submission from ${firstName} ${lastName}`,
+        react: Notification(notificationParams),
+        text: notificationText,
+      })
     } catch (notificationError) {
-      console.error('Error sending notification email:', notificationError)
-      // Don't fail the entire request if notification email fails
+      console.error('Error preparing notification email:', notificationError)
+    }
+
+    // Send all emails in a single batch request (if any emails to send)
+    if (emailsToSend.length > 0) {
+      try {
+        const { data: batchData, error: batchError } = await resend.batch.send(emailsToSend)
+
+        if (batchError) {
+          console.error('Error sending batch emails:', batchError)
+          // Don't fail the entire request if batch email fails
+        } else {
+          console.log(`Successfully sent ${emailsToSend.length} emails in batch`)
+        }
+      } catch (batchError) {
+        console.error('Error sending batch emails:', batchError)
+        // Don't fail the entire request if batch email fails
+      }
     }
 
     return new Response(
