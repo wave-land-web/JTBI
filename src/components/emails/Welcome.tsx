@@ -17,22 +17,27 @@ import { capitalize } from '../../lib/text'
 interface WelcomeProps {
   email: string
   firstName: string
+  isSubscribed?: boolean
 }
 
-export default function Welcome({ email, firstName }: WelcomeProps) {
+export default function Welcome({ email, firstName, isSubscribed = true }: WelcomeProps) {
   const firstNameCapitalized = capitalize(firstName)
 
   return (
     <Html>
       <Head />
-      <Preview>Welcome to JTB Imaginative LLC, {firstNameCapitalized}</Preview>
+      <Preview>
+        {isSubscribed
+          ? `Welcome to JTB Imaginative LLC, ${firstNameCapitalized}`
+          : `Thank you for contacting JTB Imaginative LLC, ${firstNameCapitalized}`}
+      </Preview>
       <Body style={main}>
         <Container style={container}>
           <Img
-            src={`${SITE_URL}/images/logo.png`}
-            width="125"
+            src={`${SITE_URL}/jtbi-logo-primary-90-opacity.png`}
+            width="320"
             height="auto"
-            alt="Ascend 360 Logo"
+            alt="JTB Imaginative LLC Logo"
             style={logo}
           />
 
@@ -41,13 +46,16 @@ export default function Welcome({ email, firstName }: WelcomeProps) {
           <Section style={container}>
             <Text style={paragraph}>Hi {firstNameCapitalized},</Text>
 
-            <Text style={paragraph}>Thank you for subscribing to JTB Imaginative LLC</Text>
+            <Text style={paragraph}>
+              {isSubscribed
+                ? 'Thank you for subscribing to JTB Imaginative LLC'
+                : 'Thank you for contacting JTB Imaginative LLC'}
+            </Text>
 
             <Text style={paragraph}>
-              We've received your information and will get back to you shortly. You've also been
-              added to our mailing list. We limit our emails to only a few a year, and we never sell
-              your information to others. If you ever find that these emails no longer fit your
-              fancy, you can unsubscribe anytime.
+              {isSubscribed
+                ? "We've received your information and will get back to you shortly. You've also been added to our mailing list. We limit our emails to only a few a year, and we never sell your information to others. If you ever find that these emails no longer fit your fancy, you can unsubscribe anytime."
+                : "We've received your information and will get back to you shortly. Feel free to submit again with a checked box at anytime to subscribe for updates."}
             </Text>
 
             <Text style={paragraph}>
@@ -65,9 +73,11 @@ export default function Welcome({ email, firstName }: WelcomeProps) {
 
           <Hr style={hr} />
 
-          <Link href={`${SITE_URL}/api/forms/unsubscribe/${email}`} target="_blank">
-            unsubscribe
-          </Link>
+          {isSubscribed && (
+            <Link href={`${SITE_URL}/api/forms/unsubscribe/${email}`} target="_blank">
+              unsubscribe
+            </Link>
+          )}
 
           <Text style={footer}>JTB Imaginative LLC</Text>
           <Text style={footer}>

@@ -29,10 +29,10 @@ export default function Unsubscribe({ firstName }: UnsubscribeProps) {
       <Body style={main}>
         <Container style={container}>
           <Img
-            src={`${SITE_URL}/images/logo.png`}
-            width="125"
+            src={`${SITE_URL}/jtbi-logo-primary-90-opacity.png`}
+            width="320"
             height="auto"
-            alt="Ascend 360 Logo"
+            alt="JTB Imaginative LLC Logo"
             style={logo}
           />
 
@@ -40,8 +40,8 @@ export default function Unsubscribe({ firstName }: UnsubscribeProps) {
 
           <Section style={container}>
             <Text style={paragraph}>
-              Hi {firstNameCapitalized}, you have been unsubscribed from JTB Imaginative LLC. You will no
-              longer receive any emails from us.
+              Hi {firstNameCapitalized}, you have been unsubscribed from JTB Imaginative LLC. You
+              will no longer receive any emails from us.
             </Text>
             <Text style={paragraph}>Come back anytime!</Text>
 

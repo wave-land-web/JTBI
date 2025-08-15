@@ -79,8 +79,13 @@ export const POST: APIRoute = async ({ request }) => {
       result = await sanityClient.create(userDoc)
     }
 
-    // Handle Resend audience management
+    // Handle Resend audience management and welcome emails
     let resendContactId = null
+
+    // Determine if we should send a welcome email
+    const shouldSendWelcomeEmail =
+      isNewUser || (userData.isSubscribed && !existingUser?.isSubscribed)
+
     if (userData.isSubscribed) {
       try {
         // For existing users, check if they were previously subscribed
@@ -97,40 +102,51 @@ export const POST: APIRoute = async ({ request }) => {
           // Handle successful response
           if (resendResponse.data) {
             resendContactId = resendResponse.data.id
-
-            // Create params for the welcome email
-            const emailParams = {
-              email,
-              firstName,
-            }
-
-            // Render the welcome email as plain text
-            const text = await render(Welcome(emailParams), {
-              plainText: true,
-            })
-
-            // Send welcome email
-            const { data: welcomeEmailData, error: welcomeEmailError } = await resend.emails.send({
-              from: 'JTBI <noreply@jtbimaginative.com>',
-              to: [userData.email],
-              subject: 'Welcome to JTB Imaginative LCC',
-              react: Welcome(emailParams),
-              text,
-            })
-
-            if (welcomeEmailError) {
-              console.error('Error sending welcome email:', welcomeEmailError)
-              // Don't fail the entire request if welcome email fails
-            }
           }
         } else {
-          // User was already subscribed, no need to create new contact or send welcome email
+          // User was already subscribed, no need to create new contact
           console.log('User already subscribed to Resend audience')
         }
       } catch (resendError) {
         console.error('Error adding contact to Resend audience:', resendError)
         // Don't fail the entire request if Resend fails
         // The contact is still saved in Sanity
+      }
+    }
+
+    // Send welcome email if appropriate
+    if (shouldSendWelcomeEmail) {
+      try {
+        // Create params for the welcome email
+        const emailParams = {
+          email,
+          firstName,
+          isSubscribed: userData.isSubscribed,
+        }
+
+        // Render the welcome email as plain text
+        const text = await render(Welcome(emailParams), {
+          plainText: true,
+        })
+
+        // Send welcome email
+        const { data: welcomeEmailData, error: welcomeEmailError } = await resend.emails.send({
+          from: 'JTBI <noreply@jtbimaginative.com>',
+          to: [userData.email],
+          subject: userData.isSubscribed
+            ? 'Welcome to JTB Imaginative LLC'
+            : 'Thank you for contacting JTB Imaginative LLC',
+          react: Welcome(emailParams),
+          text,
+        })
+
+        if (welcomeEmailError) {
+          console.error('Error sending welcome email:', welcomeEmailError)
+          // Don't fail the entire request if welcome email fails
+        }
+      } catch (emailError) {
+        console.error('Error sending welcome email:', emailError)
+        // Don't fail the entire request if email fails
       }
     }
 

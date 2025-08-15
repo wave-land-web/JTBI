@@ -123,7 +123,7 @@
   </div>
 
   <!-- Form Messages -->
-  <div id="form-messages" class="hidden text-left">
+  <div id="form-messages" class="hidden text-base-100 text-left">
     <div
       id="success-message"
       class="hidden flex-col md:flex-row items-start gap-6 p-6 bg-success border border-base-100 rounded-lg"
@@ -178,6 +178,19 @@
       formMessages?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
     }
 
+    function updateSuccessMessage(isSubscribed: boolean) {
+      const successParagraph = successMessage?.querySelector('p')
+      if (successParagraph) {
+        if (isSubscribed) {
+          successParagraph.textContent =
+            "We've received your information and will get back to you shortly. You've also been added to our mailing list. We limit our emails to only a few a year, and we never sell your information to others. If you ever find that these emails no longer fit your fancy, you can unsubscribe anytime."
+        } else {
+          successParagraph.textContent =
+            "We've received your information and will get back to you shortly. Feel free to submit again with a checked box at anytime to subscribe for updates."
+        }
+      }
+    }
+
     function showErrorMessage() {
       hideMessages()
       formMessages?.classList.remove('hidden')
@@ -208,6 +221,7 @@
           const result = await response.json()
 
           if (result.success) {
+            updateSuccessMessage(result.isSubscribed)
             showSuccessMessage()
             form.reset()
           } else {
