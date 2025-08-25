@@ -5,6 +5,8 @@ import sanity from '@sanity/astro'
 import tailwindcss from '@tailwindcss/vite'
 import { defineConfig, envField, fontProviders } from 'astro/config'
 
+import sitemap from '@astrojs/sitemap'
+
 // https://astro.build/config
 export default defineConfig({
   site: 'https://jtbimaginative.com',
@@ -70,5 +72,11 @@ export default defineConfig({
       apiVersion: '2025-08-01',
     }),
     react(),
+    sitemap({
+      lastmod: new Date(),
+      filter: (page) =>
+        page !== 'https://jtbimaginative.com/404/' &&
+        page !== 'https://jtbimaginative.com/unsubscribed/',
+    }),
   ],
 })
