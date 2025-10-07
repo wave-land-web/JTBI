@@ -4,7 +4,16 @@
   method="POST"
   action="/api/forms/contact"
   data-netlify="true"
+  data-netlify-honeypot="bot-field"
 >
+  <!-- Hidden form-name input required by Netlify -->
+  <input type="hidden" name="form-name" value="contact" />
+
+  <!-- Honeypot field - hidden from users, catches bots -->
+  <div style="display: none;">
+    <label>Don't fill this out if you're human: <input name="bot-field" /></label>
+  </div>
+
   <!-- First and Last Name -->
   <fieldset class="grid grid-cols-2 gap-(--site-padding-sm)">
     <legend class="sr-only">Personal Information</legend>

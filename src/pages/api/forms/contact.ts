@@ -18,6 +18,24 @@ export const POST: APIRoute = async ({ request }) => {
     const phone = formData.get('phone')?.toString()
     const message = formData.get('message')?.toString()
     const isSubscribed = formData.get('isSubscribed') === 'on' // Checkbox values are 'on' when checked
+    const botField = formData.get('bot-field')?.toString()
+
+    // Honeypot spam protection - if bot-field is filled, it's likely a bot
+    if (botField && botField.trim() !== '') {
+      console.log('Spam detected: honeypot field filled')
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: 'Spam detected. Please try again.',
+        }),
+        {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+    }
 
     // Validate required fields
     if (!firstName || !lastName || !businessName || !email || !phone) {
