@@ -37,6 +37,48 @@ export const POST: APIRoute = async ({ request }) => {
       )
     }
 
+    // Simple spam detection for obvious random character patterns
+    const randomPatterns = [
+      // Mixed case random strings like "JjPwFIxexeAgcm", "BiufEDTIsTsWMrnn"
+      /^[A-Z][a-z]+[A-Z][a-z]+[A-Z][a-z]+/,
+      // Patterns like "sHfQReBGdZboKbq", "ETLdvtKyBrmbXKf"
+      /^[a-z]+[A-Z]+[a-z]+[A-Z]+[a-z]+/,
+      // Very long strings without spaces (15+ chars, likely random)
+      /^[A-Za-z]{15,}$/,
+      // Random strings with punctuation marks (semicolons, commas, etc.)
+      /[;,:!@#$%^&*()_+=\[\]{}\|\\<>?\/~`]{2,}/,
+      // Mixed letters and random punctuation
+      /^[A-Za-z]+[;,:!@#$%^&*()_+=\[\]{}\|\\<>?\/~`]+[A-Za-z]*$/,
+      // Multiple punctuation scattered throughout
+      /.*[;,:!@#$%^&*()_+=\[\]{}\|\\<>?\/~`].*[;,:!@#$%^&*()_+=\[\]{}\|\\<>?\/~`]/,
+      // Random character sequences with numbers and symbols
+      /^[A-Za-z0-9;,:!@#$%^&*()_+=\[\]{}\|\\<>?\/~`]{8,}$/,
+    ]
+
+    // Check text fields for obvious random patterns
+    const fieldsToCheck = [firstName, lastName, businessName, message].filter(Boolean) as string[]
+
+    for (const fieldValue of fieldsToCheck) {
+      const trimmed = fieldValue.trim()
+
+      // Check for random character patterns
+      if (randomPatterns.some((pattern) => pattern.test(trimmed))) {
+        console.log('Spam detected: random character pattern:', trimmed)
+        return new Response(
+          JSON.stringify({
+            success: false,
+            message: 'Please use real names and information.',
+          }),
+          {
+            status: 400,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        )
+      }
+    }
+
     // Validate required fields
     if (!firstName || !lastName || !businessName || !email || !phone) {
       return new Response(
