@@ -166,6 +166,8 @@
     const formMessages = document.getElementById('form-messages')
     const successMessage = document.getElementById('success-message')
     const errorMessage = document.getElementById('error-message')
+    const errorParagraph = errorMessage?.querySelector('p')
+    const defaultErrorText = errorParagraph?.textContent ?? ''
 
     function hideMessages() {
       formMessages?.classList.add('hidden')
@@ -198,6 +200,12 @@
       }
     }
 
+    function updateErrorMessage(message?: string) {
+      if (!errorParagraph) return
+      const trimmed = message?.trim()
+      errorParagraph.textContent = trimmed ? trimmed : defaultErrorText
+    }
+
     function showErrorMessage() {
       hideMessages()
       formMessages?.classList.remove('hidden')
@@ -225,17 +233,24 @@
             body: formData,
           })
 
-          const result = await response.json()
+          let result: any = null
+          try {
+            result = await response.json()
+          } catch {
+            // ignore JSON parse errors
+          }
 
-          if (result.success) {
+          if (response.ok && result?.success) {
             updateSuccessMessage(result.isSubscribed)
             showSuccessMessage()
             form.reset()
           } else {
+            updateErrorMessage(result?.message)
             showErrorMessage()
           }
         } catch (error) {
           console.error('Form submission error:', error)
+          updateErrorMessage()
           showErrorMessage()
         } finally {
           // Re-enable submit button and restore text

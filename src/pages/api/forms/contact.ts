@@ -43,16 +43,17 @@ export const POST: APIRoute = async ({ request }) => {
       /^[A-Z][a-z]+[A-Z][a-z]+[A-Z][a-z]+/,
       // Patterns like "sHfQReBGdZboKbq", "ETLdvtKyBrmbXKf"
       /^[a-z]+[A-Z]+[a-z]+[A-Z]+[a-z]+/,
-      // Very long strings without spaces (15+ chars, likely random)
-      /^[A-Za-z]{15,}$/,
+      // Very long strings without spaces (25+ chars, likely random)
+      /^[A-Za-z]{25,}$/,
       // Random strings with punctuation marks (semicolons, commas, etc.)
       /[;,:!@#$%^&*()_+=\[\]{}\|\\<>?\/~`]{2,}/,
       // Mixed letters and random punctuation
       /^[A-Za-z]+[;,:!@#$%^&*()_+=\[\]{}\|\\<>?\/~`]+[A-Za-z]*$/,
       // Multiple punctuation scattered throughout
       /.*[;,:!@#$%^&*()_+=\[\]{}\|\\<>?\/~`].*[;,:!@#$%^&*()_+=\[\]{}\|\\<>?\/~`]/,
-      // Random character sequences with numbers and symbols
-      /^[A-Za-z0-9;,:!@#$%^&*()_+=\[\]{}\|\\<>?\/~`]{8,}$/,
+      // Random character sequences comprised solely of numbers/symbols/letters
+      // (Require at least one digit or symbol so we don't block normal names.)
+      /^(?=.*[0-9;,:!@#$%^&*()_+=\[\]{}\|\\<>?\/~`])[A-Za-z0-9;,:!@#$%^&*()_+=\[\]{}\|\\<>?\/~`]{10,}$/,
     ]
 
     // Check text fields for obvious random patterns
