@@ -6,6 +6,7 @@ import { z } from 'zod'
 import Notification from '../../../components/emails/Notification'
 import Welcome from '../../../components/emails/Welcome'
 import { resend } from '../../../lib/resend'
+import { AKISMET_API_KEY, RESEND_AUDIENCE_ID } from 'astro:env/server'
 
 // Validation schema
 const contactFormSchema = z.object({
@@ -28,6 +29,43 @@ const contactFormSchema = z.object({
   isSubscribed: z.boolean().optional().default(false),
   'bot-field': z.string().optional().default(''),
 })
+
+// Akismet spam check
+async function checkSpamWithAkismet(
+  email: string,
+  name: string,
+  message: string,
+  userIp?: string | null,
+): Promise<boolean> {
+  try {
+    if (!AKISMET_API_KEY) {
+      console.warn('AKISMET_API_KEY not configured, skipping spam check')
+      return false
+    }
+
+    const response = await fetch(`https://${AKISMET_API_KEY}.rest.akismet.com/1.1/comment-check`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        blog: 'https://jtbimaginative.com',
+        user_ip: userIp || '127.0.0.1',
+        user_agent: 'Astro Contact Form',
+        comment_type: 'contact-form',
+        comment_author: name,
+        comment_author_email: email,
+        comment_content: message,
+      }).toString(),
+    })
+
+    const result = await response.text()
+    return result.trim() === 'true'
+  } catch (error) {
+    console.error('Error checking spam with Akismet:', error)
+    return false
+  }
+}
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -64,6 +102,31 @@ export const POST: APIRoute = async ({ request }) => {
       )
     }
 
+    // Akismet spam check
+    const userIp = request.headers.get('x-forwarded-for') || request.headers.get('cf-connecting-ip')
+    const isSpam = await checkSpamWithAkismet(
+      validated.email,
+      `${validated.firstName} ${validated.lastName}`,
+      validated.message,
+      userIp,
+    )
+
+    if (isSpam) {
+      console.log('Spam detected by Akismet:', validated.email)
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: 'Your submission was flagged as spam. Please try again.',
+        }),
+        {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      )
+    }
+
     // Format contact data
     const contactData = {
       firstName: validated.firstName,
@@ -89,7 +152,7 @@ export const POST: APIRoute = async ({ request }) => {
           email: contactData.email,
           firstName: contactData.firstName,
           lastName: contactData.lastName,
-          audienceId: import.meta.env.RESEND_AUDIENCE_ID,
+          audienceId: RESEND_AUDIENCE_ID,
         })
 
         if (resendResponse.data) {
