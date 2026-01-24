@@ -2,9 +2,14 @@ export const prerender = false
 
 import { render } from '@react-email/components'
 import type { APIRoute } from 'astro'
+import { z } from 'zod'
 import Unsubscribe from '../../../../components/emails/Unsubscribe'
 import { resend } from '../../../../lib/resend'
-import { sanityClient } from '../../../../sanity/lib/client'
+
+// Validation schema
+const unsubscribeParamsSchema = z.object({
+  email: z.string().trim().email('Invalid email address'),
+})
 
 /**
  * GET request handler for unsubscribing an email.
@@ -14,83 +19,93 @@ import { sanityClient } from '../../../../sanity/lib/client'
  * @returns The response object.
  */
 export const GET: APIRoute = async ({ params, redirect }) => {
-  // Extract the email from the URL
-  const { email } = params
-
-  // If there is no email in the URL >> return an error
-  if (!email) {
-    return new Response(null, {
-      status: 404,
-      statusText: 'Email Not found',
+  try {
+    // Validate email parameter
+    const { email } = unsubscribeParamsSchema.parse({
+      email: params.email,
     })
-  }
 
-  const sanitizedEmail = email.trim().toLowerCase()
+    const sanitizedEmail = email.toLowerCase()
 
-  // Query for the user document by email to get firstName
-  const query = '*[_type == "user" && email == $email][0]'
-  const existingUser = await sanityClient.fetch(query, { email: sanitizedEmail })
-
-  // Update subscription status in Sanity
-  if (existingUser) {
-    await sanityClient
-      .patch(existingUser._id)
-      .set({
-        isSubscribed: false,
-        unsubscribedAt: new Date().toISOString(),
+    // Fetch contact from Resend audience to get firstName
+    let firstName = 'there'
+    try {
+      const { data: contactData } = await resend.contacts.get({
+        email: sanitizedEmail,
+        audienceId: import.meta.env.RESEND_AUDIENCE_ID,
       })
-      .commit()
-  }
+      if (contactData?.first_name) {
+        firstName = contactData.first_name
+      }
+    } catch (error) {
+      console.error("Error fetching contact from Resend, using default greeting 'there':", error)
+    }
 
-  // Handle unsubscription from the Resend audience
-  const { data: unsubscribeData, error: unsubscribeError } = await resend.contacts.update({
-    email: sanitizedEmail,
-    audienceId: import.meta.env.RESEND_AUDIENCE_ID,
-    unsubscribed: true,
-  })
+    // Handle unsubscription from the Resend audience
+    const { data: unsubscribeData, error: unsubscribeError } = await resend.contacts.update({
+      email: sanitizedEmail,
+      audienceId: import.meta.env.RESEND_AUDIENCE_ID,
+      unsubscribed: true,
+    })
 
-  // Log the response from Resend
-  console.log(unsubscribeData, unsubscribeError)
+    // Log the response from Resend
+    console.log(unsubscribeData, unsubscribeError)
 
-  // Render the Unsubscribe email as plain text
-  const text = await render(Unsubscribe({ firstName: existingUser?.firstName || 'there' }), {
-    plainText: true,
-  })
+    // Render the Unsubscribe email as plain text
+    const text = await render(Unsubscribe({ firstName }), {
+      plainText: true,
+    })
 
-  // Send an email to the user confirming their unsubscription
-  const { data: unsubscribeEmailData, error: unsubscribeEmailError } = await resend.emails.send({
-    from: 'JTBI <hello@jtbimaginative.com>',
-    to: sanitizedEmail,
-    subject: 'You have been unsubscribed from JTB Imaginative LLC',
-    react: Unsubscribe({
-      firstName: existingUser?.firstName || 'there',
-    }),
-    text,
-  })
+    // Send an email to the user confirming their unsubscription
+    const { data: unsubscribeEmailData, error: unsubscribeEmailError } = await resend.emails.send({
+      from: 'JTBI <hello@jtbimaginative.com>',
+      to: sanitizedEmail,
+      subject: 'You have been unsubscribed from JTB Imaginative LLC',
+      react: Unsubscribe({ firstName }),
+      text,
+    })
 
-  // Log the response from Resend
-  console.log(unsubscribeEmailData, unsubscribeEmailError)
+    // Log the response from Resend
+    console.log(unsubscribeEmailData, unsubscribeEmailError)
 
-  // If there was an error unsubscribing the user >> return an error
-  if (unsubscribeError?.message) {
+    // If there was an error unsubscribing the user >> return an error
+    if (unsubscribeError?.message) {
+      return new Response(
+        JSON.stringify({
+          error: `There was an error unsubscribing ${sanitizedEmail}. Please try again later. Error: ${unsubscribeError.message}`,
+        }),
+        { status: 500 },
+      )
+    }
+
+    // If there was an error sending the unsubscription email >> return an error
+    if (unsubscribeEmailError?.message) {
+      return new Response(
+        JSON.stringify({
+          error: `There was an error sending the unsubscription email to ${sanitizedEmail}. Please try again later. Error: ${unsubscribeEmailError.message}`,
+        }),
+        { status: 500 },
+      )
+    }
+
+    // If unsubscription was successful >> redirect to the `/unsubscribed` page
+    return redirect('/unsubscribed', 303)
+  } catch (error) {
+    // Handle Zod validation errors
+    if (error instanceof z.ZodError) {
+      return new Response(null, {
+        status: 404,
+        statusText: 'Invalid email',
+      })
+    }
+
+    // Handle other errors
+    console.error('Error in unsubscribe route:', error)
     return new Response(
       JSON.stringify({
-        error: `There was an error unsubscribing ${sanitizedEmail}. Please try again later. Error: ${unsubscribeError.message}`,
+        error: 'An unexpected error occurred. Please try again later.',
       }),
-      { status: 500 }
+      { status: 500 },
     )
   }
-
-  // If there was an error sending the unsubscription email >> return an error
-  if (unsubscribeEmailError?.message) {
-    return new Response(
-      JSON.stringify({
-        error: `There was an error sending the unsubscription email to ${sanitizedEmail}. Please try again later. Error: ${unsubscribeEmailError.message}`,
-      }),
-      { status: 500 }
-    )
-  }
-
-  // If unsubscription was successful >> redirect to the `/unsubscribed` page
-  return redirect('/unsubscribed', 303)
 }

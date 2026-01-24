@@ -2,26 +2,53 @@ export const prerender = false
 
 import { render } from '@react-email/render'
 import type { APIRoute } from 'astro'
+import { z } from 'zod'
 import Notification from '../../../components/emails/Notification'
 import Welcome from '../../../components/emails/Welcome'
 import { resend } from '../../../lib/resend'
-import { sanityClient } from '../../../sanity/lib/client'
+
+// Validation schema
+const contactFormSchema = z.object({
+  firstName: z.string().trim().min(1, 'First name is required'),
+  lastName: z.string().trim().min(1, 'Last name is required'),
+  businessName: z.string().trim().min(1, 'Business name is required'),
+  email: z.string().trim().email('Invalid email address'),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^[+0-9()\-.\s]+$/, 'Invalid phone number') // Allow only common phone characters; actual digit count is enforced separately
+    .refine(
+      (value) => {
+        const digitsOnly = value.replace(/\D/g, '')
+        return digitsOnly.length >= 10 && digitsOnly.length <= 15
+      },
+      { message: 'Invalid phone number' },
+    ),
+  message: z.string().trim().optional().default(''),
+  isSubscribed: z.boolean().optional().default(false),
+  'bot-field': z.string().optional().default(''),
+})
 
 export const POST: APIRoute = async ({ request }) => {
   try {
     // Extract form data
     const formData = await request.formData()
-    const firstName = formData.get('firstName')?.toString()
-    const lastName = formData.get('lastName')?.toString()
-    const businessName = formData.get('businessName')?.toString()
-    const email = formData.get('email')?.toString()
-    const phone = formData.get('phone')?.toString()
-    const message = formData.get('message')?.toString()
-    const isSubscribed = formData.get('isSubscribed') === 'on' // Checkbox values are 'on' when checked
-    const botField = formData.get('bot-field')?.toString()
+    const rawData = {
+      firstName: formData.get('firstName')?.toString() ?? '',
+      lastName: formData.get('lastName')?.toString() ?? '',
+      businessName: formData.get('businessName')?.toString() ?? '',
+      email: formData.get('email')?.toString() ?? '',
+      phone: formData.get('phone')?.toString() ?? '',
+      message: formData.get('message')?.toString() ?? '',
+      isSubscribed: formData.get('isSubscribed') === 'on',
+      'bot-field': formData.get('bot-field')?.toString() ?? '',
+    }
+
+    // Validate with Zod
+    const validated = contactFormSchema.parse(rawData)
 
     // Honeypot spam protection - if bot-field is filled, it's likely a bot
-    if (botField && botField.trim() !== '') {
+    if (validated['bot-field'] && validated['bot-field'].trim() !== '') {
       console.log('Spam detected: honeypot field filled')
       return new Response(
         JSON.stringify({
@@ -33,192 +60,81 @@ export const POST: APIRoute = async ({ request }) => {
           headers: {
             'Content-Type': 'application/json',
           },
-        }
+        },
       )
     }
 
-    // Simple spam detection for obvious random character patterns
-    const randomPatterns = [
-      // Mixed case random strings like "JjPwFIxexeAgcm", "BiufEDTIsTsWMrnn"
-      /^[A-Z][a-z]+[A-Z][a-z]+[A-Z][a-z]+/,
-      // Patterns like "sHfQReBGdZboKbq", "ETLdvtKyBrmbXKf"
-      /^[a-z]+[A-Z]+[a-z]+[A-Z]+[a-z]+/,
-      // Very long strings without spaces (25+ chars, likely random)
-      /^[A-Za-z]{25,}$/,
-      // Random strings with punctuation marks (semicolons, commas, etc.)
-      /[;,:!@#$%^&*()_+=\[\]{}\|\\<>?\/~`]{2,}/,
-      // Mixed letters and random punctuation
-      /^[A-Za-z]+[;,:!@#$%^&*()_+=\[\]{}\|\\<>?\/~`]+[A-Za-z]*$/,
-      // Multiple punctuation scattered throughout
-      /.*[;,:!@#$%^&*()_+=\[\]{}\|\\<>?\/~`].*[;,:!@#$%^&*()_+=\[\]{}\|\\<>?\/~`]/,
-      // Random character sequences comprised solely of numbers/symbols/letters
-      // (Require at least one digit or symbol so we don't block normal names.)
-      /^(?=.*[0-9;,:!@#$%^&*()_+=\[\]{}\|\\<>?\/~`])[A-Za-z0-9;,:!@#$%^&*()_+=\[\]{}\|\\<>?\/~`]{10,}$/,
-    ]
-
-    // Check text fields for obvious random patterns
-    const fieldsToCheck = [firstName, lastName, businessName, message].filter(Boolean) as string[]
-
-    for (const fieldValue of fieldsToCheck) {
-      const trimmed = fieldValue.trim()
-
-      // Check for random character patterns
-      if (randomPatterns.some((pattern) => pattern.test(trimmed))) {
-        console.log('Spam detected: random character pattern:', trimmed)
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: 'Please use real names and information.',
-          }),
-          {
-            status: 400,
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        )
-      }
+    // Format contact data
+    const contactData = {
+      firstName: validated.firstName,
+      lastName: validated.lastName,
+      businessName: validated.businessName,
+      email: validated.email,
+      phone: validated.phone,
+      message: validated.message,
+      isSubscribed: validated.isSubscribed,
     }
 
-    // Validate required fields
-    if (!firstName || !lastName || !businessName || !email || !phone) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: 'All fields are required',
-          missing: {
-            firstName: !firstName,
-            lastName: !lastName,
-            businessName: !businessName,
-            email: !email,
-            phone: !phone,
-          },
-        }),
-        {
-          status: 400,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-    }
-
-    // Check if user already exists by email
-    const existingUser = await sanityClient.fetch(`*[_type == "user" && email == $email][0]`, {
-      email: email.trim().toLowerCase(),
-    })
-
-    let result
-    let isNewUser = false
-    const userData = {
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      businessName: businessName.trim(),
-      email: email.trim().toLowerCase(),
-      phone: phone.trim(),
-      message: message ? message.trim() : '',
-      isSubscribed: isSubscribed || false,
-    }
-
-    if (existingUser) {
-      // Update existing user
-      result = await sanityClient
-        .patch(existingUser._id)
-        .set({
-          ...userData,
-          updatedAt: new Date().toISOString(),
-        })
-        .commit()
-    } else {
-      // Create new user
-      isNewUser = true
-      const userDoc = {
-        _type: 'user',
-        ...userData,
-        createdAt: new Date().toISOString(),
-      }
-
-      result = await sanityClient.create(userDoc)
-    }
-
-    // Handle Resend audience management and welcome emails
+    // Handle Resend audience management
     let resendContactId = null
-
-    // Determine if we should send a welcome email
-    const shouldSendWelcomeEmail =
-      isNewUser || (userData.isSubscribed && !existingUser?.isSubscribed)
-
-    if (userData.isSubscribed) {
-      try {
-        // For existing users, check if they were previously subscribed
-        const shouldCreateContact = isNewUser || !existingUser?.isSubscribed
-
-        if (shouldCreateContact) {
-          const resendResponse = await resend.contacts.create({
-            email: userData.email,
-            firstName: userData.firstName,
-            lastName: userData.lastName,
-            audienceId: import.meta.env.RESEND_AUDIENCE_ID,
-          })
-
-          // Handle successful response
-          if (resendResponse.data) {
-            resendContactId = resendResponse.data.id
-          }
-        } else {
-          // User was already subscribed, no need to create new contact
-          console.log('User already subscribed to Resend audience')
-        }
-      } catch (resendError) {
-        console.error('Error adding contact to Resend audience:', resendError)
-        // Don't fail the entire request if Resend fails
-        // The contact is still saved in Sanity
-      }
-    }
 
     // Prepare emails to send using batch API
     const emailsToSend = []
 
-    // Prepare welcome email if appropriate
-    if (shouldSendWelcomeEmail) {
+    // If user opted in to subscribe, add them to Resend audience
+    if (contactData.isSubscribed) {
       try {
-        // Create params for the welcome email
-        const emailParams = {
-          email,
-          firstName,
-          isSubscribed: userData.isSubscribed,
+        // Add contact to Resend audience
+        const resendResponse = await resend.contacts.create({
+          email: contactData.email,
+          firstName: contactData.firstName,
+          lastName: contactData.lastName,
+          audienceId: import.meta.env.RESEND_AUDIENCE_ID,
+        })
+
+        if (resendResponse.data) {
+          resendContactId = resendResponse.data.id
         }
 
-        // Render the welcome email as plain text
-        const welcomeText = await render(Welcome(emailParams), {
-          plainText: true,
-        })
+        // Prepare welcome email to the new subscriber
+        try {
+          const emailParams = {
+            email: contactData.email,
+            firstName: contactData.firstName,
+            isSubscribed: true,
+          }
 
-        // Add welcome email to batch
-        emailsToSend.push({
-          from: 'JTBI <hello@jtbimaginative.com>',
-          to: [userData.email],
-          subject: userData.isSubscribed
-            ? 'Welcome to JTB Imaginative LLC'
-            : 'Thank you for contacting JTB Imaginative LLC',
-          react: Welcome(emailParams),
-          text: welcomeText,
-        })
-      } catch (emailError) {
-        console.error('Error preparing welcome email:', emailError)
+          const welcomeText = await render(Welcome(emailParams), {
+            plainText: true,
+          })
+
+          // Add welcome email to batch (only if Resend contact creation succeeded)
+          emailsToSend.push({
+            from: 'JTBI <hello@jtbimaginative.com>',
+            to: [contactData.email],
+            subject: 'Welcome to JTB Imaginative LLC',
+            react: Welcome(emailParams),
+            text: welcomeText,
+          })
+        } catch (emailError) {
+          console.error('Error preparing welcome email:', emailError)
+        }
+      } catch (resendError) {
+        console.error('Error adding contact to Resend audience:', resendError)
+        // Don't fail the entire request if Resend fails (user can still contact)
       }
     }
 
     // Prepare notification email to jtbimaginative@gmail.com
     try {
       const notificationParams = {
-        firstName,
-        lastName,
-        businessName,
-        email,
-        phone,
-        message,
-        isSubscribed: userData.isSubscribed,
+        firstName: contactData.firstName,
+        lastName: contactData.lastName,
+        businessName: contactData.businessName,
+        email: contactData.email,
+        phone: contactData.phone,
+        message: contactData.message,
+        isSubscribed: contactData.isSubscribed,
       }
 
       // Render the notification email as plain text
@@ -230,7 +146,7 @@ export const POST: APIRoute = async ({ request }) => {
       emailsToSend.push({
         from: 'JTBI Website <noreply@jtbimaginative.com>',
         to: ['jtbimaginative@gmail.com'],
-        subject: `New contact form submission from ${firstName} ${lastName}`,
+        subject: `New contact form submission from ${contactData.firstName} ${contactData.lastName}`,
         react: Notification(notificationParams),
         text: notificationText,
       })
@@ -259,19 +175,40 @@ export const POST: APIRoute = async ({ request }) => {
       JSON.stringify({
         success: true,
         message: 'We have received your message and will get back to you shortly.',
-        id: result._id,
-        isSubscribed: userData.isSubscribed,
+        email: contactData.email,
+        isSubscribed: contactData.isSubscribed,
         resendContactId,
-        isNewUser,
       }),
       {
         status: 201,
         headers: {
           'Content-Type': 'application/json',
         },
-      }
+      },
     )
   } catch (error) {
+    // Handle Zod validation errors
+    if (error instanceof z.ZodError) {
+      const fieldErrors = error.flatten().fieldErrors
+      const firstError = Object.values(fieldErrors)[0]?.[0]
+      const message = firstError || 'Please check your form and try again'
+
+      console.error('Validation error:', fieldErrors)
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message,
+        }),
+        {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      )
+    }
+
+    // Handle other errors
     console.error('Error sending message:', error)
 
     return new Response(
@@ -285,7 +222,7 @@ export const POST: APIRoute = async ({ request }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-      }
+      },
     )
   }
 }
