@@ -3,6 +3,7 @@ import { Font, getImage } from 'astro:assets'
 import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from '../consts'
 import CloudBackground from '../assets/images/textures/jtbi-cloud-background-tan-variant.jpg'
 import Footer from '../components/ui/Footer.astro'
+import Navigation from '../components/ui/Navigation.astro'
 import '../styles/global.css'
 
 export interface Props {
@@ -72,6 +73,7 @@ const backgroundImage = await getImage({ src: CloudBackground, inferSize: true }
       aria-hidden="true"
     >
     </div>
+    <Navigation />
 
     <!-- Page content with proper z-index -->
     <div class="relative z-10 min-h-screen">

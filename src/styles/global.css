@@ -116,7 +116,7 @@
   }
 
   html {
-    @apply scroll-smooth break-words scroll-pt-[calc(var(--site-padding-3xl)+var(--nav-height))];
+    @apply scroll-smooth break-words;
   }
 
   body {
@@ -199,7 +199,7 @@
 
   img,
   svg {
-    @apply w-full h-auto;
+    @apply block w-full h-auto;
   }
 
   img {

@@ -1,0 +1,93 @@
+---
+import { Image } from 'astro:assets'
+import JTBILogoPrimary from '../../assets/images/logos/jtbi-logo-primary.svg'
+import CloudTexture from '../../assets/images/textures/jtbi-cloud1-80-opacity.png'
+
+const links = [
+  { label: 'Home', href: '/' },
+  { label: 'Portfolio', href: '/#portfolio' },
+  { label: 'About', href: '/#about' },
+  { label: 'Contact', href: '/#contact' },
+]
+
+const currentPath = Astro.url.pathname
+---
+
+<nav
+  id="main-navigation"
+  class="sticky top-0 z-30 bg-primary/90 backdrop-blur-md text-base-100 transition-transform duration-300 ease-in-out -translate-y-full active [&.active]:translate-y-0"
+  aria-label="Primary"
+>
+  <div
+    class="wrapper flex flex-col items-center justify-center gap-6 py-8 md:flex-row md:justify-between"
+  >
+    <a
+      href="/"
+      class="relative block w-44 md:w-48 overflow-visible group"
+      aria-label="JTB Imaginative home"
+    >
+      <Image
+        src={CloudTexture}
+        alt="Cloud texture background"
+        aria-hidden="true"
+        class="pointer-events-none absolute top-1/2 h-[160%] w-full -translate-y-1/2 opacity-60 transition-opacity duration-200 group-hover:opacity-80 object-contain"
+      />
+      <JTBILogoPrimary class="relative z-10 block w-full" />
+    </a>
+
+    <ul
+      class="flex flex-wrap items-center justify-center gap-[clamp(1.25rem,3vw,4.5rem)]"
+      role="list"
+    >
+      {
+        links.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              class:list={[
+                'text-sm md:text-base text-base-300 font-extrabold uppercase transition-colors duration-200 hover:text-base-100 focus-visible:text-base-100',
+                link.href === '/' && currentPath === '/' ? 'text-base-100' : undefined,
+              ]}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</nav>
+
+<script>
+  const nav: HTMLElement | null = document.getElementById('main-navigation')
+
+  if (nav) {
+    let lastScrollY = window.scrollY
+    const minDelta = 8
+
+    const updateNavState = () => {
+      const currentScrollY = window.scrollY
+      const delta = currentScrollY - lastScrollY
+
+      if (currentScrollY <= 0) {
+        nav.classList.add('active')
+        lastScrollY = 0
+        return
+      }
+
+      if (Math.abs(delta) < minDelta) {
+        return
+      }
+
+      if (delta > 0) {
+        nav.classList.remove('active')
+      } else {
+        nav.classList.add('active')
+      }
+
+      lastScrollY = currentScrollY
+    }
+
+    window.addEventListener('scroll', updateNavState, { passive: true })
+  }
+</script>
