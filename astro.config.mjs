@@ -1,11 +1,12 @@
 // @ts-check
 import netlify from '@astrojs/netlify'
 import react from '@astrojs/react'
+import sitemap from '@astrojs/sitemap'
 import sanity from '@sanity/astro'
 import tailwindcss from '@tailwindcss/vite'
 import { defineConfig, envField, fontProviders } from 'astro/config'
 
-import sitemap from '@astrojs/sitemap'
+const tailwindPlugin = /** @type {any} */ (tailwindcss())
 
 // https://astro.build/config
 export default defineConfig({
@@ -42,8 +43,16 @@ export default defineConfig({
     cacheOnDemandPages: true,
   }),
 
+  fonts: [
+    {
+      provider: fontProviders.google(),
+      name: 'Radio Canada',
+      cssVariable: '--font-radio-canada',
+    },
+  ],
+
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [tailwindPlugin],
   },
 
   image: {
@@ -58,17 +67,6 @@ export default defineConfig({
 
   prefetch: {
     prefetchAll: true,
-  },
-
-  experimental: {
-    // SEE: https://docs.astro.build/en/reference/experimental-flags/fonts/#local-font-variants
-    fonts: [
-      {
-        provider: fontProviders.google(),
-        name: 'Radio Canada',
-        cssVariable: '--font-radio-canada',
-      },
-    ],
   },
 
   integrations: [

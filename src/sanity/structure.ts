@@ -1,41 +1,25 @@
-import { BookIcon, ClipboardIcon, FolderIcon, UserIcon } from '@sanity/icons'
+import { EnvelopeIcon, FolderIcon } from '@sanity/icons'
 
 export const structure = (S: any) => {
   return S.list()
     .title('Sanity Studio')
     .items([
-      // TODO: Pages at top level
-      // S.listItem()
-      //   .title('Pages')
-      //   .icon(FolderIcon)
-      //   .child(
-      //     S.list()
-      //       .title('Pages')
-      //       .items([
-      //         S.listItem()
-      //           .title('Home')
-      //           .icon(ClipboardIcon)
-      //           .child(S.documentTypeList('home').title('Home Page')),
-      //         S.listItem()
-      //           .title('Blog')
-      //           .icon(ClipboardIcon)
-      //           .child(S.documentTypeList('blog').title('Blog Page')),
-      //       ])
-      //   ),
-
-      // People at top level
       S.listItem()
-        .title('People')
-        .icon(UserIcon)
+        .title('Forms')
+        .icon(FolderIcon)
         .child(
           S.list()
-            .title('People')
+            .title('Forms')
             .items([
               S.listItem()
-                .title('Users')
-                .icon(UserIcon)
-                .child(S.documentTypeList('user').title('Users')),
-            ])
+                .title('Contact')
+                .icon(EnvelopeIcon)
+                .child(
+                  S.documentTypeList('contactSubmission')
+                    .title('Contact')
+                    .defaultOrdering([{ field: 'submittedAt', direction: 'desc' }]),
+                ),
+            ]),
         ),
     ])
 }

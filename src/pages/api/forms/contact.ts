@@ -6,6 +6,7 @@ import { z } from 'zod'
 import Notification from '../../../components/emails/Notification'
 import Welcome from '../../../components/emails/Welcome'
 import { resend } from '../../../lib/resend'
+import sanityClient from '../../../sanity/lib/client'
 import { AKISMET_API_KEY, RESEND_AUDIENCE_ID } from 'astro:env/server'
 
 // Validation schema
@@ -138,6 +139,35 @@ export const POST: APIRoute = async ({ request }) => {
       isSubscribed: validated.isSubscribed,
     }
 
+    let submissionId: string | null = null
+
+    try {
+      const submission = await sanityClient.create({
+        _type: 'contactSubmission',
+        ...contactData,
+        source: 'website-contact-form',
+        status: 'new',
+        submittedAt: new Date().toISOString(),
+      })
+
+      submissionId = submission._id
+    } catch (sanityError) {
+      console.error('Error saving contact submission to Sanity:', sanityError)
+
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: 'Failed to save your message. Please try again later.',
+        }),
+        {
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      )
+    }
+
     // Handle Resend audience management
     let resendContactId = null
 
@@ -157,6 +187,10 @@ export const POST: APIRoute = async ({ request }) => {
 
         if (resendResponse.data) {
           resendContactId = resendResponse.data.id
+
+          if (submissionId) {
+            await sanityClient.patch(submissionId).set({ resendContactId }).commit()
+          }
         }
 
         // Prepare welcome email to the new subscriber
@@ -240,6 +274,7 @@ export const POST: APIRoute = async ({ request }) => {
         message: 'We have received your message and will get back to you shortly.',
         email: contactData.email,
         isSubscribed: contactData.isSubscribed,
+        submissionId,
         resendContactId,
       }),
       {
