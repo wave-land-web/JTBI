@@ -81,7 +81,9 @@ export default defineConfig({
       studioBasePath: '/admin',
       apiVersion: '2025-08-01',
     }),
-    react(),
+    react({
+      include: ['**/*.jsx', '**/*.tsx', '**/node_modules/@sanity/astro/**'],
+    }),
     sitemap({
       lastmod: new Date(),
       filter: (page) =>
