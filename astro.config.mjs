@@ -78,12 +78,10 @@ export default defineConfig({
       projectId: 'vs47sslu',
       dataset: 'production',
       useCdn: false,
+      apiVersion: '2025-01-28',
       studioBasePath: '/admin',
-      apiVersion: '2025-08-01',
     }),
-    react({
-      include: ['**/*.jsx', '**/*.tsx', '**/node_modules/@sanity/astro/**'],
-    }),
+    react(),
     sitemap({
       lastmod: new Date(),
       filter: (page) =>
