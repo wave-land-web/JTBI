@@ -2,6 +2,7 @@ export const prerender = false
 
 import { render } from '@react-email/components'
 import type { APIRoute } from 'astro'
+import { RESEND_AUDIENCE_ID } from 'astro:env/server'
 import { z } from 'zod'
 import Unsubscribe from '../../../../components/emails/Unsubscribe'
 import { resend } from '../../../../lib/resend'
@@ -32,7 +33,7 @@ export const GET: APIRoute = async ({ params, redirect }) => {
     try {
       const { data: contactData } = await resend.contacts.get({
         email: sanitizedEmail,
-        audienceId: import.meta.env.RESEND_AUDIENCE_ID,
+        audienceId: RESEND_AUDIENCE_ID,
       })
       if (contactData?.first_name) {
         firstName = contactData.first_name
@@ -44,7 +45,7 @@ export const GET: APIRoute = async ({ params, redirect }) => {
     // Handle unsubscription from the Resend audience
     const { data: unsubscribeData, error: unsubscribeError } = await resend.contacts.update({
       email: sanitizedEmail,
-      audienceId: import.meta.env.RESEND_AUDIENCE_ID,
+      audienceId: RESEND_AUDIENCE_ID,
       unsubscribed: true,
     })
 
