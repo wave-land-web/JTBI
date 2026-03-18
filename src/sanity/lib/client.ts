@@ -6,12 +6,12 @@ import { PUBLIC_SANITY_STUDIO_DATASET, PUBLIC_SANITY_STUDIO_PROJECT_ID } from 'a
 import { SANITY_STUDIO_SECRET_TOKEN } from 'astro:env/server'
 
 export const sanityClient = createClient({
+  // This must match astro.config.mjs
   projectId: PUBLIC_SANITY_STUDIO_PROJECT_ID,
   dataset: PUBLIC_SANITY_STUDIO_DATASET || 'production',
   token: SANITY_STUDIO_SECRET_TOKEN,
   useCdn: false,
-  // Use current date for most recent API version
-  apiVersion: '2025-08-01',
+  apiVersion: '2025-01-28',
 })
 
 export default sanityClient
