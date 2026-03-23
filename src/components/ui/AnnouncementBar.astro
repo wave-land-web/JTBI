@@ -1,23 +1,81 @@
 ---
 export interface Props {
   active?: boolean
+  dismissible?: boolean
   label?: string
   message?: string
   linkText?: string
   href?: string
 }
 
-const { active = false, label, message, linkText, href } = Astro.props
+const { active = false, dismissible = false, label, message, linkText, href } = Astro.props
+const sessionKey = `jtbi:announcement-bar:${[label, message, linkText, href].filter(Boolean).join('|')}`
 ---
 
 {
   active && message && (
-    <div class="bg-secondary text-secondary-content">
-      <div class="flex flex-wrap items-center justify-center gap-2 py-3 text-center text-xs font-semibold uppercase tracking-widest sm:text-sm">
-        {label && <span>{label}</span>}
+    <div
+      class="bg-secondary text-secondary-content"
+      data-announcement-bar
+      data-session-key={sessionKey}
+    >
+      <div class="relative flex flex-wrap items-center justify-center gap-2 py-3 pr-12 pl-4 text-center text-xs uppercase tracking-wide sm:px-12 sm:text-sm">
+        {label && <span class="font-bold">{label}</span>}
         <span class="normal-case tracking-normal text-balance">{message}</span>
         {linkText && href && <a href={href}>{linkText}</a>}
+        {dismissible && (
+          <button
+            type="button"
+            class="absolute top-1/2 right-3 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border border-secondary-content/30 text-lg leading-none transition-colors duration-200 hover:bg-secondary-content/10 focus-visible:bg-secondary-content/10"
+            aria-label="Dismiss announcement"
+            data-announcement-close
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        )}
       </div>
     </div>
   )
 }
+
+<script>
+  // TODO: fix "flash" of announcement bar on page load when it should be dismissed (currently happens because we render the bar in the HTML and then hide it with JS, but we could avoid rendering it at all if it's already dismissed)
+  const setupAnnouncementBars = () => {
+    const announcementBars = document.querySelectorAll<HTMLElement>('[data-announcement-bar]')
+
+    announcementBars.forEach((announcementBar) => {
+      const sessionKey = announcementBar.dataset.sessionKey
+      const closeButton = announcementBar.querySelector<HTMLButtonElement>(
+        '[data-announcement-close]',
+      )
+
+      if (!sessionKey) {
+        return
+      }
+
+      try {
+        announcementBar.hidden = sessionStorage.getItem(sessionKey) === 'dismissed'
+      } catch {
+        announcementBar.hidden = false
+      }
+
+      if (!closeButton || closeButton.dataset.bound === 'true') {
+        return
+      }
+
+      closeButton.dataset.bound = 'true'
+      closeButton.addEventListener('click', () => {
+        announcementBar.hidden = true
+
+        try {
+          sessionStorage.setItem(sessionKey, 'dismissed')
+        } catch {
+          // Ignore storage failures and still hide the bar for this page view.
+        }
+      })
+    })
+  }
+
+  setupAnnouncementBars()
+  document.addEventListener('astro:page-load', setupAnnouncementBars)
+</script>

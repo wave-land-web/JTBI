@@ -15,6 +15,7 @@ export interface Props {
 interface SiteSettings {
   announcementBar?: {
     active?: boolean
+    dismissible?: boolean
     label?: string
     message?: string
     linkText?: string
@@ -30,6 +31,7 @@ const siteSettings = await sanityClient.fetch<SiteSettings | null>(`
   *[_type == "siteSettings" && _id == "siteSettings"][0]{
     announcementBar{
       active,
+      dismissible,
       label,
       message,
       linkText,

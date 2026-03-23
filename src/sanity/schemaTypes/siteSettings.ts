@@ -27,6 +27,14 @@ export default defineType({
           initialValue: false,
         }),
         defineField({
+          name: 'dismissible',
+          title: 'Allow visitors to dismiss this announcement',
+          description:
+            'Stores the dismissed state in session storage so it resets when their session ends.',
+          type: 'boolean',
+          initialValue: false,
+        }),
+        defineField({
           name: 'label',
           title: 'Label',
           description: 'Short lead-in text such as “New” or “Important update”.',
