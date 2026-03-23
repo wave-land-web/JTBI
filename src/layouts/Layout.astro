@@ -1,9 +1,9 @@
 ---
-import { Font, getImage } from 'astro:assets'
+import { Font } from 'astro:assets'
 import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from '../consts'
-import CloudBackground from '../assets/images/textures/jtbi-cloud-background-tan-variant.jpg'
 import Footer from '../components/ui/Footer.astro'
 import Navigation from '../components/ui/Navigation.astro'
+import sanityClient from '../sanity/lib/client'
 import '../styles/global.css'
 
 export interface Props {
@@ -12,11 +12,31 @@ export interface Props {
   socialImage?: string
 }
 
+interface SiteSettings {
+  announcementBar?: {
+    active?: boolean
+    label?: string
+    message?: string
+    linkText?: string
+    href?: string
+  }
+}
+
 const { title = SITE_TITLE, description = SITE_DESCRIPTION, socialImage } = Astro.props
 const canonicalURL = new URL(Astro.url.pathname, Astro.site)
 // TODO: Replace with better social image
 const socialImageURL = new URL(socialImage || '/jtbi-logo-primary-90-opacity.png', canonicalURL)
-const backgroundImage = await getImage({ src: CloudBackground, inferSize: true })
+const siteSettings = await sanityClient.fetch<SiteSettings | null>(`
+  *[_type == "siteSettings" && _id == "siteSettings"][0]{
+    announcementBar{
+      active,
+      label,
+      message,
+      linkText,
+      href
+    }
+  }
+`)
 ---
 
 <html lang="en" data-theme="corporate">
@@ -65,15 +85,7 @@ const backgroundImage = await getImage({ src: CloudBackground, inferSize: true }
   </head>
 
   <body class="relative min-h-screen overflow-x-hidden">
-    <!-- Full screen cloud background -->
-    <div
-      class="fixed inset-0 w-full h-auto bg-center bg-cover pointer-events-none z-0"
-      style={`background-image: url('${backgroundImage.src}');`}
-      role="presentation"
-      aria-hidden="true"
-    >
-    </div>
-    <Navigation />
+    <Navigation announcementBar={siteSettings?.announcementBar} />
 
     <!-- Page content with proper z-index -->
     <div class="relative z-10 min-h-screen">

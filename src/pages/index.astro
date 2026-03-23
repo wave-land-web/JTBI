@@ -1,6 +1,5 @@
 ---
 import { Image } from 'astro:assets'
-import LogoPrimary from '../assets/images/logos/jtbi-logo-primary.svg'
 import CloudImage from '../assets/images/textures/jtbi-cloud1-80-opacity.png'
 import CloudImageTwo from '../assets/images/textures/jtbi-cloud2-80-opacity.png'
 import ContactForm from '../components/ui/forms/Contact.astro'
@@ -28,23 +27,22 @@ import Layout from '../layouts/Layout.astro'
     </div>
     <h1 class="sr-only">{SITE_TITLE}</h1>
 
-    <div class="relative w-full max-w-xl z-10 lsa no-repeat delay-100">
-      <LogoPrimary />
+    <div class="relative w-full z-10 lsa no-repeat delay-100">
+      <h2
+        class="text-7xl sm:text-8xl md:text-9xl text-base-100 font-extrabold max-w-[1235px] mx-auto lsa no-repeat text-wrap"
+      >
+        You're not industry- standard,<br />
+        <span
+          class="text-5xl sm:text-6xl md:text-7xl block leading-snug font-normal text-base-content lsa no-repeat"
+          >and your branding should prove it.</span
+        >
+      </h2>
     </div>
   </header>
 
   <main
     class="max-w-screen-lg mx-auto pt-0 pb-(--site-padding-3xl) px-(--site-padding-base) text-center"
   >
-    <section id="hero" class="pt-0 pb-(--site-padding-sm)">
-      <div class="text-left">
-        <h2 class="h1 text-pretty text-base-100 font-extrabold lsa no-repeat">
-          Time for a rebrand, so this site is under construction.
-        </h2>
-        <p class="h1 lsa no-repeat">Your brand could be next.</p>
-      </div>
-    </section>
-
     <section id="description">
       <div class="w-full grid grid-cols-1 md:grid-cols-2 md:justify-items-end">
         <div>

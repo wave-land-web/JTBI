@@ -157,7 +157,7 @@
 
   h1,
   .h1 {
-    @apply text-5xl sm:text-6xl;
+    @apply text-6xl sm:text-7xl;
   }
 
   h2,
@@ -191,10 +191,13 @@
     @apply max-w-(--content-max-width) text-base sm:text-lg text-pretty leading-relaxed;
   }
 
-  button,
+  button {
+    @apply transition-colors duration-200;
+  }
+
   a,
   .a {
-    @apply text-balance transition-colors duration-200;
+    @apply underline underline-offset-2 hover:opacity-80 transition-opacity duration-200;
   }
 
   img,

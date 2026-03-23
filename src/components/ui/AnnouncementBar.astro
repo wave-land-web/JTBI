@@ -1,0 +1,23 @@
+---
+export interface Props {
+  active?: boolean
+  label?: string
+  message?: string
+  linkText?: string
+  href?: string
+}
+
+const { active = false, label, message, linkText, href } = Astro.props
+---
+
+{
+  active && message && (
+    <div class="bg-secondary text-secondary-content">
+      <div class="flex flex-wrap items-center justify-center gap-2 py-3 text-center text-xs font-semibold uppercase tracking-widest sm:text-sm">
+        {label && <span>{label}</span>}
+        <span class="normal-case tracking-normal text-balance">{message}</span>
+        {linkText && href && <a href={href}>{linkText}</a>}
+      </div>
+    </div>
+  )
+}
