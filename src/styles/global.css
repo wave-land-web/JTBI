@@ -129,10 +129,7 @@
     @apply py-(--site-padding-lg);
   }
 
-  main {
-    @apply pb-0;
-  }
-
+  main,
   .wrapper {
     @apply w-full max-w-screen-2xl mx-auto px-(--site-padding-base);
   }
@@ -163,7 +160,7 @@
 
   h2,
   .h2 {
-    @apply text-4xl sm:text-5xl md:text-6xl text-base-100 font-bold;
+    @apply text-4xl sm:text-5xl md:text-6xl text-base-100 font-extrabold;
   }
 
   h3,
@@ -203,6 +200,10 @@
 
   em {
     @apply italic;
+  }
+
+  section {
+    @apply w-full mx-auto max-w-(--nav-width);
   }
 
   /* Form styling improvements */

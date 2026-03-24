@@ -1,9 +1,12 @@
 ---
 import { Image } from 'astro:assets'
+import PortfolioItem from '../components/ui/PortfolioItem.astro'
 import CloudImage from '../assets/images/textures/jtbi-cloud1-80-opacity.png'
+import PortfolioImage from '../assets/images/textures/jtbi-cloud-background-horizontal.png'
+import PortfolioImageTwo from '../assets/images/textures/jtbi-cloud-background-sample.png'
 import CloudImageTwo from '../assets/images/textures/jtbi-cloud2-80-opacity.png'
 import ContactForm from '../components/ui/forms/Contact.astro'
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts'
+import { SITE_TITLE } from '../consts'
 import Layout from '../layouts/Layout.astro'
 ---
 
@@ -40,28 +43,53 @@ import Layout from '../layouts/Layout.astro'
     </div>
   </header>
 
-  <main
-    class="max-w-screen-lg mx-auto pt-0 pb-(--site-padding-3xl) px-(--site-padding-base) text-center"
-  >
-    <section id="portfolio">
-      <h2 class="text-left">
+  <main class="pt-0 text-center">
+    <section id="portfolio" class="space-y-8 md:space-y-12">
+      <h2 class="text-left lsa lsa-slide-up no-repeat">
         Developing visual and marketing strategies for business acceleration.
       </h2>
+
+      <PortfolioItem
+        featureText="We're a full-service brand development and deployment company that helps build value. Our focus is expanding your reach, improving your bottom line, and helping your business consistently look its best."
+        imageSrc={PortfolioImage}
+        imageAlt="Atmospheric portfolio sample artwork"
+        accentColor="#d94b43"
+        title="Portfolio Sample Text."
+        description="Nequi tem qui dolore rem corrum iligenda incid etusam, corunt, qui re ex expelent experto con cone labo. Lam, invende pitiatonsed molorru menisci ducium fugit, sequatem velloreprae."
+        cardTextColor="#013136"
+      />
+
+      <h2 class="text-left lsa lsa-slide-up no-repeat mt-16 md:mt-32">
+        Can't see the forest for the trees? We help you analyze & refine your brand positioning.
+      </h2>
+      <PortfolioItem
+        reversed={true}
+        featureText="We research you and your target markets in relation to your goals, then develop your unique brand identity and help deploy it consistently across the most appropriate marketing channels. When you're ready to take the reins, we provide the road map you need, and support you in finding the right in-house talent."
+        imageSrc={PortfolioImageTwo}
+        imageAlt="Illustrated portfolio sample collage"
+        accentColor="#084F6F"
+        title="Portfolio Sample Text."
+        description="Nequi tem qui dolore rem corrum iligenda incid etusam, corunt, qui re ex expelent experto con cone labo. Lam, invende pitiatonsed molorru menisci ducium fugit, sequatem velloreprae."
+        cardBackgroundColor="#084F6F"
+        cardTextColor="var(--color-base-100)"
+      />
     </section>
 
     <section id="contact">
-      <header class="mb-8 text-left">
-        <h2 class="h4 text-base-content font-bold mb-2 lsa no-repeat">
-          WANT TO DISCUSS YOUR BRAND? <span class="font-normal">Let's chat.</span>
-        </h2>
-        <p class="lsa no-repeat">
-          Whether you're considering refreshing your current branding, or are seeking support with
-          the launch of an entirely new business, we're here to help. Contact us for a free
-          45-minute consultation.
-        </p>
-      </header>
+      <div class="max-w-screen-lg mx-auto text-left">
+        <header class="mb-8 text-left">
+          <h2 class="h4 text-base-content font-bold mb-2 lsa no-repeat">
+            WANT TO DISCUSS YOUR BRAND? <span class="font-normal">Let's chat.</span>
+          </h2>
+          <p class="lsa no-repeat">
+            Whether you're considering refreshing your current branding, or are seeking support with
+            the launch of an entirely new business, we're here to help. Contact us for a free
+            45-minute consultation.
+          </p>
+        </header>
 
-      <ContactForm />
+        <ContactForm />
+      </div>
     </section>
   </main>
 </Layout>
