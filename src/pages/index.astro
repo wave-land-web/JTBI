@@ -9,18 +9,18 @@ import Layout from '../layouts/Layout.astro'
 
 <Layout>
   <header class="h-[80dvh] px-(--site-padding-base) relative flex justify-center items-center">
-    <div class="overflow-hidden absolute inset-0">
+    <div class="overflow-hidden absolute inset-0 pointer-events-none">
       <Image
         src={CloudImage}
         alt="Cloud texture background"
-        class="absolute top-1/2 left-1/2 w-auto h-auto max-w-md opacity-80 pointer-events-none cloud-drift-one lsa no-repeat"
+        class="absolute top-1/2 left-1/2 w-auto h-auto max-w-md opacity-80 cloud-drift-one lsa no-repeat"
         role="presentation"
         loading="eager"
       />
       <Image
         src={CloudImageTwo}
         alt="Secondary cloud texture background"
-        class="absolute top-1/2 left-1/2 w-auto h-auto max-w-md opacity-80 pointer-events-none cloud-drift-two lsa no-repeat"
+        class="absolute top-1/2 left-1/2 w-auto h-auto max-w-md opacity-80 cloud-drift-two lsa no-repeat"
         role="presentation"
         loading="eager"
       />
@@ -43,24 +43,15 @@ import Layout from '../layouts/Layout.astro'
   <main
     class="max-w-screen-lg mx-auto pt-0 pb-(--site-padding-3xl) px-(--site-padding-base) text-center"
   >
-    <section id="description">
-      <div class="w-full grid grid-cols-1 md:grid-cols-2 md:justify-items-end">
-        <div>
-          <!-- Empty Column -->
-        </div>
-        <aside class="relative max-w-md text-left lsa no-repeat">
-          <p
-            class="before:content-[''] before:h-10 before:w-10 before:bg-secondary before:absolute before:-top-14 md:before:top-0 md:before:-left-14"
-          >
-            {SITE_DESCRIPTION}
-          </p>
-        </aside>
-      </div>
+    <section id="portfolio">
+      <h2 class="text-left">
+        Developing visual and marketing strategies for business acceleration.
+      </h2>
     </section>
 
     <section id="contact">
       <header class="mb-8 text-left">
-        <h2 class="h4 font-bold mb-2 lsa no-repeat">
+        <h2 class="h4 text-base-content font-bold mb-2 lsa no-repeat">
           WANT TO DISCUSS YOUR BRAND? <span class="font-normal">Let's chat.</span>
         </h2>
         <p class="lsa no-repeat">

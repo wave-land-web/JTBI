@@ -24,16 +24,32 @@ const announcementId = getAnnouncementBarId({ label, message, linkText, href })
       <div class="relative flex flex-wrap items-center justify-center gap-2 py-3 pr-12 pl-4 text-center text-xs uppercase tracking-wide sm:px-12 sm:text-sm">
         {label && <span class="font-bold">{label}</span>}
         <span class="normal-case tracking-normal text-balance">{message}</span>
-        {linkText && href && <a href={href}>{linkText}</a>}
+        {linkText && href && (
+          <a href={href} class="link link-primary">
+            {linkText}
+          </a>
+        )}
         {dismissible && (
-          <button
-            type="button"
-            class="absolute top-1/2 right-3 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border border-secondary-content/30 text-lg leading-none transition-colors duration-200 hover:bg-secondary-content/10 focus-visible:bg-secondary-content/10"
-            aria-label="Dismiss announcement"
-            data-announcement-close
-          >
-            <span aria-hidden="true">&times;</span>
-          </button>
+          <div class="absolute top-1/2 right-3 -translate-y-1/2">
+            <button
+              type="button"
+              class="btn btn-ghost btn-circle btn-xs border border-secondary-content/30 text-secondary-content hover:border-secondary-content/50 hover:bg-secondary-content/10"
+              aria-label="Dismiss announcement"
+              data-announcement-close
+            >
+              <svg
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                class="size-3.5"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6 6 18" />
+              </svg>
+            </button>
+          </div>
         )}
       </div>
     </div>

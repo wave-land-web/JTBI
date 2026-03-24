@@ -163,7 +163,7 @@
 
   h2,
   .h2 {
-    @apply text-4xl sm:text-5xl;
+    @apply text-4xl sm:text-5xl md:text-6xl text-base-100 font-bold;
   }
 
   h3,
@@ -192,22 +192,13 @@
     @apply max-w-(--content-max-width) text-base sm:text-lg text-pretty leading-relaxed;
   }
 
-  button {
-    @apply cursor-pointer transition-colors duration-200;
-  }
-
-  a,
-  .a {
-    @apply underline underline-offset-2 hover:opacity-80 transition-opacity duration-200;
-  }
-
   img,
   svg {
     @apply block w-full h-auto;
   }
 
   img {
-    @apply w-full h-auto object-cover;
+    @apply object-cover;
   }
 
   em {
