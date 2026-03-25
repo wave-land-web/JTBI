@@ -1,10 +1,12 @@
 ---
 import { Image } from 'astro:assets'
 import MediaCard from '../components/ui/MediaCard.astro'
+import MediaCardSmall from '../components/ui/MediaCardSmall.astro'
 import CloudImage from '../assets/images/textures/jtbi-cloud1-80-opacity.png'
 import PortfolioImage from '../assets/images/textures/jtbi-cloud-background-horizontal.png'
 import PortfolioImageTwo from '../assets/images/textures/jtbi-cloud-background-sample.png'
 import CloudImageTwo from '../assets/images/textures/jtbi-cloud2-80-opacity.png'
+import LogoPrimaryImage from '../assets/images/logos/jtbi-logo-primary-80-opacity.png'
 import ContactForm from '../components/ui/forms/Contact.astro'
 import { SITE_TITLE } from '../consts'
 import Layout from '../layouts/Layout.astro'
@@ -126,6 +128,56 @@ import Layout from '../layouts/Layout.astro'
         cardBackgroundColor="white"
         cardTextColor="var(--color-primary)"
       />
+      <div class="mt-12 flex flex-col gap-8 md:mt-16 md:gap-10">
+        <h3 class="font-factoria font-bold uppercase text-left lsa lsa-slide-up no-repeat">
+          Services We Offer
+        </h3>
+
+        <div class="grid gap-8 md:grid-cols-3 md:gap-10">
+          <MediaCardSmall
+            title="Brand Identity"
+            description="A brand is more than a logo. We design the visual language for your business."
+            href="#contact"
+            imageSrc={LogoPrimaryImage}
+            imageAlt="JTB Imaginative logo mark for brand identity"
+            accentColor="#203347"
+            mediaBackgroundColor="#243546"
+            cardBackgroundColor="#ffffff"
+            cardTextColor="#203347"
+            titleColor="#1d2733"
+            bodyTextColor="#45515c"
+            ctaColor="#58616a"
+          />
+          <MediaCardSmall
+            title="Marketing Audits"
+            description="A brand is more than a logo. We design the visual language for your business."
+            href="#contact"
+            imageSrc={LogoPrimaryImage}
+            imageAlt="JTB Imaginative logo mark for marketing audits"
+            accentColor="#42d8ff"
+            mediaBackgroundColor="#fbfaf7"
+            cardBackgroundColor="#f7f3ef"
+            cardTextColor="#08a8dd"
+            titleColor="#06b8ea"
+            bodyTextColor="#55616c"
+            ctaColor="#06b8ea"
+          />
+          <MediaCardSmall
+            title="Logo Design"
+            description="A brand is more than a logo. We design the visual language for your business."
+            href="#contact"
+            imageSrc={LogoPrimaryImage}
+            imageAlt="JTB Imaginative logo mark for logo design"
+            accentColor="#ffd24a"
+            mediaBackgroundColor="#f3e6c8"
+            cardBackgroundColor="#ffc73a"
+            cardTextColor="#fff7e7"
+            titleColor="#fffdf5"
+            bodyTextColor="#fff5d5"
+            ctaColor="#fffdf5"
+          />
+        </div>
+      </div>
     </section>
 
     <section id="contact">
