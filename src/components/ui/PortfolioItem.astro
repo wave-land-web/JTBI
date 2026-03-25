@@ -52,9 +52,10 @@ const componentStyles = [
     ]}
     aria-hidden="true"></span>
 
-  <div class:list={['text-left md:pt-8', reversed && 'md:order-2']}>
-    <p>{featureText}</p>
-  </div>
+  <div
+    class:list={['space-y-4 md:pt-8 text-left', reversed && 'md:order-2']}
+    set:html={featureText}
+  />
 
   <div
     class:list={[
