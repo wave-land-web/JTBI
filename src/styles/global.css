@@ -56,7 +56,7 @@
   /* Content spacing + sizing */
   --form-gap: clamp(1rem, 2vw, 1.5rem);
   --content-max-width: 85ch;
-  --nav-width: 1235px;
+  --nav-width: 1300px;
 }
 
 /* Animations */
@@ -124,18 +124,23 @@
     @apply min-h-screen bg-base-300 font-radio-canada text-base-content antialiased;
   }
 
-  main,
+  header,
+  section,
   footer {
     @apply py-(--site-padding-lg);
   }
 
-  main,
-  .wrapper {
-    @apply w-full max-w-screen-2xl mx-auto px-(--site-padding-base);
+  header,
+  main {
+    @apply w-full max-w-screen-2xl mx-auto;
   }
 
   section {
-    @apply py-(--site-padding-2xl);
+    @apply w-full mx-auto max-w-(--nav-width) px-(--site-padding-base);
+  }
+
+  .wrapper {
+    @apply w-full max-w-(--nav-width) mx-auto px-(--site-padding-base);
   }
 
   h1,
@@ -200,10 +205,6 @@
 
   em {
     @apply italic;
-  }
-
-  section {
-    @apply w-full mx-auto max-w-(--nav-width);
   }
 
   /* Form styling improvements */
