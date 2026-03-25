@@ -34,15 +34,15 @@ const componentStyles = [
   `--portfolio-card-background: ${cardBackgroundColor};`,
   `--portfolio-card-text: ${cardTextColor};`,
   `--portfolio-card-divider: color-mix(in srgb, ${cardTextColor} 12%, transparent);`,
-  '--portfolio-border-duration: 900ms;',
+  '--portfolio-border-duration: 600ms;',
   '--portfolio-border-delay: 300ms;',
-  '--portfolio-card-duration: 900ms;',
+  '--portfolio-card-duration: 600ms;',
   '--portfolio-card-delay: 600ms;',
 ].join(' ')
 ---
 
 <article
-  class="portfolio-item lsa no-repeat relative grid gap-8 [opacity:1] [transform:none] md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.15fr)] md:gap-10 md:pt-[2px]"
+  class="portfolio-item relative lsa no-repeat grid gap-8 [opacity:1] [transform:none] md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.15fr)] md:gap-10 md:pt-[2px]"
   style={componentStyles}
 >
   <span
@@ -53,17 +53,22 @@ const componentStyles = [
     aria-hidden="true"></span>
 
   <div
-    class:list={['space-y-4 md:pt-8 text-left', reversed && 'md:order-2']}
+    class:list={[
+      'space-y-4 md:pt-8 [&>p]:text-lg [&>p]:md:text-xl text-left lsa lsa-slide-up no-repeat delay-100',
+      reversed && 'md:order-2',
+    ]}
     set:html={featureText}
   />
 
   <div
     class:list={[
-      'portfolio-item__card-reveal grid min-h-[22rem] [grid-template-rows:0fr] opacity-0 [will-change:grid-template-rows,opacity] sm:min-h-[25rem] md:min-h-[31rem] motion-reduce:[grid-template-rows:1fr] motion-reduce:opacity-100',
+      'portfolio-item__card-reveal min-h-[22rem] overflow-hidden sm:min-h-[25rem] md:min-h-[31rem]',
       reversed && 'md:order-1',
     ]}
   >
-    <div class="portfolio-item__card min-h-0 overflow-hidden">
+    <div
+      class="portfolio-item__card min-h-full opacity-0 origin-top [transform:scaleY(0)] [will-change:transform,opacity] motion-reduce:opacity-100 motion-reduce:[transform:none]"
+    >
       <div class="relative aspect-video overflow-hidden bg-base-200">
         {
           imageSrc ? (
@@ -78,7 +83,7 @@ const componentStyles = [
         class="border-t border-[var(--portfolio-card-divider)] bg-[var(--portfolio-card-background)] p-5 text-left text-[var(--portfolio-card-text)] sm:p-7"
       >
         <h3 class="mb-2 text-sm font-extrabold uppercase tracking-wide">{title}</h3>
-        <p class="max-w-none text-sm leading-relaxed sm:text-base">{description}</p>
+        <p class="max-w-none font-factoria leading-relaxed sm:text-base">{description}</p>
       </div>
     </div>
   </div>
@@ -94,8 +99,8 @@ const componentStyles = [
     }
   }
 
-  .portfolio-item.active .portfolio-item__card-reveal {
-    animation: portfolio-card-grow var(--portfolio-card-duration) cubic-bezier(0.22, 1, 0.36, 1)
+  .portfolio-item.active .portfolio-item__card {
+    animation: portfolio-card-reveal var(--portfolio-card-duration) cubic-bezier(0.22, 1, 0.36, 1)
       var(--portfolio-card-delay) forwards;
   }
 
@@ -109,22 +114,51 @@ const componentStyles = [
     }
   }
 
-  @keyframes portfolio-card-grow {
+  @keyframes portfolio-card-reveal {
     from {
-      grid-template-rows: 0fr;
       opacity: 0;
+      transform: scaleY(0);
     }
 
     to {
-      grid-template-rows: 1fr;
       opacity: 1;
+      transform: scaleY(1);
+    }
+  }
+
+  @supports (clip-path: inset(0 0 100% 0)) {
+    .portfolio-item__card {
+      clip-path: inset(0 0 100% 0);
+      transform: none;
+      will-change: clip-path, opacity;
+    }
+
+    .portfolio-item.active .portfolio-item__card {
+      animation-name: portfolio-card-reveal-clipped;
+    }
+
+    @keyframes portfolio-card-reveal-clipped {
+      from {
+        opacity: 0;
+        clip-path: inset(0 0 100% 0);
+      }
+
+      to {
+        opacity: 1;
+        clip-path: inset(0 0 0 0);
+      }
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .portfolio-item__border,
-    .portfolio-item__card-reveal {
+    .portfolio-item__card {
       animation: none !important;
+    }
+
+    .portfolio-item__card {
+      clip-path: none;
+      will-change: auto;
     }
   }
 </style>

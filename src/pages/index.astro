@@ -1,6 +1,6 @@
 ---
 import { Image } from 'astro:assets'
-import PortfolioItem from '../components/ui/PortfolioItem.astro'
+import MediaCard from '../components/ui/MediaCard.astro'
 import CloudImage from '../assets/images/textures/jtbi-cloud1-80-opacity.png'
 import PortfolioImage from '../assets/images/textures/jtbi-cloud-background-horizontal.png'
 import PortfolioImageTwo from '../assets/images/textures/jtbi-cloud-background-sample.png'
@@ -44,12 +44,12 @@ import Layout from '../layouts/Layout.astro'
   </header>
 
   <main class="pt-0 text-center">
-    <section id="portfolio" class="space-y-8 md:space-y-12">
+    <section id="portfolio" class="flex flex-col gap-8 md:gap-12">
       <h2 class="text-left lsa lsa-slide-up no-repeat">
         Developing visual and marketing strategies for business acceleration.
       </h2>
 
-      <PortfolioItem
+      <MediaCard
         featureText="<p>We're a full-service brand development and deployment company that helps build value. Our focus is expanding your reach, improving your bottom line, and helping your business consistently look its best.<p>"
         imageSrc={PortfolioImage}
         imageAlt="Atmospheric portfolio sample artwork"
@@ -62,7 +62,7 @@ import Layout from '../layouts/Layout.astro'
       <h2 class="text-left lsa lsa-slide-up no-repeat mt-16 md:mt-32">
         Can't see the forest for the trees? We help you analyze & refine your brand positioning.
       </h2>
-      <PortfolioItem
+      <MediaCard
         reversed={true}
         featureText="<p>We research you and your target markets in relation to your goals, then develop your unique brand identity and help deploy it consistently across the most appropriate marketing channels.</p><p>When you're ready to take the reins, we provide the road map you need, and support you in finding the right in-house talent.</p>"
         imageSrc={PortfolioImageTwo}
@@ -77,41 +77,45 @@ import Layout from '../layouts/Layout.astro'
       <h2 class="text-left lsa lsa-slide-up no-repeat mt-16 md:mt-32">
         Your branding needs change over time.
       </h2>
-      <PortfolioItem
-        featureText="<p>There are three key points when brand identity work is critical:</p><p><strong>Starting Up -</strong> Entrepreneurs and teams looking to launch a new business, idea, or product.</p>"
-        imageSrc={PortfolioImageTwo}
-        imageAlt="Illustrated portfolio sample collage"
-        accentColor="#e05136"
-        title="Portfolio Sample Text."
-        description="Nequi tem qui dolore rem corrum iligenda incid etusam, corunt, qui re ex expelent experto con cone labo. Lam, invende pitiatonsed molorru menisci ducium fugit, sequatem velloreprae."
-        cardBackgroundColor="white"
-        cardTextColor="#1f193e"
-      />
-      <PortfolioItem
-        featureText="<p><strong>Scaling Up -</strong> An established business looking to expand product lines, services, or enter new markets.</p>"
-        imageSrc={PortfolioImageTwo}
-        imageAlt="Illustrated portfolio sample collage"
-        accentColor="#FFFF00"
-        title="Portfolio Sample Text."
-        description="Nequi tem qui dolore rem corrum iligenda incid etusam, corunt, qui re ex expelent experto con cone labo. Lam, invende pitiatonsed molorru menisci ducium fugit, sequatem velloreprae."
-        cardBackgroundColor="white"
-        cardTextColor="var(--color-primary)"
-      />
-      <PortfolioItem
-        featureText="<p><strong>Freshening Up -</strong> Long-standing businesses that are seeing more competition in their sector and want to update their look and marketing strategy.</p>"
-        imageSrc={PortfolioImageTwo}
-        imageAlt="Illustrated portfolio sample collage"
-        accentColor="#FFFF00"
-        title="Portfolio Sample Text."
-        description="Nequi tem qui dolore rem corrum iligenda incid etusam, corunt, qui re ex expelent experto con cone labo. Lam, invende pitiatonsed molorru menisci ducium fugit, sequatem velloreprae."
-        cardBackgroundColor="transparent"
-        cardTextColor="var(--color-primary)"
-      />
+      <div class="flex flex-col gap-12 md:gap-16">
+        <MediaCard
+          featureText="<p>There are three key points when brand identity work is critical:</p><p><strong>Starting Up -</strong> Entrepreneurs and teams looking to launch a new business, idea, or product.</p>"
+          imageSrc={PortfolioImageTwo}
+          imageAlt="Illustrated portfolio sample collage"
+          accentColor="#e05136"
+          title="Portfolio Sample Text."
+          description="Nequi tem qui dolore rem corrum iligenda incid etusam, corunt, qui re ex expelent experto con cone labo. Lam, invende pitiatonsed molorru menisci ducium fugit, sequatem velloreprae."
+          cardBackgroundColor="white"
+          cardTextColor="#1f193e"
+        />
+        <MediaCard
+          featureText="<p><strong>Scaling Up -</strong> An established business looking to expand product lines, services, or enter new markets.</p>"
+          imageSrc={PortfolioImageTwo}
+          imageAlt="Illustrated portfolio sample collage"
+          accentColor="#FFFF00"
+          title="Portfolio Sample Text."
+          description="Nequi tem qui dolore rem corrum iligenda incid etusam, corunt, qui re ex expelent experto con cone labo. Lam, invende pitiatonsed molorru menisci ducium fugit, sequatem velloreprae."
+          cardBackgroundColor="white"
+          cardTextColor="var(--color-primary)"
+        />
+        <MediaCard
+          featureText="<p><strong>Freshening Up -</strong> Long-standing businesses that are seeing more competition in their sector and want to update their look and marketing strategy.</p>"
+          imageSrc={PortfolioImageTwo}
+          imageAlt="Illustrated portfolio sample collage"
+          accentColor="#FFFF00"
+          title="Portfolio Sample Text."
+          description="Nequi tem qui dolore rem corrum iligenda incid etusam, corunt, qui re ex expelent experto con cone labo. Lam, invende pitiatonsed molorru menisci ducium fugit, sequatem velloreprae."
+          cardBackgroundColor="transparent"
+          cardTextColor="var(--color-primary)"
+        />
+      </div>
+    </section>
 
+    <section id="about" class="flex flex-col gap-8 md:gap-12">
       <h2 class="text-left lsa lsa-slide-up no-repeat mt-16 md:mt-32">
         Trust builds brands, so trust should be the foundation of brand development.
       </h2>
-      <PortfolioItem
+      <MediaCard
         reversed={true}
         featureText="<p>JTBI is entirely guided by owner Jeffrey Baker. You'll always work one-on-one with Jeffrey, and he'll handle all the complexities of compiling and managing a stellar creative team.</p>"
         imageSrc={PortfolioImageTwo}
@@ -126,11 +130,11 @@ import Layout from '../layouts/Layout.astro'
 
     <section id="contact">
       <div class="max-w-screen-lg mx-auto text-left">
-        <header class="mb-8 text-left">
-          <h2 class="h4 text-base-content font-bold mb-2 lsa no-repeat">
+        <header class="mb-8 pb-0 text-left">
+          <h2 class="h4 text-base-content font-bold mb-2 lsa lsa-slide-up no-repeat">
             WANT TO DISCUSS YOUR BRAND? <span class="font-normal">Let's chat.</span>
           </h2>
-          <p class="lsa no-repeat">
+          <p class="lsa lsa-slide-up no-repeat delay-100">
             Whether you're considering refreshing your current branding, or are seeking support with
             the launch of an entirely new business, we're here to help. Contact us for a free
             45-minute consultation.
