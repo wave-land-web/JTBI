@@ -43,13 +43,16 @@ export default defineConfig({
     cacheOnDemandPages: true,
   }),
 
-  fonts: [
-    {
-      provider: fontProviders.google(),
-      name: 'Radio Canada',
-      cssVariable: '--font-radio-canada',
-    },
-  ],
+  experimental: {
+    // SEE: https://docs.astro.build/en/reference/experimental-flags/fonts/#local-font-variants
+    fonts: [
+      {
+        provider: fontProviders.google(),
+        name: 'Radio Canada',
+        cssVariable: '--font-radio-canada',
+      },
+    ],
+  },
 
   vite: {
     plugins: [tailwindPlugin],
