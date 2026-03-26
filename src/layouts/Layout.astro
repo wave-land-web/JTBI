@@ -5,6 +5,7 @@ import Footer from '../components/ui/Footer.astro'
 import Navigation from '../components/ui/Navigation.astro'
 import { ANNOUNCEMENT_BAR_STORAGE_KEY, getAnnouncementBarId } from '../lib/announcementBar'
 import sanityClient from '../sanity/lib/client'
+import backgroundImage from '../assets/images/textures/jtbi-cloud-background-tan-variant.jpg'
 import '../styles/global.css'
 
 export interface Props {
@@ -96,8 +97,7 @@ const announcementBarId =
     {
       announcementBarId && (
         <>
-          <style is:inline>{`
-            html[data-dismissed-announcement-bar="true"] [data-announcement-bar][data-announcement-id="${announcementBarId}"] {
+          <style is:inline>{`html[data-dismissed-announcement-bar="true"] [data-announcement-bar][data-announcement-id="${announcementBarId}"] {
               display: none;
             }
           `}</style>
@@ -119,6 +119,14 @@ const announcementBarId =
   </head>
 
   <body class="relative min-h-screen overflow-x-hidden">
+    <div
+      class="fixed inset-0 w-full h-auto bg-center bg-cover pointer-events-none z-0 opacity-80"
+      style={`background-image: url('${backgroundImage.src}');`}
+      role="presentation"
+      aria-hidden="true"
+    >
+    </div>
+
     <Navigation announcementBar={siteSettings?.announcementBar} />
 
     <!-- Page content with proper z-index -->

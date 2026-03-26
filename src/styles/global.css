@@ -125,13 +125,11 @@
   }
 
   header,
-  section,
-  footer {
+  section {
     @apply py-(--site-padding-lg);
   }
 
-  header,
-  main {
+  header {
     @apply w-full max-w-screen-2xl mx-auto;
   }
 

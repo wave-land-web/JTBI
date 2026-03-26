@@ -1,6 +1,6 @@
 <form
   id="contact-form"
-  class="space-y-(--site-padding-sm) lsa no-repeat"
+  class="relative z-10 space-y-(--site-padding-sm) lsa no-repeat"
   method="POST"
   action="/api/forms/contact"
   data-netlify="true"
@@ -20,7 +20,7 @@
       name="firstName"
       id="firstName"
       placeholder="First Name*"
-      class="w-full input input-primary"
+      class="w-full input input-secondary"
       required
       aria-required="true"
     />
@@ -30,7 +30,7 @@
       name="lastName"
       id="lastName"
       placeholder="Last Name*"
-      class="w-full input input-primary"
+      class="w-full input input-secondary"
       required
       aria-required="true"
     />
@@ -45,7 +45,7 @@
       name="businessName"
       id="businessName"
       placeholder="Business Name*"
-      class="w-full input input-primary"
+      class="w-full input input-secondary"
       required
       aria-required="true"
     />
@@ -60,7 +60,7 @@
       name="email"
       id="email"
       placeholder="Email*"
-      class="w-full input input-primary"
+      class="w-full input input-secondary"
       required
       aria-required="true"
       aria-describedby="email-help"
@@ -71,7 +71,7 @@
       name="phone"
       id="phone"
       placeholder="Phone*"
-      class="w-full input input-primary"
+      class="w-full input input-secondary"
       required
       aria-required="true"
     />
@@ -84,21 +84,16 @@
       name="message"
       id="message"
       placeholder="Message (optional)"
-      class="w-full textarea textarea-primary"
+      class="w-full textarea textarea-secondary"
       aria-required="false"></textarea>
   </fieldset>
 
   <!-- Email Subscription Checkbox -->
   <fieldset class="fieldset mb-8">
     <label
-      class="label text-primary font-factoria gap-(--site-padding-sm) whitespace-normal uppercase text-left text-sm font-extrabold"
+      class="label font-factoria text-base-200 gap-(--site-padding-sm) whitespace-normal uppercase text-left text-sm font-extrabold"
     >
-      <input
-        type="checkbox"
-        name="isSubscribed"
-        class="checkbox checkbox-secondary border-primary bg-base-100"
-        checked
-      />
+      <input type="checkbox" name="isSubscribed" class="checkbox checkbox-secondary" checked />
       Yes! Of course I want to join your email list.
     </label>
   </fieldset>
