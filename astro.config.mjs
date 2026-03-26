@@ -70,6 +70,7 @@ export default defineConfig({
   },
 
   integrations: [
+    react(),
     sanity({
       projectId: 'vs47sslu',
       dataset: 'production',
@@ -77,7 +78,6 @@ export default defineConfig({
       studioBasePath: '/admin',
       apiVersion: '2025-08-01',
     }),
-    react(),
     sitemap({
       lastmod: new Date(),
       filter: (page) =>
