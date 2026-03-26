@@ -117,7 +117,7 @@
   }
 
   html {
-    @apply scroll-smooth break-words;
+    @apply scroll-smooth wrap-break-word;
   }
 
   body {

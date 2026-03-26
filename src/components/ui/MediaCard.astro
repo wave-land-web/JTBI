@@ -42,12 +42,12 @@ const componentStyles = [
 ---
 
 <article
-  class="portfolio-item relative lsa no-repeat grid gap-8 [opacity:1] [transform:none] md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.15fr)] md:gap-10 md:pt-[2px]"
+  class="portfolio-item relative lsa no-repeat grid gap-8 opacity-[1] transform-none md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.15fr)] md:gap-10 md:pt-0.5"
   style={componentStyles}
 >
   <span
     class:list={[
-      'portfolio-item__border absolute top-0 left-0 hidden h-[2px] w-full bg-[var(--portfolio-accent-color)] [transform:scaleX(0)] [will-change:transform] motion-reduce:[transform:scaleX(1)] md:block',
+      'portfolio-item__border absolute top-0 left-0 hidden h-0.5 w-full bg-(--portfolio-accent-color) transform-[scaleX(0)] will-change-transform motion-reduce:transform-[scaleX(1)] md:block',
       reversed ? 'origin-right' : 'origin-left',
     ]}
     aria-hidden="true"></span>
@@ -62,12 +62,12 @@ const componentStyles = [
 
   <div
     class:list={[
-      'portfolio-item__card-reveal min-h-[22rem] overflow-hidden sm:min-h-[25rem] md:min-h-[31rem]',
+      'portfolio-item__card-reveal min-h-88 overflow-hidden sm:min-h-100 md:min-h-124',
       reversed && 'md:order-1',
     ]}
   >
     <div
-      class="portfolio-item__card min-h-full opacity-0 origin-top [transform:scaleY(0)] [will-change:transform,opacity] motion-reduce:opacity-100 motion-reduce:[transform:none]"
+      class="portfolio-item__card min-h-full opacity-0 origin-top transform-[scaleY(0)] will-change-[transform,opacity] motion-reduce:opacity-100 motion-reduce:transform-none"
     >
       <div class="relative aspect-video overflow-hidden bg-base-200">
         {
@@ -80,7 +80,7 @@ const componentStyles = [
       </div>
 
       <div
-        class="border-t border-[var(--portfolio-card-divider)] bg-[var(--portfolio-card-background)] p-5 text-left text-[var(--portfolio-card-text)] sm:p-7"
+        class="border-t border-(--portfolio-card-divider) bg-(--portfolio-card-background) p-5 text-left text-(--portfolio-card-text) sm:p-7"
       >
         <h3 class="mb-2 text-sm font-extrabold uppercase tracking-wide">{title}</h3>
         <p class="max-w-none font-factoria leading-relaxed sm:text-base">{description}</p>

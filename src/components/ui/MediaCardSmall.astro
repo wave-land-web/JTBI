@@ -52,18 +52,18 @@ const cardStyles = [
 
 <article class="service-card relative lsa no-repeat w-full" style={cardStyles}>
   <span
-    class="service-card__border absolute left-0 top-0 h-full w-px bg-[var(--service-accent-color)] [transform:scaleY(0)] origin-top [will-change:transform] motion-reduce:[transform:scaleY(1)]"
+    class="service-card__border absolute left-0 top-0 h-full w-px bg-(--service-accent-color) transform-[scaleY(0)] origin-top will-change-transform motion-reduce:transform-[scaleY(1)]"
     aria-hidden="true"></span>
 
   <div class="h-full service-card__reveal overflow-hidden pl-px">
     <a
       href={href}
-      class="h-full service-card__panel group block opacity-0 origin-left [transform:scaleX(0)] motion-reduce:opacity-100 motion-reduce:[transform:none]"
+      class="h-full service-card__panel group block opacity-0 origin-left transform-[scaleX(0)] motion-reduce:opacity-100 motion-reduce:transform-none"
     >
       <div
-        class="h-full border border-l-0 border-[var(--service-card-divider)] bg-[var(--service-card-background)] text-[var(--service-card-text)]"
+        class="h-full border border-l-0 border-(--service-card-divider) bg-(--service-card-background) text-(--service-card-text)"
       >
-        <div class="relative aspect-square overflow-hidden bg-[var(--service-media-background)]">
+        <div class="relative aspect-square overflow-hidden bg-(--service-media-background)">
           {
             imageSrc && (
               <Image
@@ -77,15 +77,15 @@ const cardStyles = [
 
         <div class="flex flex-col gap-2.5 p-4 text-left sm:p-5">
           <h4
-            class="font-radio-canada text-2xl font-semibold uppercase text-[var(--service-title-color)]"
+            class="font-radio-canada text-2xl font-semibold uppercase text-(--service-title-color)"
           >
             {title}
           </h4>
-          <p class="font-factoria font-semibold text-[var(--service-body-color)]">
+          <p class="font-factoria font-semibold text-(--service-body-color)">
             {description}
           </p>
           <p
-            class="group ml-auto text-sm font-semibold uppercase tracking-widest text-[var(--service-cta-color)]"
+            class="group ml-auto text-sm font-semibold uppercase tracking-widest text-(--service-cta-color)"
           >
             <span class="link group-hover:link-hover">
               {ctaLabel}
