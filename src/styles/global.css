@@ -54,6 +54,7 @@
   --font-factoria: 'factoria', serif;
 
   /* Content spacing + sizing */
+
   --form-gap: clamp(1rem, 2vw, 1.5rem);
   --content-max-width: 85ch;
   --nav-width: 1300px;
@@ -153,37 +154,37 @@
   .h4,
   .h5,
   .h6 {
-    @apply font-factoria text-balance leading-tight;
+    @apply font-factoria text-balance;
   }
 
   h1,
   .h1 {
-    @apply text-6xl sm:text-7xl;
+    @apply text-7xl sm:text-8xl xl:text-9xl text-base-100 font-extrabold leading-[1.1];
   }
 
   h2,
   .h2 {
-    @apply text-4xl sm:text-5xl md:text-6xl text-base-100 font-extrabold;
+    @apply text-4xl sm:text-5xl md:text-6xl text-base-100 font-extrabold leading-tight;
   }
 
   h3,
   .h3 {
-    @apply text-3xl sm:text-4xl;
+    @apply text-3xl sm:text-4xl leading-tight;
   }
 
   h4,
   .h4 {
-    @apply text-2xl sm:text-3xl;
+    @apply text-2xl sm:text-3xl leading-tight;
   }
 
   h5,
   .h5 {
-    @apply text-xl sm:text-2xl;
+    @apply text-xl sm:text-2xl leading-tight;
   }
 
   h6,
   .h6 {
-    @apply text-lg sm:text-xl;
+    @apply text-lg sm:text-xl leading-tight;
   }
 
   p,
@@ -205,7 +206,8 @@
     @apply italic;
   }
 
-  /* Form styling improvements */
+  /* Form styling */
+
   .form-control .input {
     @apply transition-colors duration-200;
   }
@@ -218,7 +220,6 @@
     @apply bg-primary border-primary;
   }
 
-  /* Ensure proper contrast for form elements */
   .input-bordered {
     @apply border-base-content/20;
   }
@@ -227,8 +228,22 @@
     @apply border-primary border-2;
   }
 
-  /* Strong text styling - uncomment when you have the font */
   strong {
     @apply font-semibold;
+  }
+
+  /* Animated underline link */
+
+  .link-underline {
+    @apply relative inline-block;
+
+    &::after {
+      @apply absolute bottom-0 left-0 h-px w-full origin-right scale-x-0 bg-current transition-transform duration-300 ease-out content-[''];
+    }
+
+    &:hover::after,
+    &:focus-visible::after {
+      @apply origin-left scale-x-100;
+    }
   }
 }

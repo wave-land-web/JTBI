@@ -26,28 +26,27 @@ const {
   description,
 } = Astro.props
 
-const fallbackImageClasses =
-  'h-full w-full bg-[radial-gradient(circle_at_30%_30%,var(--color-base-100),transparent_58%),linear-gradient(135deg,var(--color-base-100),var(--color-base-200)_46%,var(--color-base-300)_74%,var(--color-primary))]'
+const fallbackImageClasses = `h-full w-full bg-[radial-gradient(circle_at_30%_30%,var(--color-base-100),transparent_58%),linear-gradient(135deg,var(--color-base-100),var(--color-base-200)_46%,var(--color-base-300)_74%,var(--color-primary))]`
 
-const componentStyles = [
-  `--portfolio-accent-color: ${accentColor};`,
-  `--portfolio-card-background: ${cardBackgroundColor};`,
-  `--portfolio-card-text: ${cardTextColor};`,
-  `--portfolio-card-divider: color-mix(in srgb, ${cardTextColor} 12%, transparent);`,
-  '--portfolio-border-duration: 600ms;',
-  '--portfolio-border-delay: 300ms;',
-  '--portfolio-card-duration: 600ms;',
-  '--portfolio-card-delay: 600ms;',
-].join(' ')
+const componentStyles = `
+    --portfolio-accent-color: ${accentColor}; 
+    --portfolio-card-background: ${cardBackgroundColor};
+    --portfolio-card-text: ${cardTextColor}; 
+    --portfolio-card-divider: color-mix(in srgb, ${cardTextColor} 12%, transparent); 
+    --portfolio-border-duration: 600ms;
+    --portfolio-border-delay: 300ms; 
+    --portfolio-card-duration: 1500ms; 
+    --portfolio-card-delay: 600ms;
+  `
 ---
 
 <article
-  class="portfolio-item relative lsa no-repeat grid gap-8 opacity-[1] transform-none md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.15fr)] md:gap-10 md:pt-0.5"
+  class="portfolio-item relative lsa no-repeat grid gap-8 transform-none md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.15fr)] md:gap-10 md:pt-0.75"
   style={componentStyles}
 >
   <span
     class:list={[
-      'portfolio-item__border absolute top-0 left-0 hidden h-0.5 w-full bg-(--portfolio-accent-color) transform-[scaleX(0)] will-change-transform motion-reduce:transform-[scaleX(1)] md:block',
+      'portfolio-item__border absolute top-0 left-0 hidden h-0.75 w-full bg-(--portfolio-accent-color) transform-[scaleX(0)] will-change-transform motion-reduce:transform-[scaleX(1)] md:block',
       reversed ? 'origin-right' : 'origin-left',
     ]}
     aria-hidden="true"></span>
@@ -67,7 +66,7 @@ const componentStyles = [
     ]}
   >
     <div
-      class="portfolio-item__card min-h-full opacity-0 origin-top transform-[scaleY(0)] will-change-[transform,opacity] motion-reduce:opacity-100 motion-reduce:transform-none"
+      class="portfolio-item__card origin-top transform-[scaleY(0)] will-change-[transform,opacity] motion-reduce:opacity-100 motion-reduce:transform-none"
     >
       <div class="relative aspect-video overflow-hidden bg-base-200">
         {

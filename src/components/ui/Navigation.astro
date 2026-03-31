@@ -30,9 +30,9 @@ const logoLinkClasses = 'relative block overflow-visible group'
 const logoTextureClasses =
   'pointer-events-none absolute top-1/2 h-[160%] w-full -translate-y-1/2 opacity-60 object-contain transition-opacity duration-200 group-hover:opacity-80 pointer-events-none'
 const desktopLinkClasses =
-  'rounded-box px-3 py-2 text-sm md:text-base text-base-300 font-extrabold uppercase tracking-wide transition-colors duration-200 hover:bg-base-100/10 hover:text-base-100 focus-visible:bg-base-100/10 focus-visible:text-base-100'
+  'link-underline text-sm md:text-base text-base-300 font-extrabold uppercase tracking-wide transition-colors duration-200 hover:text-base-100 focus-visible:text-base-100'
 const mobileLinkClasses =
-  'rounded-box px-3 py-2 text-sm font-extrabold uppercase tracking-wide text-base-300 transition-colors duration-200 hover:bg-base-100/10 hover:text-base-100 focus:bg-base-100/10 focus:text-base-100!  focus-visible:bg-base-100/10! focus-visible:text-base-100!'
+  'px-3 py-2 text-sm font-extrabold uppercase tracking-wide text-base-300 transition-colors duration-200 hover:bg-base-100/10 hover:text-base-100 focus:bg-base-100/10 focus:text-base-100!  focus-visible:bg-base-100/10! focus-visible:text-base-100!'
 const activeLinkClasses = 'text-base-100!'
 
 const isActiveLink = (href: string) => href === '/' && currentPath === '/'
@@ -59,6 +59,7 @@ const getLinkClasses = (variant: 'desktop' | 'mobile', href: string) => [
               alt="Cloud texture background"
               aria-hidden="true"
               class={logoTextureClasses}
+              priority
             />
             <JTBILogoPrimary class="relative z-10 block w-full" />
           </a>
@@ -87,7 +88,7 @@ const getLinkClasses = (variant: 'desktop' | 'mobile', href: string) => [
             </button>
             <ul
               tabindex="0"
-              class="bg-primary menu menu-sm dropdown-content rounded-box z-40 right-0 mt-4 w-56 border border-base-100/10 p-3 shadow-xl"
+              class="bg-primary menu menu-sm dropdown-content z-40 right-0 mt-4 w-56 border border-base-100/10 p-3 shadow-xl"
               role="list"
             >
               {
@@ -118,11 +119,12 @@ const getLinkClasses = (variant: 'desktop' | 'mobile', href: string) => [
             alt="Cloud texture background"
             aria-hidden="true"
             class={logoTextureClasses}
+            priority
           />
           <JTBILogoPrimary class="relative z-10 block w-full" />
         </a>
 
-        <ul class="flex flex-wrap items-center justify-center gap-4" role="list">
+        <ul class="flex flex-wrap items-center justify-center gap-8" role="list">
           {
             links.map((link) => (
               <li>

@@ -34,34 +34,34 @@ const {
   mediaBackgroundColor = 'var(--color-base-200)',
 } = Astro.props
 
-const cardStyles = [
-  `--service-accent-color: ${accentColor};`,
-  `--service-card-background: ${cardBackgroundColor};`,
-  `--service-card-text: ${cardTextColor};`,
-  `--service-title-color: ${titleColor};`,
-  `--service-body-color: ${bodyTextColor};`,
-  `--service-cta-color: ${ctaColor};`,
-  `--service-media-background: ${mediaBackgroundColor};`,
-  `--service-card-divider: color-mix(in srgb, ${cardTextColor} 14%, transparent);`,
-  '--service-border-duration: 600ms;',
-  '--service-border-delay: 300ms;',
-  '--service-card-duration: 600ms;',
-  '--service-card-delay: 600ms;',
-].join(' ')
+const cardStyles = `
+  --service-accent-color: ${accentColor};
+  --service-card-background: ${cardBackgroundColor};
+  --service-card-text: ${cardTextColor};
+  --service-title-color: ${titleColor};
+  --service-body-color: ${bodyTextColor};
+  --service-cta-color: ${ctaColor};
+  --service-media-background: ${mediaBackgroundColor};
+  --service-card-divider: color-mix(in srgb, ${cardTextColor} 14%, transparent);
+  --service-border-duration: 1000ms;
+  --service-border-delay: 300ms;
+  --service-card-duration: 1000ms;
+  --service-card-delay: 600ms;
+`
 ---
 
 <article class="service-card relative lsa no-repeat w-full" style={cardStyles}>
   <span
-    class="service-card__border absolute left-0 top-0 h-full w-px bg-(--service-accent-color) transform-[scaleY(0)] origin-top will-change-transform motion-reduce:transform-[scaleY(1)]"
+    class="service-card__border absolute left-0 top-0 h-full w-0.75 bg-(--service-accent-color) transform-[scaleY(0)] origin-top will-change-transform motion-reduce:transform-[scaleY(1)]"
     aria-hidden="true"></span>
 
-  <div class="h-full service-card__reveal overflow-hidden pl-px">
+  <div class="h-full service-card__reveal overflow-hidden pl-0.75">
     <a
       href={href}
       class="h-full service-card__panel group block opacity-0 origin-left transform-[scaleX(0)] motion-reduce:opacity-100 motion-reduce:transform-none"
     >
       <div
-        class="h-full border border-l-0 border-(--service-card-divider) bg-(--service-card-background) text-(--service-card-text)"
+        class="h-full border-l-0 border-(--service-card-divider) bg-(--service-card-background) text-(--service-card-text)"
       >
         <div class="relative aspect-square overflow-hidden bg-(--service-media-background)">
           {
@@ -77,7 +77,7 @@ const cardStyles = [
 
         <div class="flex flex-col gap-2.5 p-4 text-left sm:p-5">
           <h4
-            class="font-radio-canada text-2xl font-semibold uppercase text-(--service-title-color)"
+            class="font-radio-canada text-2xl font-extrabold uppercase text-(--service-title-color)"
           >
             {title}
           </h4>
@@ -85,9 +85,9 @@ const cardStyles = [
             {description}
           </p>
           <p
-            class="group ml-auto text-sm font-semibold uppercase tracking-widest text-(--service-cta-color)"
+            class="link-underline ml-auto text-sm font-semibold uppercase tracking-widest text-(--service-cta-color)"
           >
-            <span class="link group-hover:link-hover">
+            <span>
               {ctaLabel}
             </span>
             <span class="text-xl">»</span>
