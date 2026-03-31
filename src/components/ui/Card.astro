@@ -1,0 +1,75 @@
+---
+import { Image } from 'astro:assets'
+import type { ImageMetadata } from 'astro'
+
+export interface Props {
+  title: string
+  description: string
+  imageSrc?: ImageMetadata
+  imageAlt?: string
+  imageAspect?: 'video' | 'square'
+  imageClass?: string
+  mediaClass?: string
+  contentClass?: string
+  showFallback?: boolean
+  class?: string
+  href?: string
+  ctaLabel?: string
+  isExternal?: boolean
+}
+
+const {
+  title,
+  description,
+  imageSrc,
+  imageAlt = '',
+  imageAspect = 'video',
+  imageClass = 'h-full w-full object-cover',
+  mediaClass = '',
+  contentClass = '',
+  showFallback = false,
+  class: className = '',
+  href,
+  ctaLabel,
+  isExternal = false,
+} = Astro.props
+
+const Tag = href ? 'a' : 'article'
+const linkProps = href
+  ? { href, ...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {}) }
+  : {}
+
+const fallbackImageClasses = `h-full w-full bg-[radial-gradient(circle_at_30%_30%,var(--color-base-100),transparent_58%),linear-gradient(135deg,var(--color-base-100),var(--color-base-200)_46%,var(--color-base-300)_74%,var(--color-primary))]`
+---
+
+<Tag class={className} {...linkProps}>
+  <div
+    class:list={[
+      'relative overflow-hidden',
+      imageAspect === 'video' ? 'aspect-video' : 'aspect-square',
+      mediaClass,
+    ]}
+  >
+    {
+      imageSrc ? (
+        <Image src={imageSrc} alt={imageAlt} class={imageClass} />
+      ) : showFallback ? (
+        <div class={fallbackImageClasses} />
+      ) : null
+    }
+  </div>
+
+  <div class={contentClass}>
+    <h3 class="mb-2 text-lg md:text-xl font-extrabold uppercase tracking-wide">{title}</h3>
+    <p class="max-w-none font-factoria leading-relaxed">{description}</p>
+    {
+      ctaLabel && (
+        <p class="link-underline ml-auto text-sm font-semibold uppercase tracking-widest text-(--service-cta-color)">
+          <span>{ctaLabel}</span>
+          <span class="text-xl">»</span>
+        </p>
+      )
+    }
+    <slot />
+  </div>
+</Tag>
