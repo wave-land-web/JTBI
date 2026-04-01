@@ -1,188 +1,207 @@
 ---
-import MediaCard from '../components/ui/MediaCard.astro'
+import MediaCardRow from '../components/ui/MediaCardRow.astro'
 import MediaCardSmall from '../components/ui/MediaCardSmall.astro'
-import PortfolioImage from '../assets/images/textures/jtbi-cloud-background-horizontal.png'
-import PortfolioImageTwo from '../assets/images/textures/jtbi-cloud-background-sample.png'
 import LogoPrimaryImage from '../assets/images/logos/jtbi-logo-primary-80-opacity.png'
 import ContactBg from '../assets/images/textures/jtbi-cloud-background-sample.svg'
 import ContactForm from '../components/ui/forms/Contact.astro'
 import { SITE_TITLE } from '../consts'
 import Layout from '../layouts/Layout.astro'
+import { sanityClient } from '../sanity/lib/client'
+import { urlForImage } from '../sanity/lib/urlForImage'
+import type { PageBlock } from '../sanity/lib/types'
+import { toHTML } from '@portabletext/to-html'
+
+const homepage = await sanityClient.fetch(
+  `*[_id == "homepage"][0]{
+    pageBuilder[]{
+      _type,
+      _key,
+      _type == "heroBlock" => {
+        sectionId,
+        headingLine1,
+        headingLine2
+      },
+      _type == "projectsBlock" => {
+        sectionId,
+        heading,
+        projects[]-> {
+          _id,
+          title,
+          description,
+          featureText,
+          image,
+          href,
+          ctaLabel,
+          reversed,
+          styling
+        }
+      },
+      _type == "mediaCardRowBlock" => {
+        sectionId,
+        heading,
+        featureText,
+        title,
+        description,
+        image,
+        href,
+        ctaLabel,
+        reversed,
+        styling
+      },
+      _type == "servicesBlock" => {
+        sectionId,
+        heading,
+        items
+      },
+      _type == "contactBlock" => {
+        sectionId,
+        heading,
+        subheading,
+        subheadingAccent,
+        body
+      }
+    }
+  }`,
+)
+
+const blocks: PageBlock[] = homepage?.pageBuilder ?? []
 ---
 
 <Layout>
-  <header
-    class="h-[calc(100dvh-88px)] md:h-[calc(100dvh-128px)] relative flex justify-center items-center max-w-none"
-  >
-    <!-- TODO: need to add dynamic image -->
-    <div class="relative wrapper z-10">
-      <h1 class="sr-only">{SITE_TITLE}</h1>
-      <h2 class="h1 lsa no-repeat lsa-slide-up delay-100">
-        You're not industry-standard,<br />
-        <span
-          class="block text-5xl sm:text-6xl xl:text-7xl leading-snug font-normal text-base-content lsa no-repeat lsa-slide-up delay-200"
-          >and your branding should prove it.</span
-        >
-      </h2>
-    </div>
-  </header>
+  {
+    blocks.map((block) => {
+      if (block._type === 'heroBlock') {
+        return (
+          <header
+            id={block.sectionId || undefined}
+            class="h-[calc(100dvh-88px)] md:h-[calc(100dvh-128px)] relative flex justify-center items-center max-w-none"
+          >
+            <div class="relative wrapper z-10">
+              <h1 class="sr-only">{SITE_TITLE}</h1>
+              <h2 class="h1 lsa no-repeat lsa-slide-up delay-100">
+                {block.headingLine1 || "You're not industry-standard,"}
+                <br />
+                <span class="block text-5xl sm:text-6xl xl:text-7xl leading-snug font-normal text-base-content lsa no-repeat lsa-slide-up delay-200">
+                  {block.headingLine2 || 'and your branding should prove it.'}
+                </span>
+              </h2>
+            </div>
+          </header>
+        )
+      }
 
-  <main class="pt-0 text-center">
-    <section id="portfolio" class="flex flex-col gap-8 md:gap-12">
-      <h2 class="text-left lsa lsa-slide-up no-repeat">
-        Developing visual and marketing strategies for business acceleration.
-      </h2>
+      if (block._type === 'projectsBlock') {
+        const projects = block.projects ?? []
+        return (
+          <section
+            id={block.sectionId || undefined}
+            class="text-center flex flex-col gap-8 md:gap-12"
+          >
+            <h2 class="text-left lsa lsa-slide-up no-repeat">
+              {block.heading ||
+                'Developing visual and marketing strategies for business acceleration.'}
+            </h2>
+            {projects.map((project) => (
+              <MediaCardRow
+                featureText={toHTML(project.featureText)}
+                reversed={project.reversed}
+                imageSrc={project.image ? urlForImage(project.image).width(800).url() : undefined}
+                imageAlt={project.image?.alt || 'Portfolio preview image'}
+                accentColor={project.styling?.accentColor}
+                cardBackgroundColor={project.styling?.cardBackgroundColor}
+                cardTextColor={project.styling?.cardTextColor}
+                title={project.title}
+                description={project.description}
+                href={project.href}
+                ctaLabel={project.ctaLabel}
+              />
+            ))}
+          </section>
+        )
+      }
 
-      <MediaCard
-        featureText="<p>We're a full-service brand development and deployment company that helps build value. Our focus is expanding your reach, improving your bottom line, and helping your business consistently look its best.<p>"
-        imageSrc={PortfolioImage}
-        imageAlt="Atmospheric portfolio sample artwork"
-        accentColor="#d94b43"
-        title="Portfolio Sample Text."
-        description="Nequi tem qui dolore rem corrum iligenda incid etusam, corunt, qui re ex expelent experto con cone labo. Lam, invende pitiatonsed molorru menisci ducium fugit, sequatem velloreprae."
-        cardTextColor="#013136"
-      />
+      if (block._type === 'mediaCardRowBlock') {
+        return (
+          <section
+            id={block.sectionId || undefined}
+            class="text-center flex flex-col gap-8 md:gap-12"
+          >
+            {block.heading && <h2 class="text-left lsa lsa-slide-up no-repeat">{block.heading}</h2>}
+            <MediaCardRow
+              reversed={block.reversed}
+              featureText={block.featureText ? toHTML(block.featureText) : ''}
+              imageSrc={block.image ? urlForImage(block.image).width(800).url() : undefined}
+              imageAlt={block.image?.alt || ''}
+              accentColor={block.styling?.accentColor}
+              cardBackgroundColor={block.styling?.cardBackgroundColor}
+              cardTextColor={block.styling?.cardTextColor}
+              title={block.title || ''}
+              description={block.description || ''}
+              href={block.href}
+              ctaLabel={block.ctaLabel}
+            />
+          </section>
+        )
+      }
 
-      <h2 class="text-left lsa lsa-slide-up no-repeat mt-16 md:mt-32">
-        Can't see the forest for the trees? We help you analyze & refine your brand positioning.
-      </h2>
-      <MediaCard
-        reversed={true}
-        featureText="<p>We research you and your target markets in relation to your goals, then develop your unique brand identity and help deploy it consistently across the most appropriate marketing channels.</p><p>When you're ready to take the reins, we provide the road map you need, and support you in finding the right in-house talent.</p>"
-        imageSrc={PortfolioImageTwo}
-        imageAlt="Illustrated portfolio sample collage"
-        accentColor="#084F6F"
-        title="Portfolio Sample Text."
-        description="Nequi tem qui dolore rem corrum iligenda incid etusam, corunt, qui re ex expelent experto con cone labo. Lam, invende pitiatonsed molorru menisci ducium fugit, sequatem velloreprae."
-        cardBackgroundColor="#084F6F"
-        cardTextColor="var(--color-base-100)"
-      />
+      if (block._type === 'servicesBlock') {
+        return (
+          <section id={block.sectionId || undefined} class="text-center">
+            <div class="flex flex-col gap-8 md:gap-10">
+              <h2 class="h3 font-factoria font-bold uppercase text-left text-primary lsa lsa-slide-up no-repeat">
+                {block.heading || 'Services We Offer'}
+              </h2>
+              <div class="grid gap-8 md:grid-cols-3 md:gap-10">
+                {block.items?.map((item) => (
+                  <MediaCardSmall
+                    title={item.title}
+                    description={item.description}
+                    href={item.href || '#contact'}
+                    ctaLabel={item.ctaLabel || 'Read More'}
+                    imageSrc={LogoPrimaryImage}
+                    imageAlt={`JTB Imaginative logo mark for ${item.title.toLowerCase()}`}
+                    accentColor={item.accentColor}
+                    mediaBackgroundColor={item.mediaBackgroundColor}
+                    cardBackgroundColor={item.cardBackgroundColor}
+                    cardTextColor={item.cardTextColor}
+                    titleColor={item.titleColor}
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        )
+      }
 
-      <h2 class="text-left lsa lsa-slide-up no-repeat mt-16 md:mt-32">
-        Your branding needs change over time.
-      </h2>
-      <div class="flex flex-col gap-12 md:gap-16">
-        <MediaCard
-          featureText="<p>There are three key points when brand identity work is critical:</p><p><strong>Starting Up -</strong> Entrepreneurs and teams looking to launch a new business, idea, or product.</p>"
-          imageSrc={PortfolioImageTwo}
-          imageAlt="Illustrated portfolio sample collage"
-          accentColor="#e05136"
-          title="Portfolio Sample Text."
-          description="Nequi tem qui dolore rem corrum iligenda incid etusam, corunt, qui re ex expelent experto con cone labo. Lam, invende pitiatonsed molorru menisci ducium fugit, sequatem velloreprae."
-          cardBackgroundColor="white"
-          cardTextColor="#1f193e"
-          href="#contact"
-          ctaLabel="Learn More"
-        />
-        <MediaCard
-          featureText="<p><strong>Scaling Up -</strong> An established business looking to expand product lines, services, or enter new markets.</p>"
-          imageSrc={PortfolioImageTwo}
-          imageAlt="Illustrated portfolio sample collage"
-          accentColor="#FFFF00"
-          title="Portfolio Sample Text."
-          description="Nequi tem qui dolore rem corrum iligenda incid etusam, corunt, qui re ex expelent experto con cone labo. Lam, invende pitiatonsed molorru menisci ducium fugit, sequatem velloreprae."
-          cardBackgroundColor="white"
-          cardTextColor="var(--color-primary)"
-          href="#contact"
-          ctaLabel="Read More"
-        />
-        <MediaCard
-          featureText="<p><strong>Freshening Up -</strong> Long-standing businesses that are seeing more competition in their sector and want to update their look and marketing strategy.</p>"
-          imageSrc={PortfolioImageTwo}
-          imageAlt="Illustrated portfolio sample collage"
-          accentColor="#FFFF00"
-          title="Portfolio Sample Text."
-          description="Nequi tem qui dolore rem corrum iligenda incid etusam, corunt, qui re ex expelent experto con cone labo. Lam, invende pitiatonsed molorru menisci ducium fugit, sequatem velloreprae."
-          cardBackgroundColor="transparent"
-          cardTextColor="var(--color-primary)"
-        />
-      </div>
-    </section>
+      if (block._type === 'contactBlock') {
+        return (
+          <section id={block.sectionId || undefined} class="relative max-w-none bg-primary">
+            <div
+              style={`background-image: url(${ContactBg.src}); background-size: cover; background-position: center;`}
+              class="absolute inset-0 opacity-10 pointer-events-none"
+              role="presentation"
+            />
+            <div class="wrapper text-left">
+              <header class="space-y-4 mb-8 py-0 text-left relative z-10">
+                <h2 class="lsa lsa-slide-up no-repeat">
+                  {block.heading || 'Brand building that means business.'}
+                </h2>
+                <h3 class="h4 text-primary-content font-extrabold lsa lsa-slide-up no-repeat delay-100">
+                  {block.subheading || 'WANT TO DISCUSS YOUR BRAND?'}
+                  <span class="font-medium">{block.subheadingAccent || "Let's chat."}</span>
+                </h3>
+                <p class="text-base-200 font-bold lsa lsa-slide-up no-repeat delay-200">
+                  {block.body ||
+                    "Whether you're considering refreshing your current branding, or are seeking support with the launch of an entirely new business, we're here to help. Contact us for a free 45-minute consultation."}
+                </p>
+              </header>
+              <ContactForm />
+            </div>
+          </section>
+        )
+      }
 
-    <section id="about" class="flex flex-col gap-8 md:gap-12">
-      <h2 class="text-left lsa lsa-slide-up no-repeat mt-16 md:mt-32">
-        Trust builds brands, so trust should be the foundation of brand development.
-      </h2>
-      <MediaCard
-        reversed={true}
-        featureText="<p>JTBI is entirely guided by owner Jeffrey Baker. You'll always work one-on-one with Jeffrey, and he'll handle all the complexities of compiling and managing a stellar creative team.</p>"
-        imageSrc={PortfolioImageTwo}
-        imageAlt="Illustrated portfolio sample collage"
-        accentColor="#F28095"
-        title="Sample Bio Text Teaser."
-        description="Nequi tem qui dolore rem corrum iligenda incid etusam, corunt, qui re ex expelent experto con cone labo. Lam, invende pitiatonsed molorru menisci ducium fugit, sequatem velloreprae."
-        cardBackgroundColor="white"
-        cardTextColor="var(--color-primary)"
-      />
-      <div class="mt-12 flex flex-col gap-8 md:mt-16 md:gap-10">
-        <h3 class="font-factoria font-bold uppercase text-left lsa lsa-slide-up no-repeat">
-          Services We Offer
-        </h3>
-
-        <div class="grid gap-8 md:grid-cols-3 md:gap-10">
-          <MediaCardSmall
-            title="Brand Identity"
-            description="A brand is more than a logo. We design the visual language for your business."
-            href="#contact"
-            ctaLabel="Read More"
-            imageSrc={LogoPrimaryImage}
-            imageAlt="JTB Imaginative logo mark for brand identity"
-            accentColor="#203347"
-            mediaBackgroundColor="#243546"
-            cardBackgroundColor="#ffffff"
-            cardTextColor="#203347"
-            titleColor="#1d2733"
-          />
-          <MediaCardSmall
-            title="Marketing Audits"
-            description="A brand is more than a logo. We design the visual language for your business."
-            href="#contact"
-            ctaLabel="Read More"
-            imageSrc={LogoPrimaryImage}
-            imageAlt="JTB Imaginative logo mark for marketing audits"
-            accentColor="#42d8ff"
-            mediaBackgroundColor="#fbfaf7"
-            cardBackgroundColor="#f7f3ef"
-          />
-          <MediaCardSmall
-            title="Logo Design"
-            description="A brand is more than a logo. We design the visual language for your business."
-            href="#contact"
-            ctaLabel="Read More"
-            imageSrc={LogoPrimaryImage}
-            imageAlt="JTB Imaginative logo mark for logo design"
-            accentColor="#ffd24a"
-            mediaBackgroundColor="#f3e6c8"
-            cardBackgroundColor="#ffc73a"
-            cardTextColor="#fff"
-            titleColor="#fff"
-          />
-        </div>
-      </div>
-    </section>
-
-    <section id="contact" class="relative max-w-none bg-primary">
-      <div
-        style={`background-image: url(${ContactBg.src}); background-size: cover; background-position: center;`}
-        class="absolute inset-0 opacity-10 pointer-events-none"
-        role="presentation"
-      >
-      </div>
-      <div class="wrapper text-left">
-        <header class="space-y-4 mb-8 py-0 text-left relative z-10">
-          <h2 class="lsa lsa-slide-up no-repeat">Brand building that means business.</h2>
-          <h3 class="h4 text-primary-content font-extrabold lsa lsa-slide-up no-repeat delay-100">
-            WANT TO DISCUSS YOUR BRAND? <span class="font-medium">Let's chat.</span>
-          </h3>
-          <p class="text-base-200 font-bold lsa lsa-slide-up no-repeat delay-200">
-            Whether you're considering refreshing your current branding, or are seeking support with
-            the launch of an entirely new business, we're here to help. Contact us for a free
-            45-minute consultation.
-          </p>
-        </header>
-
-        <ContactForm />
-      </div>
-    </section>
-  </main>
+      return null
+    })
+  }
 </Layout>
