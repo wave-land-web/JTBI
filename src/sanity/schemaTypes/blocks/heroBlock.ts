@@ -15,10 +15,42 @@ export default defineType({
       type: 'string',
     }),
     defineField({
+      name: 'backgroundImage',
+      title: 'Background Image',
+      description: 'Full-width background image for the hero section.',
+      type: 'image',
+      options: {
+        hotspot: true,
+      },
+      fields: [
+        defineField({
+          name: 'alt',
+          type: 'string',
+          title: 'Alternative Text',
+          validation: (Rule) => Rule.required().warning('Alt text is important for accessibility'),
+        }),
+      ],
+    }),
+    defineField({
       name: 'headingLine1',
       title: 'Heading Line 1',
       type: 'string',
       validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'headingLine1Color',
+      title: 'Heading Line 1 Color',
+      description: 'Choose "dark" for primary text or "light" for white text.',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Light', value: 'light' },
+          { title: 'Dark', value: 'dark' },
+        ],
+        layout: 'radio',
+        direction: 'horizontal',
+      },
+      initialValue: 'light',
     }),
     defineField({
       name: 'headingLine2',
@@ -26,14 +58,29 @@ export default defineType({
       type: 'string',
       validation: (Rule) => Rule.required(),
     }),
+    defineField({
+      name: 'headingLine2Color',
+      title: 'Heading Line 2 Color',
+      description: 'Choose "dark" for primary text or "light" for white text.',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Light', value: 'light' },
+          { title: 'Dark', value: 'dark' },
+        ],
+        layout: 'radio',
+        direction: 'horizontal',
+      },
+      initialValue: 'light',
+    }),
   ],
   preview: {
-    select: { line1: 'headingLine1', line2: 'headingLine2' },
-    prepare({ line1, line2 }) {
+    select: { line1: 'headingLine1', line2: 'headingLine2', media: 'backgroundImage' },
+    prepare({ line1, line2, media }) {
       return {
         title: line1 || 'Untitled Hero',
         subtitle: line2 || 'Hero',
-        media: BlockContentIcon,
+        media: media || BlockContentIcon,
       }
     },
   },

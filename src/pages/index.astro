@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets'
 import MediaCardRow from '../components/ui/MediaCardRow.astro'
 import MediaCardSmall from '../components/ui/MediaCardSmall.astro'
 import LogoPrimaryImage from '../assets/images/logos/jtbi-logo-primary-80-opacity.png'
@@ -18,8 +19,14 @@ const homepage = await sanityClient.fetch(
       _key,
       _type == "heroBlock" => {
         sectionId,
+        backgroundImage {
+          asset->{ _id, url },
+          alt
+        },
         headingLine1,
-        headingLine2
+        headingLine1Color,
+        headingLine2,
+        headingLine2Color
       },
       _type == "projectsBlock" => {
         sectionId,
@@ -74,14 +81,27 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
         return (
           <header
             id={block.sectionId || undefined}
-            class="h-[calc(100dvh-88px)] md:h-[calc(100dvh-128px)] relative flex justify-center items-center max-w-none"
+            class="h-screen relative flex justify-center items-center max-w-none overflow-hidden"
           >
-            <div class="relative wrapper z-10">
+            {block.backgroundImage?.asset && (
+              <Image
+                src={urlForImage(block.backgroundImage).width(1920).url()}
+                alt={block.backgroundImage.alt || ''}
+                class="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+                inferSize
+              />
+            )}
+            <div class="absolute inset-0 bg-black/30" aria-hidden="true" />
+            <div class="relative wrapper z-40">
               <h1 class="sr-only">{SITE_TITLE}</h1>
-              <h2 class="h1 lsa no-repeat lsa-slide-up delay-100">
+              <h2
+                class={`h1 lsa no-repeat lsa-slide-up delay-100 ${block.headingLine1Color === 'dark' ? 'text-primary' : 'text-base-100'}`}
+              >
                 {block.headingLine1 || "You're not industry-standard,"}
                 <br />
-                <span class="block text-5xl sm:text-6xl xl:text-7xl leading-snug font-normal text-base-content lsa no-repeat lsa-slide-up delay-200">
+                <span
+                  class={`block text-5xl sm:text-6xl xl:text-7xl leading-snug font-normal lsa no-repeat lsa-slide-up delay-200 ${block.headingLine2Color === 'dark' ? 'text-primary' : 'text-base-300'}`}
+                >
                   {block.headingLine2 || 'and your branding should prove it.'}
                 </span>
               </h2>
@@ -89,119 +109,130 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
           </header>
         )
       }
-
-      if (block._type === 'projectsBlock') {
-        const projects = block.projects ?? []
-        return (
-          <section
-            id={block.sectionId || undefined}
-            class="text-center flex flex-col gap-8 md:gap-12"
-          >
-            <h2 class="text-left lsa lsa-slide-up no-repeat">
-              {block.heading ||
-                'Developing visual and marketing strategies for business acceleration.'}
-            </h2>
-            {projects.map((project) => (
-              <MediaCardRow
-                featureText={toHTML(project.featureText)}
-                reversed={project.reversed}
-                imageSrc={project.image ? urlForImage(project.image).width(800).url() : undefined}
-                imageAlt={project.image?.alt || 'Portfolio preview image'}
-                accentColor={project.styling?.accentColor}
-                cardBackgroundColor={project.styling?.cardBackgroundColor}
-                cardTextColor={project.styling?.cardTextColor}
-                title={project.title}
-                description={project.description}
-                href={project.href}
-                ctaLabel={project.ctaLabel}
-              />
-            ))}
-          </section>
-        )
-      }
-
-      if (block._type === 'mediaCardRowBlock') {
-        return (
-          <section
-            id={block.sectionId || undefined}
-            class="text-center flex flex-col gap-8 md:gap-12"
-          >
-            {block.heading && <h2 class="text-left lsa lsa-slide-up no-repeat">{block.heading}</h2>}
-            <MediaCardRow
-              reversed={block.reversed}
-              featureText={block.featureText ? toHTML(block.featureText) : ''}
-              imageSrc={block.image ? urlForImage(block.image).width(800).url() : undefined}
-              imageAlt={block.image?.alt || ''}
-              accentColor={block.styling?.accentColor}
-              cardBackgroundColor={block.styling?.cardBackgroundColor}
-              cardTextColor={block.styling?.cardTextColor}
-              title={block.title || ''}
-              description={block.description || ''}
-              href={block.href}
-              ctaLabel={block.ctaLabel}
-            />
-          </section>
-        )
-      }
-
-      if (block._type === 'servicesBlock') {
-        return (
-          <section id={block.sectionId || undefined} class="text-center">
-            <div class="flex flex-col gap-8 md:gap-10">
-              <h2 class="h3 font-factoria font-bold uppercase text-left text-primary lsa lsa-slide-up no-repeat">
-                {block.heading || 'Services We Offer'}
-              </h2>
-              <div class="grid gap-8 md:grid-cols-3 md:gap-10">
-                {block.items?.map((item) => (
-                  <MediaCardSmall
-                    title={item.title}
-                    description={item.description}
-                    href={item.href || '#contact'}
-                    ctaLabel={item.ctaLabel || 'Read More'}
-                    imageSrc={LogoPrimaryImage}
-                    imageAlt={`JTB Imaginative logo mark for ${item.title.toLowerCase()}`}
-                    accentColor={item.accentColor}
-                    mediaBackgroundColor={item.mediaBackgroundColor}
-                    cardBackgroundColor={item.cardBackgroundColor}
-                    cardTextColor={item.cardTextColor}
-                    titleColor={item.titleColor}
-                  />
-                ))}
-              </div>
-            </div>
-          </section>
-        )
-      }
-
-      if (block._type === 'contactBlock') {
-        return (
-          <section id={block.sectionId || undefined} class="relative max-w-none bg-primary">
-            <div
-              style={`background-image: url(${ContactBg.src}); background-size: cover; background-position: center;`}
-              class="absolute inset-0 opacity-10 pointer-events-none"
-              role="presentation"
-            />
-            <div class="wrapper text-left">
-              <header class="space-y-4 mb-8 py-0 text-left relative z-10">
-                <h2 class="lsa lsa-slide-up no-repeat">
-                  {block.heading || 'Brand building that means business.'}
-                </h2>
-                <h3 class="h4 text-primary-content font-extrabold lsa lsa-slide-up no-repeat delay-100">
-                  {block.subheading || 'WANT TO DISCUSS YOUR BRAND?'}
-                  <span class="font-medium">{block.subheadingAccent || "Let's chat."}</span>
-                </h3>
-                <p class="text-base-200 font-bold lsa lsa-slide-up no-repeat delay-200">
-                  {block.body ||
-                    "Whether you're considering refreshing your current branding, or are seeking support with the launch of an entirely new business, we're here to help. Contact us for a free 45-minute consultation."}
-                </p>
-              </header>
-              <ContactForm />
-            </div>
-          </section>
-        )
-      }
-
       return null
     })
   }
+
+  <main>
+    {
+      blocks.map((block) => {
+        if (block._type === 'heroBlock') return null
+
+        if (block._type === 'projectsBlock') {
+          const projects = block.projects ?? []
+          return (
+            <section
+              id={block.sectionId || undefined}
+              class="text-center flex flex-col gap-8 md:gap-12"
+            >
+              <h2 class="text-left lsa lsa-slide-up no-repeat">
+                {block.heading ||
+                  'Developing visual and marketing strategies for business acceleration.'}
+              </h2>
+              {projects.map((project) => (
+                <MediaCardRow
+                  featureText={toHTML(project.featureText)}
+                  reversed={project.reversed}
+                  imageSrc={project.image ? urlForImage(project.image).width(800).url() : undefined}
+                  imageAlt={project.image?.alt || 'Portfolio preview image'}
+                  accentColor={project.styling?.accentColor}
+                  cardBackgroundColor={project.styling?.cardBackgroundColor}
+                  cardTextColor={project.styling?.cardTextColor}
+                  title={project.title}
+                  description={project.description}
+                  href={project.href}
+                  ctaLabel={project.ctaLabel}
+                />
+              ))}
+            </section>
+          )
+        }
+
+        if (block._type === 'mediaCardRowBlock') {
+          return (
+            <section
+              id={block.sectionId || undefined}
+              class="text-center flex flex-col gap-8 md:gap-12"
+            >
+              {block.heading && (
+                <h2 class="text-left lsa lsa-slide-up no-repeat">{block.heading}</h2>
+              )}
+              <MediaCardRow
+                reversed={block.reversed}
+                featureText={block.featureText ? toHTML(block.featureText) : ''}
+                imageSrc={block.image ? urlForImage(block.image).width(800).url() : undefined}
+                imageAlt={block.image?.alt || ''}
+                accentColor={block.styling?.accentColor}
+                cardBackgroundColor={block.styling?.cardBackgroundColor}
+                cardTextColor={block.styling?.cardTextColor}
+                title={block.title || ''}
+                description={block.description || ''}
+                href={block.href}
+                ctaLabel={block.ctaLabel}
+              />
+            </section>
+          )
+        }
+
+        if (block._type === 'servicesBlock') {
+          return (
+            <section id={block.sectionId || undefined} class="text-center">
+              <div class="flex flex-col gap-8 md:gap-10">
+                <h2 class="h3 font-factoria font-bold uppercase text-left text-primary lsa lsa-slide-up no-repeat">
+                  {block.heading || 'Services We Offer'}
+                </h2>
+                <div class="grid gap-8 md:grid-cols-3 md:gap-10">
+                  {block.items?.map((item) => (
+                    <MediaCardSmall
+                      title={item.title}
+                      description={item.description}
+                      href={item.href || '#contact'}
+                      ctaLabel={item.ctaLabel || 'Read More'}
+                      imageSrc={LogoPrimaryImage}
+                      imageAlt={`JTB Imaginative logo mark for ${item.title.toLowerCase()}`}
+                      accentColor={item.accentColor}
+                      mediaBackgroundColor={item.mediaBackgroundColor}
+                      cardBackgroundColor={item.cardBackgroundColor}
+                      cardTextColor={item.cardTextColor}
+                      titleColor={item.titleColor}
+                    />
+                  ))}
+                </div>
+              </div>
+            </section>
+          )
+        }
+
+        if (block._type === 'contactBlock') {
+          return (
+            <section id={block.sectionId || undefined} class="relative max-w-none bg-primary">
+              <div
+                style={`background-image: url(${ContactBg.src}); background-size: cover; background-position: center;`}
+                class="absolute inset-0 opacity-10 pointer-events-none"
+                role="presentation"
+              />
+              <div class="wrapper text-left">
+                <header class="space-y-4 mb-8 py-0 text-left relative z-10">
+                  <h2 class="lsa lsa-slide-up no-repeat">
+                    {block.heading || 'Brand building that means business.'}
+                  </h2>
+                  <h3 class="h4 text-primary-content font-extrabold lsa lsa-slide-up no-repeat delay-100">
+                    {block.subheading || 'WANT TO DISCUSS YOUR BRAND?'}
+                    <span class="font-medium">{block.subheadingAccent || "Let's chat."}</span>
+                  </h3>
+                  <p class="text-base-200 font-bold lsa lsa-slide-up no-repeat delay-200">
+                    {block.body ||
+                      "Whether you're considering refreshing your current branding, or are seeking support with the launch of an entirely new business, we're here to help. Contact us for a free 45-minute consultation."}
+                  </p>
+                </header>
+                <ContactForm />
+              </div>
+            </section>
+          )
+        }
+
+        return null
+      })
+    }
+  </main>
 </Layout>

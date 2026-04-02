@@ -58,6 +58,7 @@
   --form-gap: clamp(1rem, 2vw, 1.5rem);
   --content-max-width: 85ch;
   --nav-width: 1300px;
+  --nav-height: clamp(88px, 12vw, 128px);
 }
 
 /* Animations */
@@ -125,17 +126,12 @@
     @apply min-h-screen bg-base-300 font-radio-canada text-base-content antialiased;
   }
 
-  header,
-  section {
-    @apply py-(--site-padding-lg);
-  }
-
   header {
-    @apply w-full max-w-screen-2xl mx-auto;
+    @apply w-full max-w-screen-2xl mx-auto pt-[calc(var(--nav-height)+var(--site-padding-2xl))];
   }
 
   section {
-    @apply w-full mx-auto max-w-(--nav-width) px-(--site-padding-base);
+    @apply w-full mx-auto max-w-(--nav-width) px-(--site-padding-base) py-(--site-padding-2xl);
   }
 
   .wrapper {

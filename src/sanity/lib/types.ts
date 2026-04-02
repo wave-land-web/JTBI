@@ -5,8 +5,11 @@ export interface BlockBase {
 
 export interface HeroBlock extends BlockBase {
   _type: 'heroBlock'
+  backgroundImage?: { asset: any; alt?: string }
   headingLine1?: string
+  headingLine1Color?: 'light' | 'dark'
   headingLine2?: string
+  headingLine2Color?: 'light' | 'dark'
 }
 
 export interface ProjectsBlock extends BlockBase {
