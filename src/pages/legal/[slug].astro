@@ -1,0 +1,42 @@
+---
+import Button from '../../components/ui/Button.astro'
+import PageHeader from '../../components/ui/PageHeader.astro'
+import Layout from '../../layouts/Layout.astro'
+import { sanityClient } from '../../sanity/lib/client'
+import { toHTML } from '@portabletext/to-html'
+
+export const prerender = false
+
+const { slug } = Astro.params
+
+const page = await sanityClient.fetch(
+  `*[_type == "legalPage" && slug.current == $slug][0]{
+    title,
+    body,
+    seoDescription
+  }`,
+  { slug },
+)
+
+if (!page) {
+  return Astro.redirect('/404')
+}
+---
+
+<Layout title={`${page.title} | JTB Imaginative LLC`} description={page.seoDescription || ''}>
+  <PageHeader
+    eyebrow="Legal"
+    headingLine1={page.title}
+    fullHeight={false}
+    headerClass="text-center"
+    contentClass="flex flex-col items-center"
+  />
+  {
+    page.body && (
+      <main class="wrapper prose py-(--site-padding-3xl)">
+        <Fragment set:html={toHTML(page.body)} />
+        <Button label="Back to Home" href="/" wrapperClass="mt-8" tagClass="no-underline" />
+      </main>
+    )
+  }
+</Layout>

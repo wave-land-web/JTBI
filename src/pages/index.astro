@@ -1,16 +1,16 @@
 ---
-import { Image } from 'astro:assets'
+import Layout from '../layouts/Layout.astro'
+import PageHeader from '../components/ui/PageHeader.astro'
 import MediaCardRow from '../components/ui/MediaCardRow.astro'
 import MediaCardSmall from '../components/ui/MediaCardSmall.astro'
 import LogoPrimaryImage from '../assets/images/logos/jtbi-logo-primary-80-opacity.png'
 import ContactBg from '../assets/images/textures/jtbi-cloud-background-sample.svg'
 import ContactForm from '../components/ui/forms/Contact.astro'
-import { SITE_TITLE } from '../consts'
-import Layout from '../layouts/Layout.astro'
 import { sanityClient } from '../sanity/lib/client'
 import { urlForImage } from '../sanity/lib/urlForImage'
-import type { PageBlock } from '../sanity/lib/types'
 import { toHTML } from '@portabletext/to-html'
+import { SITE_TITLE } from '../consts'
+import type { PageBlock } from '../sanity/lib/types'
 
 const homepage = await sanityClient.fetch(
   `*[_id == "homepage"][0]{
@@ -79,34 +79,20 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
     blocks.map((block) => {
       if (block._type === 'heroBlock') {
         return (
-          <header
-            id={block.sectionId || undefined}
-            class="h-screen relative flex justify-center items-center max-w-none overflow-hidden"
-          >
-            {block.backgroundImage?.asset && (
-              <Image
-                src={urlForImage(block.backgroundImage).width(1920).url()}
-                alt={block.backgroundImage.alt || ''}
-                class="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
-                inferSize
-              />
-            )}
-            <div class="absolute inset-0 bg-black/30" aria-hidden="true" />
-            <div class="relative wrapper z-40">
-              <h1 class="sr-only">{SITE_TITLE}</h1>
-              <h2
-                class={`h1 lsa no-repeat lsa-slide-up delay-100 ${block.headingLine1Color === 'dark' ? 'text-primary' : 'text-base-100'}`}
-              >
-                {block.headingLine1 || "You're not industry-standard,"}
-                <br />
-                <span
-                  class={`block text-5xl sm:text-6xl xl:text-7xl leading-snug font-normal lsa no-repeat lsa-slide-up delay-200 ${block.headingLine2Color === 'dark' ? 'text-primary' : 'text-base-300'}`}
-                >
-                  {block.headingLine2 || 'and your branding should prove it.'}
-                </span>
-              </h2>
-            </div>
-          </header>
+          <PageHeader
+            id={block.sectionId}
+            backgroundImageSrc={
+              block.backgroundImage?.asset
+                ? urlForImage(block.backgroundImage).width(1920).url()
+                : undefined
+            }
+            backgroundImageAlt={block.backgroundImage?.alt}
+            headingLine1={block.headingLine1 || "You're not industry-standard,"}
+            headingLine1Color={block.headingLine1Color}
+            headingLine2={block.headingLine2 || 'and your branding should prove it.'}
+            headingLine2Color={block.headingLine2Color}
+            srTitle={SITE_TITLE}
+          />
         )
       }
       return null

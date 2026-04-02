@@ -1,0 +1,80 @@
+---
+import { Image } from 'astro:assets'
+import Button from './Button.astro'
+
+interface Props {
+  id?: string
+  backgroundImageSrc?: string
+  backgroundImageAlt?: string
+  eyebrow?: string
+  headingLine1?: string
+  headingLine1Color?: 'dark' | 'light'
+  headingLine2?: string
+  headingLine2Color?: 'dark' | 'light'
+  message?: string
+  ctaLabel?: string
+  ctaHref?: string
+  srTitle?: string
+  fullHeight?: boolean
+  headerClass?: string
+  contentClass?: string
+}
+
+const {
+  id,
+  backgroundImageSrc,
+  backgroundImageAlt = '',
+  eyebrow,
+  headingLine1,
+  headingLine1Color = 'light',
+  headingLine2,
+  headingLine2Color = 'light',
+  message,
+  ctaLabel,
+  ctaHref,
+  srTitle,
+  fullHeight = true,
+  headerClass = '',
+  contentClass = ''
+} = Astro.props
+---
+
+<header
+  id={id || undefined}
+  class={`relative flex justify-center items-center max-w-none overflow-hidden ${fullHeight || backgroundImageSrc ? 'h-screen' : ''} ${headerClass || ''}`}
+>
+  {backgroundImageSrc && (
+    <Image
+      src={backgroundImageSrc}
+      alt={backgroundImageAlt}
+      class="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+      inferSize
+    />
+    <div class="absolute inset-0 bg-black/30" aria-hidden="true" />
+  )}
+  
+  <div class={`relative wrapper z-40 ${contentClass || ''}`}>
+    {eyebrow && <p class="text-sm font-extrabold uppercase tracking-widest text-primary">{eyebrow}</p>}
+    {srTitle && <h1 class="sr-only">{srTitle}</h1>}
+    {(headingLine1 || headingLine2) && (
+      <h2
+        class={`h1 lsa no-repeat lsa-slide-up delay-100 ${headingLine1Color === 'dark' ? 'text-primary' : 'text-base-100'}`}
+      >
+        {headingLine1}
+        {headingLine2 && (
+          <>
+            <br />
+            <span
+              class={`block text-5xl sm:text-6xl xl:text-7xl leading-snug font-normal lsa no-repeat lsa-slide-up delay-200 ${headingLine2Color === 'dark' ? 'text-primary' : 'text-base-300'}`}
+            >
+              {headingLine2}
+            </span>
+          </>
+        )}
+      </h2>
+    )}
+    {message && <p class="h4 mb-16 lsa no-repeat">{message}</p>}
+    {ctaLabel && ctaHref && (
+      <Button label={ctaLabel!} href={ctaHref} wrapperClass="justify-center" />
+    )}
+    <slot />
