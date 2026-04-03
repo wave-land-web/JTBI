@@ -16,6 +16,7 @@ export interface Props {
   href?: string
   ctaLabel?: string
   isExternal?: boolean
+  accentBorderColor?: string
 }
 
 const {
@@ -32,6 +33,7 @@ const {
   href,
   ctaLabel,
   isExternal = false,
+  accentBorderColor,
 } = Astro.props
 
 const Tag = href ? 'a' : 'article'
@@ -39,39 +41,137 @@ const linkProps = href
   ? { href, ...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {}) }
   : {}
 
-const fallbackImageClasses = `h-full w-full bg-gradient-to-tr from-secondary/10 to-(--portfolio-accent-color)/10`
+const fallbackImageClasses = `h-full w-full bg-gradient-to-tr from-secondary/10 to-(--card-accent)/10`
 ---
 
-<Tag class={className} {...linkProps}>
-  <div
-    class:list={[
-      'relative overflow-hidden',
-      imageAspect === 'video' ? 'aspect-video' : 'aspect-square',
-      mediaClass,
-    ]}
-  >
-    {
-      imageSrc && typeof imageSrc === 'string' ? (
-        <img src={imageSrc} alt={imageAlt} class={imageClass} loading="lazy" decoding="async" />
-      ) : imageSrc ? (
-        <Image src={imageSrc as ImageMetadata} alt={imageAlt} class={imageClass} />
-      ) : showFallback ? (
-        <div class={fallbackImageClasses} />
-      ) : null
-    }
-  </div>
+<Tag class:list={[className, accentBorderColor && 'relative block @container']} {...linkProps}>
+  {
+    accentBorderColor && (
+      <span
+        class="card__accent-border absolute inset-y-0 left-0 w-0.75"
+        style={`background-color: ${accentBorderColor}`}
+        aria-hidden="true"
+      />
+    )
+  }
+  <div class:list={[accentBorderColor && 'card__body']}>
+    <div
+      class:list={[
+        'relative overflow-hidden',
+        imageAspect === 'video' ? 'aspect-video' : 'aspect-square',
+        mediaClass,
+      ]}
+    >
+      {
+        imageSrc && typeof imageSrc === 'string' ? (
+          <img src={imageSrc} alt={imageAlt} class={imageClass} loading="lazy" decoding="async" />
+        ) : imageSrc ? (
+          <Image src={imageSrc as ImageMetadata} alt={imageAlt} class={imageClass} />
+        ) : showFallback ? (
+          <div class={fallbackImageClasses} />
+        ) : null
+      }
+    </div>
 
-  <div class={contentClass}>
-    <h3 class="mb-2 text-lg md:text-xl font-extrabold uppercase tracking-wide">{title}</h3>
-    <p class="max-w-none font-factoria leading-relaxed">{description}</p>
-    {
-      ctaLabel && (
-        <p class="link-underline ml-auto text-sm font-semibold uppercase tracking-widest text-(--service-cta-color)">
-          <span>{ctaLabel}</span>
-          <span class="text-xl">»</span>
-        </p>
-      )
-    }
-    <slot />
+    <div class={contentClass}>
+      <h3 class="mb-2 text-lg md:text-xl font-extrabold uppercase tracking-wide">{title}</h3>
+      <p class="max-w-none font-factoria leading-relaxed">{description}</p>
+      {
+        ctaLabel && (
+          <p class="link-underline ml-auto text-sm font-semibold uppercase tracking-widest text-(--card-cta)">
+            <span>{ctaLabel}</span>
+            <span class="text-xl">»</span>
+          </p>
+        )
+      }
+      <slot />
+    </div>
   </div>
 </Tag>
+
+<style>
+  /* Accent border */
+  .card__accent-border {
+    transform-origin: top;
+    transform: scaleY(0);
+    will-change: transform;
+  }
+
+  :global(.active) .card__accent-border {
+    animation: card-border-draw 600ms cubic-bezier(0.22, 1, 0.36, 1) 300ms forwards;
+  }
+
+  @keyframes card-border-draw {
+    from {
+      transform: scaleY(0);
+    }
+
+    to {
+      transform: scaleY(1);
+    }
+  }
+
+  /* Card body reveal — narrow cards: left-to-right */
+  .card__body {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0;
+    will-change: clip-path, opacity;
+    margin-left: 3px;
+  }
+
+  :global(.active) .card__body {
+    animation: card-reveal-lr 1200ms cubic-bezier(0.22, 1, 0.36, 1) 600ms forwards;
+  }
+
+  @keyframes card-reveal-lr {
+    from {
+      opacity: 0;
+      clip-path: inset(0 100% 0 0);
+    }
+
+    to {
+      opacity: 1;
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  /* Wide cards: reveal top-to-bottom */
+  @container (min-width: 768px) {
+    .card__body {
+      clip-path: inset(0 0 100% 0);
+      margin-left: 0;
+      margin-top: 3px;
+    }
+
+    :global(.active) .card__body {
+      animation-name: card-reveal-tb;
+    }
+  }
+
+  @keyframes card-reveal-tb {
+    from {
+      opacity: 0;
+      clip-path: inset(0 0 100% 0);
+    }
+
+    to {
+      opacity: 1;
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card__accent-border {
+      animation: none !important;
+      transform: scaleY(1);
+      will-change: auto;
+    }
+
+    .card__body {
+      animation: none !important;
+      clip-path: none;
+      opacity: 1;
+      will-change: auto;
+    }
+  }
+</style>

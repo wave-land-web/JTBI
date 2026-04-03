@@ -31,24 +31,21 @@ const {
 } = Astro.props
 
 const componentStyles = `
-    --portfolio-accent-color: ${accentColor}; 
-    --portfolio-card-background: ${cardBackgroundColor};
-    --portfolio-card-text: ${cardTextColor}; 
-    --portfolio-card-divider: color-mix(in srgb, ${cardTextColor} 12%, transparent); 
-    --portfolio-border-duration: 600ms;
-    --portfolio-border-delay: 300ms; 
-    --portfolio-card-duration: 1500ms; 
-    --portfolio-card-delay: 600ms;
+    --card-accent: ${accentColor};
+    --card-bg: ${cardBackgroundColor};
+    --card-text: ${cardTextColor};
+    --card-cta: ${cardTextColor};
+    --card-divider: color-mix(in srgb, ${cardTextColor} 12%, transparent);
   `
 ---
 
-<article
-  class="portfolio-item relative lsa no-repeat grid gap-8 transform-none md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.15fr)] md:gap-10 md:pt-0.75"
+<div
+  class="portfolio-item relative lsa no-repeat grid gap-8 transform-none md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.15fr)] md:gap-10"
   style={componentStyles}
 >
   <span
     class:list={[
-      'portfolio-item__border absolute top-0 left-0 hidden h-0.75 w-full bg-(--portfolio-accent-color) transform-[scaleX(0)] will-change-transform motion-reduce:transform-[scaleX(1)] md:block',
+      'portfolio-item__border absolute top-0 left-0 hidden h-0.75 w-full bg-(--card-accent) transform-[scaleX(0)] will-change-transform motion-reduce:transform-[scaleX(1)] md:block',
       reversed ? 'origin-right' : 'origin-left',
     ]}
     aria-hidden="true"></span>
@@ -61,44 +58,27 @@ const componentStyles = `
     set:html={featureText}
   />
 
-  <div
-    class:list={[
-      'portfolio-item__card-reveal min-h-88 overflow-hidden sm:min-h-100 md:min-h-124',
-      reversed && 'md:order-1',
-    ]}
-  >
-    <div
-      class="portfolio-item__card origin-top transform-[scaleY(0)] will-change-[transform,opacity] motion-reduce:opacity-100 motion-reduce:transform-none"
-    >
-      <Card
-        title={title}
-        description={description}
-        imageSrc={imageSrc}
-        imageAlt={imageAlt}
-        imageClass="h-full w-full object-cover"
-        mediaClass="bg-base-200"
-        contentClass="border-t border-(--portfolio-card-divider) bg-(--portfolio-card-background) p-5 text-left text-(--portfolio-card-text) sm:p-7"
-        showFallback={true}
-        href={href}
-        ctaLabel={ctaLabel}
-      />
-    </div>
+  <div class:list={['min-h-88 sm:min-h-100 md:min-h-124', reversed && 'md:order-1']}>
+    <Card
+      title={title}
+      description={description}
+      imageSrc={imageSrc}
+      imageAlt={imageAlt}
+      imageClass="h-full w-full object-cover"
+      contentClass="border-t border-(--card-divider) bg-(--card-bg) p-5 text-left text-(--card-text) sm:p-7"
+      showFallback={true}
+      href={href}
+      ctaLabel={ctaLabel}
+      accentBorderColor={accentColor}
+    />
   </div>
-</article>
+</div>
 
 <style>
-  /* Keep only the stateful animation hooks in CSS. Static styling lives in Tailwind classes above. */
-
   @media (min-width: 768px) {
     .portfolio-item.active .portfolio-item__border {
-      animation: portfolio-border-draw var(--portfolio-border-duration)
-        cubic-bezier(0.22, 1, 0.36, 1) var(--portfolio-border-delay) forwards;
+      animation: portfolio-border-draw 600ms cubic-bezier(0.22, 1, 0.36, 1) 300ms forwards;
     }
-  }
-
-  .portfolio-item.active .portfolio-item__card {
-    animation: portfolio-card-reveal var(--portfolio-card-duration) cubic-bezier(0.22, 1, 0.36, 1)
-      var(--portfolio-card-delay) forwards;
   }
 
   @keyframes portfolio-border-draw {
@@ -111,51 +91,18 @@ const componentStyles = `
     }
   }
 
-  @keyframes portfolio-card-reveal {
-    from {
-      opacity: 0;
-      transform: scaleY(0);
-    }
-
-    to {
-      opacity: 1;
-      transform: scaleY(1);
-    }
-  }
-
-  @supports (clip-path: inset(0 0 100% 0)) {
-    .portfolio-item__card {
-      clip-path: inset(0 0 100% 0);
-      transform: none;
-      will-change: clip-path, opacity;
-    }
-
-    .portfolio-item.active .portfolio-item__card {
-      animation-name: portfolio-card-reveal-clipped;
-    }
-
-    @keyframes portfolio-card-reveal-clipped {
-      from {
-        opacity: 0;
-        clip-path: inset(0 0 100% 0);
-      }
-
-      to {
-        opacity: 1;
-        clip-path: inset(0 0 0 0);
-      }
-    }
-  }
-
   @media (prefers-reduced-motion: reduce) {
-    .portfolio-item__border,
-    .portfolio-item__card {
+    .portfolio-item__border {
       animation: none !important;
-    }
-
-    .portfolio-item__card {
-      clip-path: none;
+      transform: scaleX(1);
       will-change: auto;
+    }
+  }
+
+  /* Desktop: hide Card's vertical border (horizontal top border is used instead) */
+  @media (min-width: 768px) {
+    .portfolio-item :global(.card__accent-border) {
+      display: none;
     }
   }
 </style>

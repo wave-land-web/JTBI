@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro'
 import PageHeader from '../components/ui/PageHeader.astro'
 import MediaCardRow from '../components/ui/MediaCardRow.astro'
-import MediaCardSmall from '../components/ui/MediaCardSmall.astro'
+import Card from '../components/ui/Card.astro'
 import LogoPrimaryImage from '../assets/images/logos/jtbi-logo-primary-80-opacity.png'
 import ContactBg from '../assets/images/textures/jtbi-cloud-background-sample.svg'
 import ContactForm from '../components/ui/forms/Contact.astro'
@@ -102,8 +102,6 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
   <main>
     {
       blocks.map((block) => {
-        if (block._type === 'heroBlock') return null
-
         if (block._type === 'projectsBlock') {
           const projects = block.projects ?? []
           return (
@@ -168,21 +166,35 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                   {block.heading || 'Services We Offer'}
                 </h2>
                 <div class="grid gap-8 md:grid-cols-3 md:gap-10">
-                  {block.items?.map((item) => (
-                    <MediaCardSmall
-                      title={item.title}
-                      description={item.description}
-                      href={item.href || '#contact'}
-                      ctaLabel={item.ctaLabel || 'Read More'}
-                      imageSrc={LogoPrimaryImage}
-                      imageAlt={`JTB Imaginative logo mark for ${item.title.toLowerCase()}`}
-                      accentColor={item.accentColor}
-                      mediaBackgroundColor={item.mediaBackgroundColor}
-                      cardBackgroundColor={item.cardBackgroundColor}
-                      cardTextColor={item.cardTextColor}
-                      titleColor={item.titleColor}
-                    />
-                  ))}
+                  {block.items?.map((item) => {
+                    // Generate inline styles for card based on its styling properties, w/ fallbacks to CSS variables or defaults
+                    const cardStyles = `
+                      --card-accent: ${item.accentColor || 'var(--color-primary)'};
+                      --card-bg: ${item.cardBackgroundColor || item.accentColor};
+                      --card-text: ${item.cardTextColor || item.accentColor || 'var(--color-primary)'};
+                      --card-cta: ${item.cardTextColor || item.accentColor || 'var(--color-primary)'};
+                      --card-media-bg: ${item.mediaBackgroundColor || 'var(--color-base-200)'};
+                      --card-divider: color-mix(in srgb, ${item.cardTextColor || item.accentColor || 'var(--color-primary)'} 14%, transparent);
+                    `
+                    return (
+                      <div class="service-card lsa no-repeat w-full" style={cardStyles}>
+                        <Card
+                          title={item.title}
+                          description={item.description}
+                          href={item.href || '#contact'}
+                          ctaLabel={item.ctaLabel || 'Read More'}
+                          imageSrc={LogoPrimaryImage}
+                          imageAlt={`JTB Imaginative logo mark for ${item.title.toLowerCase()}`}
+                          imageAspect="square"
+                          imageClass="relative z-10 h-full w-full object-contain p-7"
+                          mediaClass="bg-(--card-media-bg)"
+                          contentClass="flex flex-col gap-2.5 p-4 text-left sm:p-5 bg-(--card-bg)"
+                          class="h-full border-(--card-divider) text-(--card-text)"
+                          accentBorderColor={item.accentColor || 'var(--color-primary)'}
+                        />
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             </section>
