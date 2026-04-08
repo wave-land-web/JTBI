@@ -23,10 +23,10 @@ const homepage = await sanityClient.fetch(
           asset->{ _id, url },
           alt
         },
-        headingLine1,
-        headingLine1Color,
-        headingLine2,
-        headingLine2Color
+        headline1,
+        headline1Color,
+        headline2,
+        headline2Color
       },
       _type == "projectsBlock" => {
         sectionId,
@@ -87,10 +87,10 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                 : undefined
             }
             backgroundImageAlt={block.backgroundImage?.alt}
-            headingLine1={block.headingLine1 || "You're not industry-standard,"}
-            headingLine1Color={block.headingLine1Color}
-            headingLine2={block.headingLine2 || 'and your branding should prove it.'}
-            headingLine2Color={block.headingLine2Color}
+            headline1={block.headline1 || "You're not industry-standard,"}
+            headline1Color={block.headline1Color}
+            headline2={block.headline2 || 'and your branding should prove it.'}
+            headline2Color={block.headline2Color}
             srTitle={SITE_TITLE}
           />
         )
@@ -105,10 +105,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
         if (block._type === 'projectsBlock') {
           const projects = block.projects ?? []
           return (
-            <section
-              id={block.sectionId || undefined}
-              class="text-center flex flex-col gap-8 md:gap-12"
-            >
+            <section id={block.sectionId || undefined} class="text-center flex flex-col gap-8">
               <h2 class="text-left lsa lsa-slide-up no-repeat">
                 {block.heading ||
                   'Developing visual and marketing strategies for business acceleration.'}
@@ -134,10 +131,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
 
         if (block._type === 'mediaCardRowBlock') {
           return (
-            <section
-              id={block.sectionId || undefined}
-              class="text-center flex flex-col gap-8 md:gap-12"
-            >
+            <section id={block.sectionId || undefined} class="text-center flex flex-col gap-8">
               {block.heading && (
                 <h2 class="text-left lsa lsa-slide-up no-repeat">{block.heading}</h2>
               )}
@@ -162,10 +156,10 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
           return (
             <section id={block.sectionId || undefined} class="text-center">
               <div class="flex flex-col gap-8 md:gap-10">
-                <h2 class="h3 font-factoria font-bold uppercase text-left text-primary lsa lsa-slide-up no-repeat">
+                <h2 class="h3 uppercase text-left text-primary lsa lsa-slide-up no-repeat">
                   {block.heading || 'Services We Offer'}
                 </h2>
-                <div class="grid gap-8 md:grid-cols-3 md:gap-10">
+                <div class="grid md:grid-cols-3 gap-8 md:gap-10">
                   {block.items?.map((item) => {
                     // Generate inline styles for card based on its styling properties, w/ fallbacks to CSS variables or defaults
                     const cardStyles = `
@@ -214,9 +208,9 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                   <h2 class="lsa lsa-slide-up no-repeat">
                     {block.heading || 'Brand building that means business.'}
                   </h2>
-                  <h3 class="h4 text-primary-content font-extrabold lsa lsa-slide-up no-repeat delay-100">
+                  <h3 class="text-primary-content lsa lsa-slide-up no-repeat delay-100">
                     {block.subheading || 'WANT TO DISCUSS YOUR BRAND?'}
-                    <span class="font-medium">{block.subheadingAccent || "Let's chat."}</span>
+                    <span>{block.subheadingAccent || "Let's chat."}</span>
                   </h3>
                   <p class="text-base-200 font-bold lsa lsa-slide-up no-repeat delay-200">
                     {block.body ||

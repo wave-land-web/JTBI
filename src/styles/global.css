@@ -156,38 +156,54 @@
 
   h1,
   .h1 {
-    @apply text-7xl sm:text-8xl xl:text-9xl text-base-100 font-extrabold leading-[1.1];
+    @apply text-5xl sm:text-6xl md:text-7xl font-light leading-tight;
   }
 
   h2,
   .h2 {
-    @apply text-4xl sm:text-5xl md:text-6xl text-base-100 font-extrabold leading-tight;
+    @apply text-4xl sm:text-5xl md:text-6xl text-base-100 font-bold;
   }
 
   h3,
   .h3 {
-    @apply text-3xl sm:text-4xl leading-tight;
+    @apply text-2xl sm:text-3xl font-bold;
   }
 
   h4,
   .h4 {
-    @apply text-2xl sm:text-3xl leading-tight;
+    @apply text-xl sm:text-2xl font-radio-canada font-semibold uppercase;
   }
 
   h5,
   .h5 {
-    @apply text-xl sm:text-2xl leading-tight;
+    @apply text-xl sm:text-2xl;
   }
 
   h6,
   .h6 {
-    @apply text-lg sm:text-xl leading-tight;
+    @apply text-lg sm:text-xl;
   }
 
   p,
   li:not(nav li),
   .p {
-    @apply max-w-(--content-max-width) text-base sm:text-lg text-pretty leading-relaxed;
+    @apply max-w-(--content-max-width) text-base sm:text-lg text-pretty;
+  }
+
+  .p2 {
+    @apply text-sm sm:text-base text-pretty font-bold;
+  }
+
+  .p3 {
+    @apply text-sm sm:text-base font-factoria font-semibold;
+  }
+
+  .headline {
+    @apply text-7xl sm:text-8xl xl:text-9xl text-base-100 font-extrabold;
+  }
+
+  .eyebrow {
+    @apply text-sm font-extrabold uppercase tracking-widest;
   }
 
   img,

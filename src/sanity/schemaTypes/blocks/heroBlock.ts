@@ -32,13 +32,13 @@ export default defineType({
       ],
     }),
     defineField({
-      name: 'headingLine1',
+      name: 'headline1',
       title: 'Heading Line 1',
       type: 'string',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'headingLine1Color',
+      name: 'headline1Color',
       title: 'Heading Line 1 Color',
       description: 'Choose "dark" for primary text or "light" for white text.',
       type: 'string',
@@ -53,13 +53,13 @@ export default defineType({
       initialValue: 'light',
     }),
     defineField({
-      name: 'headingLine2',
+      name: 'headline2',
       title: 'Heading Line 2',
       type: 'string',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'headingLine2Color',
+      name: 'headline2Color',
       title: 'Heading Line 2 Color',
       description: 'Choose "dark" for primary text or "light" for white text.',
       type: 'string',
@@ -75,7 +75,7 @@ export default defineType({
     }),
   ],
   preview: {
-    select: { line1: 'headingLine1', line2: 'headingLine2', media: 'backgroundImage' },
+    select: { line1: 'headline1', line2: 'headline2', media: 'backgroundImage' },
     prepare({ line1, line2, media }) {
       return {
         title: line1 || 'Untitled Hero',

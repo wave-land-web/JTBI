@@ -7,13 +7,14 @@ interface Props {
   backgroundImageSrc?: string
   backgroundImageAlt?: string
   eyebrow?: string
-  headingLine1?: string
-  headingLine1Color?: 'dark' | 'light'
-  headingLine2?: string
-  headingLine2Color?: 'dark' | 'light'
+  headline1?: string
+  headline1Color?: 'dark' | 'light'
+  headline2?: string
+  headline2Color?: 'dark' | 'light'
   message?: string
   ctaLabel?: string
   ctaHref?: string
+  title?: string
   srTitle?: string
   fullHeight?: boolean
   headerClass?: string
@@ -25,13 +26,14 @@ const {
   backgroundImageSrc,
   backgroundImageAlt = '',
   eyebrow,
-  headingLine1,
-  headingLine1Color = 'light',
-  headingLine2,
-  headingLine2Color = 'light',
+  headline1,
+  headline1Color = 'light',
+  headline2,
+  headline2Color = 'light',
   message,
   ctaLabel,
   ctaHref,
+  title,
   srTitle,
   fullHeight = true,
   headerClass = '',
@@ -54,22 +56,21 @@ const {
   )}
   
   <div class={`relative wrapper z-40 ${contentClass || ''}`}>
-    {eyebrow && <p class="text-sm font-extrabold uppercase tracking-widest text-primary">{eyebrow}</p>}
+    {eyebrow && <p class="eyebrow">{eyebrow}</p>}
     {srTitle && <h1 class="sr-only">{srTitle}</h1>}
-    {(headingLine1 || headingLine2) && (
+    {title && <h1>{title}</h1>}
+    {(headline1 || headline2) && (
       <h2
-        class={`h1 lsa no-repeat lsa-slide-up delay-100 ${headingLine1Color === 'dark' ? 'text-primary' : 'text-base-100'}`}
+        class={`flex flex-col gap-3 headline lsa no-repeat lsa-slide-up delay-100 ${headline1Color === 'dark' ? 'text-primary' : 'text-base-100'}`}
       >
-        {headingLine1}
-        {headingLine2 && (
-          <>
-            <br />
-            <span
-              class={`block text-5xl sm:text-6xl xl:text-7xl leading-snug font-normal lsa no-repeat lsa-slide-up delay-200 ${headingLine2Color === 'dark' ? 'text-primary' : 'text-base-300'}`}
-            >
-              {headingLine2}
-            </span>
-          </>
+        {headline1}
+        {headline2 && (
+          <br />
+          <span
+            class={`h1 block lsa no-repeat lsa-slide-up delay-200 ${headline2Color === 'dark' ? 'text-primary' : 'text-base-300'}`}
+          >
+            {headline2}
+          </span>
         )}
       </h2>
     )}
