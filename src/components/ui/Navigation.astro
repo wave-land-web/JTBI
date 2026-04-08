@@ -25,22 +25,11 @@ const links = [
 ]
 
 const { announcementBar } = Astro.props
-const currentPath = Astro.url.pathname
 const logoLinkClasses = 'relative block overflow-visible group'
 const logoTextureClasses =
   'pointer-events-none absolute top-1/2 h-[160%] w-full -translate-y-1/2 opacity-60 object-contain transition-opacity duration-300 group-hover:opacity-80 pointer-events-none'
-const desktopLinkClasses =
-  'link-underline text-sm md:text-base text-base-300 font-semibold uppercase tracking-wide transition-colors duration-300 hover:text-base-100 focus-visible:text-base-100'
-const mobileLinkClasses =
-  'px-3 py-2 text-sm font-semibold uppercase tracking-wide text-base-300 transition-colors duration-300 hover:bg-base-100/10 hover:text-base-100 focus:bg-base-100/10 focus:text-base-100!  focus-visible:bg-base-100/10! focus-visible:text-base-100!'
-const activeLinkClasses = 'text-base-100!'
-
-const isActiveLink = (href: string) => href === '/' && currentPath === '/'
-
-const getLinkClasses = (variant: 'desktop' | 'mobile', href: string) => [
-  variant === 'desktop' ? desktopLinkClasses : mobileLinkClasses,
-  isActiveLink(href) ? activeLinkClasses : undefined,
-]
+const linkClasses =
+  'link-underline w-fit p-0 text-sm md:text-base text-base-300 font-semibold uppercase tracking-wide transition-colors duration-300 hover:text-base-100 focus-visible:text-base-100'
 ---
 
 <nav
@@ -115,7 +104,7 @@ const getLinkClasses = (variant: 'desktop' | 'mobile', href: string) => [
           {
             links.map((link) => (
               <li>
-                <a href={link.href} class:list={getLinkClasses('desktop', link.href)}>
+                <a href={link.href} class:list={linkClasses} data-nav-link>
                   {link.label}
                 </a>
               </li>
@@ -143,15 +132,11 @@ const getLinkClasses = (variant: 'desktop' | 'mobile', href: string) => [
     <label for="mobile-drawer" aria-label="close sidebar" class="drawer-overlay"
       ><span class="sr-only">Close sidebar</span></label
     >
-    <ul class="menu bg-primary/95 backdrop-blur-sm min-h-full w-64 p-6 gap-2" role="list">
+    <ul class="menu h-full w-64 p-(--site-padding-base) gap-6 bg-primary/95 backdrop-blur-sm">
       {
         links.map((link) => (
           <li>
-            <a
-              href={link.href}
-              class:list={getLinkClasses('mobile', link.href)}
-              data-mobile-nav-link
-            >
+            <a href={link.href} class:list={linkClasses} data-nav-link data-mobile-nav-link>
               {link.label}
             </a>
           </li>
@@ -161,45 +146,96 @@ const getLinkClasses = (variant: 'desktop' | 'mobile', href: string) => [
   </div>
 </div>
 
+<style>
+  [data-nav-link]::after {
+    background: var(--underline-color, currentColor);
+  }
+</style>
+
 <script>
+  /** Light colors that cycle on nav link hover underlines */
+  const UNDERLINE_COLORS = [
+    '#f59e0b', // amber
+    '#60a5fa', // blue
+    '#f472b6', // pink
+    '#4ade80', // green
+    '#c084fc', // purple
+    '#fb923c', // orange
+    '#2dd4bf', // teal
+    '#fde047', // yellow
+    '#fb7185', // rose
+    '#38bdf8', // sky
+    '#bef264', // lime
+    '#e879f9', // fuchsia
+  ]
+
+  /** Minimum scroll delta (px) before toggling nav visibility */
+  const SCROLL_THRESHOLD = 8
+
+  /**
+   * Initializes show/hide behavior for the navigation bar based on scroll direction.
+   * @param {HTMLElement} nav - The navigation element to toggle
+   */
+  function initScrollBehavior(nav: HTMLElement) {
+    let lastScrollY = window.scrollY
+
+    window.addEventListener(
+      'scroll',
+      () => {
+        const currentScrollY = window.scrollY
+        const delta = currentScrollY - lastScrollY
+
+        if (currentScrollY <= 0) {
+          nav.classList.add('active')
+          lastScrollY = 0
+          return
+        }
+
+        if (Math.abs(delta) < SCROLL_THRESHOLD) return
+
+        nav.classList.toggle('active', delta < 0)
+        lastScrollY = currentScrollY
+      },
+      { passive: true },
+    )
+  }
+
+  /**
+   * Closes the mobile drawer when any mobile nav link is clicked.
+   * @param {HTMLInputElement} toggle - The drawer checkbox input
+   * @param {NodeListOf<Element>} links - The mobile nav link elements
+   */
+  function initMobileDrawer(toggle: HTMLInputElement, links: NodeListOf<Element>) {
+    links.forEach((link) => {
+      link.addEventListener('click', () => {
+        toggle.checked = false
+      })
+    })
+  }
+
+  /**
+   * Cycles through underline colors on nav link hover.
+   * Each hover advances to the next color in the palette.
+   * @param {NodeListOf<HTMLAnchorElement>} links - The nav link elements
+   */
+  function initUnderlineColors(links: NodeListOf<HTMLAnchorElement>) {
+    let index = Math.floor(Math.random() * UNDERLINE_COLORS.length)
+
+    links.forEach((link) => {
+      link.addEventListener('mouseenter', () => {
+        link.style.setProperty('--underline-color', UNDERLINE_COLORS[index])
+        index = (index + 1) % UNDERLINE_COLORS.length
+      })
+    })
+  }
+
+  // Initialize
   const nav = document.getElementById('main-navigation')
   const drawerToggle = document.getElementById('mobile-drawer') as HTMLInputElement | null
   const mobileLinks = document.querySelectorAll('[data-mobile-nav-link]')
+  const navLinks = document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]')
 
-  if (nav) {
-    let lastScrollY = window.scrollY
-    const minDelta = 8
-
-    const updateNavState = () => {
-      const currentScrollY = window.scrollY
-      const delta = currentScrollY - lastScrollY
-
-      if (currentScrollY <= 0) {
-        nav.classList.add('active')
-        lastScrollY = 0
-        return
-      }
-
-      if (Math.abs(delta) < minDelta) {
-        return
-      }
-
-      if (delta > 0) {
-        nav.classList.remove('active')
-      } else {
-        nav.classList.add('active')
-      }
-
-      lastScrollY = currentScrollY
-    }
-
-    window.addEventListener('scroll', updateNavState, { passive: true })
-  }
-
-  // Close mobile drawer when a link is clicked
-  mobileLinks.forEach((link) => {
-    link.addEventListener('click', () => {
-      if (drawerToggle) drawerToggle.checked = false
-    })
-  })
+  if (nav) initScrollBehavior(nav)
+  if (drawerToggle) initMobileDrawer(drawerToggle, mobileLinks)
+  initUnderlineColors(navLinks)
 </script>
