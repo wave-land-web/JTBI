@@ -40,7 +40,10 @@ const componentStyles = `
 ---
 
 <div
-  class="portfolio-item relative lsa no-repeat grid gap-8 transform-none md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.15fr)] md:gap-10"
+  class:list={[
+    'portfolio-item relative lsa no-repeat grid gap-8 transform-none md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.15fr)] md:gap-10',
+    reversed && 'portfolio-item--reversed',
+  ]}
   style={componentStyles}
 >
   <span
@@ -58,7 +61,12 @@ const componentStyles = `
     set:html={featureText}
   />
 
-  <div class:list={['min-h-88 sm:min-h-100 md:min-h-124', reversed && 'md:order-1']}>
+  <div
+    class:list={[
+      'portfolio-item__card min-h-88 sm:min-h-100 md:min-h-124',
+      reversed && 'md:order-1',
+    ]}
+  >
     <Card
       title={title}
       description={description}
@@ -70,12 +78,31 @@ const componentStyles = `
       href={href}
       ctaLabel={ctaLabel}
       accentBorderColor={accentColor}
+      animationDirection="top-to-bottom"
+      reversed={reversed}
     />
   </div>
 </div>
 
 <style>
+  /* Viewport-edge bleed */
   @media (min-width: 768px) {
+    .portfolio-item {
+      --card-overflow: calc(var(--site-padding-base) + max(0px, (100vw - var(--nav-width)) / 2));
+    }
+  }
+
+  /* Border animation */
+  @media (min-width: 768px) {
+    .portfolio-item__border {
+      width: calc(100% + var(--card-overflow));
+    }
+
+    .portfolio-item--reversed .portfolio-item__border {
+      left: calc(-1 * var(--card-overflow));
+      width: calc(100% + var(--card-overflow));
+    }
+
     .portfolio-item.active .portfolio-item__border {
       animation: portfolio-border-draw 600ms cubic-bezier(0.22, 1, 0.36, 1) 300ms forwards;
     }
@@ -99,8 +126,18 @@ const componentStyles = `
     }
   }
 
-  /* Desktop: hide Card's vertical border (horizontal top border is used instead) */
+  /* Card overflow */
   @media (min-width: 768px) {
+    .portfolio-item__card {
+      width: calc(100% + var(--card-overflow));
+    }
+
+    .portfolio-item--reversed .portfolio-item__card {
+      width: calc(100% + var(--card-overflow));
+      margin-left: calc(-1 * var(--card-overflow));
+    }
+
+    /* Desktop: hide Card's vertical border (horizontal top border is used instead) */
     .portfolio-item :global(.card__accent-border) {
       display: none;
     }

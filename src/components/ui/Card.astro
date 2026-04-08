@@ -17,6 +17,8 @@ export interface Props {
   ctaLabel?: string
   isExternal?: boolean
   accentBorderColor?: string
+  animationDirection?: 'left-to-right' | 'top-to-bottom'
+  reversed?: boolean
 }
 
 const {
@@ -34,6 +36,8 @@ const {
   ctaLabel,
   isExternal = false,
   accentBorderColor,
+  animationDirection,
+  reversed = false,
 } = Astro.props
 
 const Tag = href ? 'a' : 'article'
@@ -54,7 +58,12 @@ const fallbackImageClasses = `h-full w-full bg-gradient-to-tr from-secondary/10 
       />
     )
   }
-  <div class:list={[accentBorderColor && 'card__body']}>
+  <div
+    class:list={[
+      accentBorderColor && 'card__body',
+      animationDirection === 'top-to-bottom' && 'card__body--tb',
+    ]}
+  >
     <div
       class:list={[
         'relative overflow-hidden',
@@ -73,18 +82,30 @@ const fallbackImageClasses = `h-full w-full bg-gradient-to-tr from-secondary/10 
       }
     </div>
 
-    <div class={contentClass}>
-      <h4 class="mb-2 text-lg md:text-xl">{title}</h4>
-      <p class="max-w-none font-factoria leading-relaxed">{description}</p>
-      {
-        ctaLabel && (
-          <p class="link-underline ml-auto text-sm font-semibold uppercase tracking-widest text-(--card-cta)">
-            <span>{ctaLabel}</span>
-            <span class="text-xl">»</span>
-          </p>
-        )
-      }
-      <slot />
+    <div
+      class={`grid ${
+        reversed && animationDirection === 'top-to-bottom'
+          ? 'md:grid-cols-[1fr_2fr]'
+          : !reversed && animationDirection === 'top-to-bottom'
+            ? 'md:grid-cols-[2fr_1fr]'
+            : ''
+      } ${contentClass}`}
+    >
+      <div class={`flex flex-col items-start gap-2 ${reversed ? 'order-2' : 'order-1'}`}>
+        <h4 class="text-lg md:text-xl">{title}</h4>
+        <p class="p3 text-balance">{description}</p>
+
+        {
+          ctaLabel && (
+            <p class="link-underline text-sm font-semibold uppercase tracking-widest text-(--card-cta)">
+              <span>{ctaLabel}</span>
+              <span class="text-xl">»</span>
+            </p>
+          )
+        }
+        <slot />
+      </div>
+      <div class={`${reversed ? 'order-1' : 'order-2'}`}></div>
     </div>
   </div>
 </Tag>
@@ -135,15 +156,15 @@ const fallbackImageClasses = `h-full w-full bg-gradient-to-tr from-secondary/10 
     }
   }
 
-  /* Wide cards: reveal top-to-bottom */
-  @container (min-width: 768px) {
-    .card__body {
+  /* Wide cards: reveal top-to-bottom (prop-driven, desktop only) */
+  @media (min-width: 768px) {
+    .card__body--tb.card__body {
       clip-path: inset(0 0 100% 0);
       margin-left: 0;
       margin-top: 3px;
     }
 
-    :global(.active) .card__body {
+    :global(.active) .card__body--tb.card__body {
       animation-name: card-reveal-tb;
     }
   }
@@ -167,7 +188,8 @@ const fallbackImageClasses = `h-full w-full bg-gradient-to-tr from-secondary/10 
       will-change: auto;
     }
 
-    .card__body {
+    .card__body,
+    .card__body--tb {
       animation: none !important;
       clip-path: none;
       opacity: 1;
