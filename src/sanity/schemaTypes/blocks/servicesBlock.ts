@@ -42,6 +42,23 @@ export default defineType({
               validation: (Rule) => Rule.required(),
             }),
             defineField({
+              name: 'image',
+              title: 'Image',
+              type: 'image',
+              options: {
+                hotspot: true,
+              },
+              fields: [
+                defineField({
+                  name: 'alt',
+                  type: 'string',
+                  title: 'Alternative Text',
+                  validation: (Rule) =>
+                    Rule.required().error('Alt text is important for SEO and accessibility'),
+                }),
+              ],
+            }),
+            defineField({
               name: 'href',
               title: 'Link',
               type: 'string',

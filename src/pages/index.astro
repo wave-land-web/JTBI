@@ -3,7 +3,6 @@ import Layout from '../layouts/Layout.astro'
 import PageHeader from '../components/ui/PageHeader.astro'
 import MediaCardRow from '../components/ui/MediaCardRow.astro'
 import Card from '../components/ui/Card.astro'
-import LogoPrimaryImage from '../assets/images/logos/jtbi-logo-primary-80-opacity.png'
 import ContactBg from '../assets/images/textures/jtbi-cloud-background-sample.svg'
 import ContactForm from '../components/ui/forms/Contact.astro'
 import { sanityClient } from '../sanity/lib/client'
@@ -177,10 +176,15 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                           description={item.description}
                           href={item.href || '#contact'}
                           ctaLabel={item.ctaLabel || 'Read More'}
-                          imageSrc={LogoPrimaryImage}
-                          imageAlt={`JTB Imaginative logo mark for ${item.title.toLowerCase()}`}
+                          imageSrc={
+                            item.image ? urlForImage(item.image).width(1000).url() : undefined
+                          }
+                          imageAlt={
+                            item.image?.alt ||
+                            `JTB Imaginative logo mark for ${item.title.toLowerCase()}`
+                          }
                           imageAspect="square"
-                          imageClass="relative z-10 h-full w-full object-contain p-7"
+                          imageClass="relative z-10"
                           mediaClass="bg-(--card-media-bg)"
                           contentClass="flex flex-col gap-2.5 p-4 text-left sm:p-5 bg-(--card-bg)"
                           class="h-full border-(--card-divider) text-(--card-text)"

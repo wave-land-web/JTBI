@@ -75,7 +75,7 @@ const fallbackImageClasses = `h-full w-full bg-gradient-to-tr from-secondary/10 
         imageSrc && typeof imageSrc === 'string' ? (
           <img src={imageSrc} alt={imageAlt} class={imageClass} loading="lazy" decoding="async" />
         ) : imageSrc ? (
-          <Image src={imageSrc as ImageMetadata} alt={imageAlt} class={imageClass} />
+          <Image src={imageSrc as ImageMetadata} alt={imageAlt} class={imageClass} loading="lazy" />
         ) : showFallback ? (
           <div class={fallbackImageClasses} />
         ) : null

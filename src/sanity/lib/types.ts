@@ -48,6 +48,7 @@ export interface ServicesBlock extends BlockBase {
     _key: string
     title: string
     description: string
+    image?: { asset: any; alt?: string }
     href?: string
     ctaLabel?: string
     accentColor?: string
