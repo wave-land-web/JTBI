@@ -2,10 +2,16 @@
 import { Image } from 'astro:assets'
 import Button from './Button.astro'
 
+interface CarouselImage {
+  src: string
+  alt: string
+}
+
 interface Props {
   id?: string
   backgroundImageSrc?: string
   backgroundImageAlt?: string
+  carouselImages?: CarouselImage[]
   eyebrow?: string
   headline1?: string
   headline1Color?: 'dark' | 'light'
@@ -23,8 +29,9 @@ interface Props {
 
 const {
   id,
-  backgroundImageSrc,
+  backgroundImageSrc = '',
   backgroundImageAlt = '',
+  carouselImages = [],
   eyebrow,
   headline1,
   headline1Color = 'light',
@@ -39,13 +46,34 @@ const {
   headerClass = '',
   contentClass = ''
 } = Astro.props
+
+const hasCarousel = carouselImages.length > 0
 ---
 
 <header
   id={id || undefined}
-  class={`relative flex justify-center items-center max-w-none overflow-hidden ${fullHeight || backgroundImageSrc ? 'h-screen' : ''} ${headerClass || ''}`}
+  class={`relative flex justify-center items-center max-w-none overflow-hidden ${fullHeight || backgroundImageSrc || hasCarousel ? 'h-screen' : 'pt-[calc(var(--nav-height)+var(--site-padding-2xl))]'} ${headerClass || ''}`}
 >
-  {backgroundImageSrc && (
+  {hasCarousel && (
+    <div class="hero-carousel swiper absolute w-full h-full inset-0 pointer-events-none select-none">
+      <div class="swiper-wrapper">
+        {carouselImages.map((img) => (
+          <div class="swiper-slide">
+            <Image
+              src={img.src}
+              alt={img.alt}
+              class="h-full w-full object-contain"
+              inferSize
+              priority
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+    <div class="page-header__overlay absolute inset-0" style="background-color: rgb(0 0 0 / var(--overlay-opacity, 0));" aria-hidden="true" />
+  )}
+
+  {backgroundImageSrc && !hasCarousel && (
     <Image
       src={backgroundImageSrc}
       alt={backgroundImageAlt}
@@ -53,37 +81,67 @@ const {
       inferSize
       priority
     />
-    <div class="page-header__overlay absolute inset-0" style="background-color: rgb(0 0 0 / var(--overlay-opacity, 0.3));" aria-hidden="true" />
+    <div class="page-header__overlay absolute inset-0" style="background-color: rgb(0 0 0 / var(--overlay-opacity, 0));" aria-hidden="true" />
   )}
   
-  <div class={`relative wrapper z-40 ${contentClass || ''}`}>
+  <div class={`${hasCarousel || backgroundImageSrc ? 'absolute' : 'relative'} flex flex-col items-center gap-3 wrapper z-40 ${contentClass || ''}`}>
     {eyebrow && <p class="eyebrow">{eyebrow}</p>}
     {srTitle && <h1 class="sr-only">{srTitle}</h1>}
     {title && <h1>{title}</h1>}
     {(headline1 || headline2) && (
       <h2
-        class={`flex flex-col gap-3 headline lsa no-repeat lsa-slide-up delay-100 ${headline1Color === 'dark' ? 'text-primary' : 'text-base-100'}`}
+        class={`flex flex-col gap-3 headline lsa no-repeat lsa-slide-up ${headline1Color === 'dark' ? 'text-primary' : 'text-base-100'}`}
       >
         {headline1}
         {headline2 && (
           <br />
           <span
-            class={`h1 block lsa no-repeat lsa-slide-up delay-200 ${headline2Color === 'dark' ? 'text-primary' : 'text-base-300'}`}
+            class={`h1 block lsa no-repeat lsa-slide-up delay-100 ${headline2Color === 'dark' ? 'text-primary' : 'text-base-300'}`}
           >
             {headline2}
           </span>
         )}
       </h2>
     )}
-    {message && <p class="h4 mb-16 lsa no-repeat">{message}</p>}
+    {message && <p class="lsa lsa-slide-up delay-100 no-repeat">{message}</p>}
     {ctaLabel && ctaHref && (
-      <Button label={ctaLabel!} href={ctaHref} wrapperClass="justify-center" />
+      <Button label={ctaLabel!} href={ctaHref} wrapperClass="justify-center lsa lsa-slide-up delay-200 no-repeat" />
     )}
     <slot />
   </div>
 </header>
 
+<style>
+  .hero-carousel .swiper-slide {
+    opacity: 0 !important;
+    transition: opacity 1.5s ease !important;
+  }
+  .hero-carousel .swiper-slide-active {
+    opacity: 1 !important;
+  }
+</style>
+
 <script>
+  import Swiper from 'swiper'
+  import { Autoplay, EffectFade } from 'swiper/modules'
+  import 'swiper/css'
+  import 'swiper/css/effect-fade'
+
+  function initHeroCarousel() {
+    const heroCarousel = document.querySelector<HTMLElement>('.hero-carousel')
+    if (!heroCarousel) return
+
+    new Swiper(heroCarousel, {
+      modules: [Autoplay, EffectFade],
+      effect: 'fade',
+      fadeEffect: { crossFade: true },
+      autoplay: { delay: 4000, disableOnInteraction: false },
+      speed: 1500,
+      loop: true,
+      allowTouchMove: false,
+    })
+  }
+
   function initOverlayScroll() {
     const headers = document.querySelectorAll<HTMLElement>('header:has(.page-header__overlay)')
 
@@ -96,7 +154,7 @@ const {
         const headerHeight = header.offsetHeight
         const scrolled = Math.max(0, -rect.top)
         const progress = Math.min(scrolled / headerHeight, 1)
-        const opacity = 0.3 + progress * 0.7
+        const opacity = 0 + progress * 0.9
         overlay.style.setProperty('--overlay-opacity', String(opacity))
       }
 
@@ -105,7 +163,11 @@ const {
     })
   }
 
+  initHeroCarousel()
   initOverlayScroll()
-  document.addEventListener('astro:after-swap', initOverlayScroll)
+  document.addEventListener('astro:after-swap', () => {
+    initHeroCarousel()
+    initOverlayScroll()
+  })
 </script>
 

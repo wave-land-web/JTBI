@@ -32,6 +32,28 @@ export default defineType({
       ],
     }),
     defineField({
+      name: 'carouselImages',
+      title: 'Carousel Images',
+      description:
+        'Optional set of images that cycle in the hero with a crossfade effect. When provided, these replace the single background image.',
+      type: 'array',
+      of: [
+        {
+          type: 'image',
+          options: { hotspot: false },
+          fields: [
+            defineField({
+              name: 'alt',
+              type: 'string',
+              title: 'Alternative Text',
+              validation: (Rule) =>
+                Rule.required().warning('Alt text is important for accessibility'),
+            }),
+          ],
+        },
+      ],
+    }),
+    defineField({
       name: 'headline1',
       title: 'Heading Line 1',
       type: 'string',

@@ -6,6 +6,7 @@ export interface BlockBase {
 export interface HeroBlock extends BlockBase {
   _type: 'heroBlock'
   backgroundImage?: { asset: any; alt?: string }
+  carouselImages?: { asset: any; alt?: string }[]
   headline1?: string
   headline1Color?: 'light' | 'dark'
   headline2?: string

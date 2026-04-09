@@ -22,6 +22,10 @@ const homepage = await sanityClient.fetch(
           asset->{ _id, url },
           alt
         },
+        carouselImages[] {
+          asset->{ _id, url },
+          alt
+        },
         headline1,
         headline1Color,
         headline2,
@@ -77,11 +81,19 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
   {
     blocks.map((block) => {
       if (block._type === 'heroBlock') {
+        const carouselImages = (block.carouselImages ?? [])
+          .filter((img) => img.asset)
+          .map((img) => ({
+            src: urlForImage(img).width(1920).url(),
+            alt: img.alt || '',
+          }))
+
         return (
           <PageHeader
             id={block.sectionId}
+            carouselImages={carouselImages.length > 0 ? carouselImages : undefined}
             backgroundImageSrc={
-              block.backgroundImage?.asset
+              carouselImages.length === 0 && block.backgroundImage?.asset
                 ? urlForImage(block.backgroundImage).width(1920).url()
                 : undefined
             }
