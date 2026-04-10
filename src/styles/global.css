@@ -161,7 +161,7 @@
 
   h2,
   .h2 {
-    @apply text-4xl sm:text-5xl md:text-6xl text-base-100 font-bold;
+    @apply text-4xl sm:text-5xl md:text-6xl text-base-100 font-extrabold;
   }
 
   h3,
