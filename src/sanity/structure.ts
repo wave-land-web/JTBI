@@ -1,6 +1,7 @@
 import {
   CloseIcon,
   CogIcon,
+  DashboardIcon,
   DocumentTextIcon,
   EnvelopeIcon,
   FolderIcon,
@@ -58,6 +59,11 @@ export const structure = (S: any) => {
             .title('Projects')
             .defaultOrdering([{ field: 'sortOrder', direction: 'asc' }]),
         ),
+      S.divider(),
+      S.listItem()
+        .title('Services')
+        .icon(DashboardIcon)
+        .child(S.documentTypeList('service').title('Services')),
       S.divider(),
       S.listItem()
         .title('Forms')

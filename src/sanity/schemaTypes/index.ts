@@ -9,6 +9,7 @@ import homepage from './homepage'
 import legalPage from './legalPage'
 import notFoundPage from './notFoundPage'
 import project from './project'
+import service from './service'
 import siteSettings from './siteSettings'
 
 export const schema: { types: SchemaTypeDefinition[] } = {
@@ -19,6 +20,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     legalPage,
     contactSubmission,
     project,
+    service,
     heroBlock,
     projectsBlock,
     mediaCardRowBlock,

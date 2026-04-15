@@ -19,10 +19,10 @@ export interface ProjectsBlock extends BlockBase {
   projects?: {
     _id: string
     title: string
+    slug?: { current: string }
     description: string
     featureText: any[]
     image?: { asset: any; alt?: string }
-    href?: string
     ctaLabel?: string
     reversed?: boolean
     styling?: { accentColor?: string; cardBackgroundColor?: string; cardTextColor?: string }
@@ -46,17 +46,19 @@ export interface ServicesBlock extends BlockBase {
   _type: 'servicesBlock'
   heading?: string
   items?: {
-    _key: string
+    _id: string
     title: string
     description: string
     image?: { asset: any; alt?: string }
     href?: string
     ctaLabel?: string
-    accentColor?: string
-    mediaBackgroundColor?: string
-    cardBackgroundColor?: string
-    cardTextColor?: string
-    titleColor?: string
+    styling?: {
+      accentColor?: string
+      mediaBackgroundColor?: string
+      cardBackgroundColor?: string
+      cardTextColor?: string
+      titleColor?: string
+    }
   }[]
 }
 

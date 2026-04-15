@@ -1,0 +1,88 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import PageHeader from '../../components/ui/PageHeader.astro'
+import { sanityClient } from '../../sanity/lib/client'
+import { toHTML } from '@portabletext/to-html'
+
+export const prerender = false
+
+const { slug } = Astro.params
+
+const project = await sanityClient.fetch(
+  `*[_type == "project" && slug.current == $slug][0]{
+    title,
+    "services": services[]->title,
+    "serviceRefs": services[]._ref,
+    projectOverview,
+    body,
+    "relatedProjects": select(
+      count(relatedProjects) > 0 => relatedProjects[]->{
+        _id,
+        title,
+        description,
+        image { asset, alt },
+        href,
+        slug
+      },
+      *[_type == "project" && count(services[_ref in ^.^.serviceRefs]) > 0 && _id != ^._id][0...3]{
+        _id,
+        title,
+        description,
+        image { asset, alt },
+        href,
+        slug
+      }
+    )
+  }`,
+  { slug },
+)
+
+if (!project) {
+  return Astro.redirect('/404')
+}
+---
+
+<Layout title={`${project.title} | JTB Imaginative LLC`}>
+  <PageHeader
+    eyebrow={project.services?.join(' / ')}
+    title={project.title}
+    fullHeight={false}
+    headerClass="text-center"
+    contentClass="flex flex-col items-center"
+  />
+
+  <main id="main-content" class="wrapper prose py-(--site-padding-3xl)">
+    {
+      project.projectOverview && (
+        <section>
+          <h2>Project Overview</h2>
+          <Fragment set:html={toHTML(project.projectOverview)} />
+        </section>
+      )
+    }
+
+    {project.body && <Fragment set:html={toHTML(project.body)} />}
+
+    {
+      project.relatedProjects?.length > 0 && (
+        <section>
+          <h2>Related Projects</h2>
+          <ul>
+            {project.relatedProjects.map((related: any) => (
+              <li>
+                <a
+                  href={
+                    related.slug?.current ? `/project/${related.slug.current}` : related.href || '#'
+                  }
+                >
+                  {related.title}
+                </a>
+                {related.description && <span> — {related.description}</span>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+  </main>
+</Layout>

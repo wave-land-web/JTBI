@@ -1,5 +1,5 @@
 import { ProjectsIcon } from '@sanity/icons'
-import { defineField, defineType } from 'sanity'
+import { defineArrayMember, defineField, defineType } from 'sanity'
 
 export default defineType({
   name: 'project',
@@ -12,6 +12,25 @@ export default defineType({
       title: 'Title',
       type: 'string',
       validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'slug',
+      title: 'Slug',
+      type: 'slug',
+      options: { source: 'title' },
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'services',
+      title: 'Services',
+      type: 'array',
+      of: [
+        defineArrayMember({
+          type: 'reference',
+          to: [{ type: 'service' }],
+        }),
+      ],
+      validation: (Rule) => Rule.required().min(1),
     }),
     defineField({
       name: 'description',
@@ -43,12 +62,6 @@ export default defineType({
           validation: (Rule) => Rule.required().error('Alt text is required for accessibility'),
         }),
       ],
-    }),
-    defineField({
-      name: 'href',
-      title: 'Link',
-      description: 'Optional link destination (e.g. /portfolio/project-name or #contact)',
-      type: 'string',
     }),
     defineField({
       name: 'ctaLabel',
@@ -106,6 +119,34 @@ export default defineType({
           type: 'string',
         }),
       ],
+    }),
+    defineField({
+      name: 'projectOverview',
+      title: 'Project Overview',
+      description: 'Optional summary shown before the main body content on the project page.',
+      type: 'array',
+      of: [defineArrayMember({ type: 'block' })],
+    }),
+    defineField({
+      name: 'body',
+      title: 'Body',
+      description: 'Main project/case study content.',
+      type: 'array',
+      of: [defineArrayMember({ type: 'block' })],
+    }),
+    defineField({
+      name: 'relatedProjects',
+      title: 'Related Projects',
+      description:
+        'Manually pick related projects. If empty, 3 projects with overlapping services are shown automatically.',
+      type: 'array',
+      of: [
+        defineArrayMember({
+          type: 'reference',
+          to: [{ type: 'project' }],
+        }),
+      ],
+      validation: (Rule) => Rule.max(3),
     }),
   ],
   orderings: [
