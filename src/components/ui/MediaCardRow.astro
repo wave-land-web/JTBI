@@ -6,6 +6,8 @@ export interface Props {
   featureText: string
   reversed?: boolean
   imageSrc?: ImageMetadata | string
+  imageWidth?: number
+  imageHeight?: number
   imageAlt?: string
   accentColor?: string
   cardBackgroundColor?: string
@@ -20,6 +22,8 @@ const {
   featureText,
   reversed = false,
   imageSrc,
+  imageWidth,
+  imageHeight,
   imageAlt = 'Portfolio preview image',
   accentColor = 'var(--color-primary)',
   cardBackgroundColor = 'var(--color-base-100)',
@@ -70,7 +74,9 @@ const componentStyles = `
     <Card
       title={title}
       description={description}
-      imageSrc={imageSrc}
+      imageSrc={imageSrc ? (typeof imageSrc === 'string' ? imageSrc : imageSrc.src) : undefined}
+      imageWidth={imageWidth}
+      imageHeight={imageHeight}
       imageAlt={imageAlt}
       imageClass="h-full w-full object-cover"
       contentClass="border-t border-(--card-divider) bg-(--card-bg) p-5 text-left text-(--card-text) sm:p-7"

@@ -30,6 +30,8 @@ const logoTextureClasses =
   'pointer-events-none absolute top-1/2 h-[160%] w-full -translate-y-1/2 opacity-60 object-contain transition-opacity duration-300 group-hover:opacity-80 pointer-events-none'
 const linkClasses =
   'link-underline w-fit p-0 text-sm md:text-base text-base-300 font-semibold uppercase tracking-wide transition-colors duration-300 hover:text-base-100 focus-visible:text-base-100'
+const mobileLinkClasses =
+  'link-underline w-fit p-0 text-lg text-base-300 font-semibold uppercase tracking-wide transition-colors duration-300 hover:text-base-100 focus-visible:text-base-100'
 ---
 
 <nav
@@ -59,12 +61,14 @@ const linkClasses =
         </div>
 
         <div class="navbar-end">
-          <label
-            for="mobile-drawer"
+          <button
+            type="button"
+            id="mobile-drawer-toggle"
             class="btn btn-ghost btn-xs transition-colors duration-300 text-base-100 hover:bg-base-100/10 focus-visible:bg-base-100/10 cursor-pointer"
             aria-label="Open navigation menu"
+            aria-expanded="false"
+            aria-controls="mobile-drawer-panel"
           >
-            <span class="sr-only">Open navigation menu</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -77,7 +81,7 @@ const linkClasses =
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h10"
               ></path>
             </svg>
-          </label>
+          </button>
         </div>
       </div>
 
@@ -132,23 +136,59 @@ const linkClasses =
     <label for="mobile-drawer" aria-label="close sidebar" class="drawer-overlay"
       ><span class="sr-only">Close sidebar</span></label
     >
-    <ul class="menu h-full w-64 p-(--site-padding-base) gap-6 bg-primary/95 backdrop-blur-sm">
-      {
-        links.map((link) => (
-          <li>
-            <a href={link.href} class:list={linkClasses} data-nav-link data-mobile-nav-link>
-              {link.label}
-            </a>
-          </li>
-        ))
-      }
-    </ul>
+    <nav id="mobile-drawer-panel" aria-label="Mobile" class="h-full">
+      <ul
+        class="menu h-full w-72 p-(--site-padding-base) pt-(--site-padding-md) gap-8 bg-primary/95 backdrop-blur-sm"
+      >
+        {
+          links.map((link, i) => (
+            <li class="drawer-link" style={`--i: ${i}`}>
+              <a href={link.href} class:list={mobileLinkClasses} data-nav-link data-mobile-nav-link>
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
   </div>
 </div>
 
 <style>
   [data-nav-link]::after {
     background: var(--underline-color, currentColor);
+  }
+
+  .drawer-link {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+
+  .drawer-toggle:checked ~ .drawer-side .drawer-link {
+    animation: drawer-link-in 500ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: calc(150ms + var(--i) * 80ms);
+  }
+
+  @keyframes drawer-link-in {
+    from {
+      opacity: 0;
+      transform: translateX(-12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .drawer-link {
+      opacity: 1;
+      transform: none;
+    }
+
+    .drawer-toggle:checked ~ .drawer-side .drawer-link {
+      animation: none;
+    }
   }
 </style>
 
@@ -201,15 +241,53 @@ const linkClasses =
   }
 
   /**
-   * Closes the mobile drawer when any mobile nav link is clicked.
-   * @param {HTMLInputElement} toggle - The drawer checkbox input
-   * @param {NodeListOf<Element>} links - The mobile nav link elements
+   * Opens or closes the mobile drawer and syncs ARIA state.
    */
-  function initMobileDrawer(toggle: HTMLInputElement, links: NodeListOf<Element>) {
+  function setDrawerOpen(open: boolean) {
+    if (!drawerToggle || !drawerButton) return
+    drawerToggle.checked = open
+    drawerButton.setAttribute('aria-expanded', String(open))
+
+    if (open) {
+      // Focus the first link in the drawer
+      const firstLink = document.querySelector<HTMLAnchorElement>('[data-mobile-nav-link]')
+      firstLink?.focus()
+    } else {
+      // Return focus to the toggle button
+      drawerButton.focus()
+    }
+  }
+
+  /**
+   * Initializes mobile drawer: toggle, close on link click, ESC key, and aria-expanded sync.
+   */
+  function initMobileDrawer(
+    toggle: HTMLInputElement,
+    button: HTMLElement,
+    links: NodeListOf<Element>,
+  ) {
+    // Toggle button opens/closes
+    button.addEventListener('click', () => {
+      setDrawerOpen(!toggle.checked)
+    })
+
+    // Close on link click
     links.forEach((link) => {
       link.addEventListener('click', () => {
-        toggle.checked = false
+        setDrawerOpen(false)
       })
+    })
+
+    // Close on ESC key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && toggle.checked) {
+        setDrawerOpen(false)
+      }
+    })
+
+    // Sync aria-expanded when overlay label closes the drawer
+    toggle.addEventListener('change', () => {
+      button.setAttribute('aria-expanded', String(toggle.checked))
     })
   }
 
@@ -222,7 +300,14 @@ const linkClasses =
     let index = Math.floor(Math.random() * UNDERLINE_COLORS.length)
 
     links.forEach((link) => {
+      // Cycle color on mouse enter
       link.addEventListener('mouseenter', () => {
+        link.style.setProperty('--underline-color', UNDERLINE_COLORS[index])
+        index = (index + 1) % UNDERLINE_COLORS.length
+      })
+
+      // Cycle color on keyboard focus for accessibility
+      link.addEventListener('focus', () => {
         link.style.setProperty('--underline-color', UNDERLINE_COLORS[index])
         index = (index + 1) % UNDERLINE_COLORS.length
       })
@@ -232,10 +317,11 @@ const linkClasses =
   // Initialize
   const nav = document.getElementById('main-navigation')
   const drawerToggle = document.getElementById('mobile-drawer') as HTMLInputElement | null
+  const drawerButton = document.getElementById('mobile-drawer-toggle')
   const mobileLinks = document.querySelectorAll('[data-mobile-nav-link]')
   const navLinks = document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]')
 
   if (nav) initScrollBehavior(nav)
-  if (drawerToggle) initMobileDrawer(drawerToggle, mobileLinks)
+  if (drawerToggle && drawerButton) initMobileDrawer(drawerToggle, drawerButton, mobileLinks)
   initUnderlineColors(navLinks)
 </script>

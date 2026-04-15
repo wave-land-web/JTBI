@@ -259,4 +259,10 @@
       @apply origin-left scale-x-100;
     }
   }
+
+  /* Skip to main content link */
+
+  .skip-link {
+    @apply fixed top-0 left-1/2 -translate-x-1/2 -translate-y-full z-50 bg-secondary text-secondary-content px-6 py-3 font-semibold text-sm uppercase tracking-wide transition-transform duration-200 focus:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary;
+  }
 }

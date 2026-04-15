@@ -1,15 +1,19 @@
 ---
-import { Image } from 'astro:assets'
+import { Picture } from 'astro:assets'
 import Button from './Button.astro'
 
 interface CarouselImage {
   src: string
+  width: number
+  height: number
   alt: string
 }
 
 interface Props {
   id?: string
   backgroundImageSrc?: string
+  backgroundImageWidth?: number
+  backgroundImageHeight?: number
   backgroundImageAlt?: string
   carouselImages?: CarouselImage[]
   eyebrow?: string
@@ -30,6 +34,8 @@ interface Props {
 const {
   id,
   backgroundImageSrc = '',
+  backgroundImageWidth,
+  backgroundImageHeight,
   backgroundImageAlt = '',
   carouselImages = [],
   eyebrow,
@@ -59,11 +65,15 @@ const hasCarousel = carouselImages.length > 0
       <div class="swiper-wrapper">
         {carouselImages.map((img) => (
           <div class="swiper-slide">
-            <Image
+            <Picture
               src={img.src}
               alt={img.alt}
               class="h-full w-full object-contain"
-              inferSize
+              pictureAttributes={{ class: 'block h-full w-full' }}
+              formats={['avif', 'webp']}
+              quality={85}
+              width={img.width}
+              height={img.height}
               priority
             />
           </div>
@@ -73,12 +83,15 @@ const hasCarousel = carouselImages.length > 0
     <div class="page-header__overlay absolute inset-0" style="background-color: rgb(0 0 0 / var(--overlay-opacity, 0));" aria-hidden="true" />
   )}
 
-  {backgroundImageSrc && !hasCarousel && (
-    <Image
+  {backgroundImageSrc && backgroundImageWidth && backgroundImageHeight && !hasCarousel && (
+    <Picture
       src={backgroundImageSrc}
       alt={backgroundImageAlt}
       class="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
-      inferSize
+      formats={['avif', 'webp']}
+      quality={85}
+      width={backgroundImageWidth}
+      height={backgroundImageHeight}
       priority
     />
     <div class="page-header__overlay absolute inset-0" style="background-color: rgb(0 0 0 / var(--overlay-opacity, 0));" aria-hidden="true" />

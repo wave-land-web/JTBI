@@ -1,10 +1,12 @@
 ---
-import { Image } from 'astro:assets'
+import { Picture } from 'astro:assets'
 
 export interface Props {
   title: string
   description: string
   imageSrc?: string
+  imageWidth?: number
+  imageHeight?: number
   imageAlt?: string
   imageAspect?: 'video' | 'square'
   imageClass?: string
@@ -24,6 +26,8 @@ const {
   title,
   description,
   imageSrc,
+  imageWidth,
+  imageHeight,
   imageAlt = '',
   imageAspect = 'video',
   imageClass = 'h-full w-full object-cover',
@@ -71,8 +75,17 @@ const fallbackImageClasses = `h-full w-full bg-gradient-to-tr from-secondary/10 
       ]}
     >
       {
-        imageSrc ? (
-          <Image src={imageSrc} alt={imageAlt} class={imageClass} inferSize loading="lazy" />
+        imageSrc && imageWidth && imageHeight ? (
+          <Picture
+            src={imageSrc}
+            alt={imageAlt}
+            class={imageClass}
+            formats={['avif', 'webp']}
+            quality={85}
+            width={imageWidth}
+            height={imageHeight}
+            loading="lazy"
+          />
         ) : showFallback ? (
           <div class={fallbackImageClasses} />
         ) : null

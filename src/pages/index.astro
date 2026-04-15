@@ -6,7 +6,7 @@ import Card from '../components/ui/Card.astro'
 import ContactBg from '../assets/images/textures/jtbi-cloud-background-sample.svg'
 import ContactForm from '../components/ui/forms/Contact.astro'
 import { sanityClient } from '../sanity/lib/client'
-import { urlForImage } from '../sanity/lib/urlForImage'
+import { imageProps } from '../sanity/lib/urlForImage'
 import { toHTML } from '@portabletext/to-html'
 import { SITE_TITLE } from '../consts'
 import type { PageBlock } from '../sanity/lib/types'
@@ -83,20 +83,23 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
       if (block._type === 'heroBlock') {
         const carouselImages = (block.carouselImages ?? [])
           .filter((img) => img.asset)
-          .map((img) => ({
-            src: urlForImage(img).width(1920).url(),
-            alt: img.alt || '',
-          }))
+          .map((img) => {
+            const props = imageProps(img, 2400)
+            return { src: props.src, width: props.width, height: props.height, alt: img.alt || '' }
+          })
+
+        const bgImage =
+          carouselImages.length === 0 && block.backgroundImage?.asset
+            ? imageProps(block.backgroundImage, 2400)
+            : undefined
 
         return (
           <PageHeader
             id={block.sectionId}
             carouselImages={carouselImages.length > 0 ? carouselImages : undefined}
-            backgroundImageSrc={
-              carouselImages.length === 0 && block.backgroundImage?.asset
-                ? urlForImage(block.backgroundImage).width(1920).url()
-                : undefined
-            }
+            backgroundImageSrc={bgImage?.src}
+            backgroundImageWidth={bgImage?.width}
+            backgroundImageHeight={bgImage?.height}
             backgroundImageAlt={block.backgroundImage?.alt}
             headline1={block.headline1 || "You're not industry-standard,"}
             headline1Color={block.headline1Color}
@@ -110,7 +113,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
     })
   }
 
-  <main>
+  <main id="main-content">
     {
       blocks.map((block) => {
         if (block._type === 'projectsBlock') {
@@ -121,26 +124,32 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                 {block.heading ||
                   'Developing visual and marketing strategies for business acceleration.'}
               </h2>
-              {projects.map((project) => (
-                <MediaCardRow
-                  featureText={toHTML(project.featureText)}
-                  reversed={project.reversed}
-                  imageSrc={project.image ? urlForImage(project.image).width(800).url() : undefined}
-                  imageAlt={project.image?.alt || 'Portfolio preview image'}
-                  accentColor={project.styling?.accentColor}
-                  cardBackgroundColor={project.styling?.cardBackgroundColor}
-                  cardTextColor={project.styling?.cardTextColor}
-                  title={project.title}
-                  description={project.description}
-                  href={project.href}
-                  ctaLabel={project.ctaLabel}
-                />
-              ))}
+              {projects.map((project) => {
+                const projImg = project.image ? imageProps(project.image, 1600) : undefined
+                return (
+                  <MediaCardRow
+                    featureText={toHTML(project.featureText)}
+                    reversed={project.reversed}
+                    imageSrc={projImg?.src}
+                    imageWidth={projImg?.width}
+                    imageHeight={projImg?.height}
+                    imageAlt={project.image?.alt || 'Portfolio preview image'}
+                    accentColor={project.styling?.accentColor}
+                    cardBackgroundColor={project.styling?.cardBackgroundColor}
+                    cardTextColor={project.styling?.cardTextColor}
+                    title={project.title}
+                    description={project.description}
+                    href={project.href}
+                    ctaLabel={project.ctaLabel}
+                  />
+                )
+              })}
             </section>
           )
         }
 
         if (block._type === 'mediaCardRowBlock') {
+          const blockImg = block.image ? imageProps(block.image, 1600) : undefined
           return (
             <section id={block.sectionId || undefined} class="text-center flex flex-col gap-8">
               {block.heading && (
@@ -149,7 +158,9 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
               <MediaCardRow
                 reversed={block.reversed}
                 featureText={block.featureText ? toHTML(block.featureText) : ''}
-                imageSrc={block.image ? urlForImage(block.image).width(800).url() : undefined}
+                imageSrc={blockImg?.src}
+                imageWidth={blockImg?.width}
+                imageHeight={blockImg?.height}
                 imageAlt={block.image?.alt || ''}
                 accentColor={block.styling?.accentColor}
                 cardBackgroundColor={block.styling?.cardBackgroundColor}
@@ -181,6 +192,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                       --card-media-bg: ${item.mediaBackgroundColor || 'var(--color-base-200)'};
                       --card-divider: color-mix(in srgb, ${item.cardTextColor || item.accentColor || 'var(--color-primary)'} 14%, transparent);
                     `
+                    const itemImg = item.image ? imageProps(item.image, 1200) : undefined
                     return (
                       <div class="service-card lsa no-repeat w-full" style={cardStyles}>
                         <Card
@@ -188,9 +200,9 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                           description={item.description}
                           href={item.href || '#contact'}
                           ctaLabel={item.ctaLabel || 'Read More'}
-                          imageSrc={
-                            item.image ? urlForImage(item.image).width(1000).url() : undefined
-                          }
+                          imageSrc={itemImg?.src}
+                          imageWidth={itemImg?.width}
+                          imageHeight={itemImg?.height}
                           imageAlt={
                             item.image?.alt ||
                             `JTB Imaginative logo mark for ${item.title.toLowerCase()}`
