@@ -1,5 +1,6 @@
 import { ComposeIcon } from '@sanity/icons'
 import { defineField, defineType } from 'sanity'
+import { richTextBlock } from '../shared/richText'
 
 export default defineType({
   name: 'mediaCardRowBlock',
@@ -25,7 +26,7 @@ export default defineType({
       title: 'Feature Text',
       description: 'Rich text displayed alongside the card.',
       type: 'array',
-      of: [{ type: 'block' }],
+      of: [richTextBlock],
       validation: (Rule) => Rule.required(),
     }),
     defineField({

@@ -1,5 +1,6 @@
 import { ProjectsIcon } from '@sanity/icons'
 import { defineArrayMember, defineField, defineType } from 'sanity'
+import { richTextBlock } from './shared/richText'
 
 export default defineType({
   name: 'project',
@@ -45,7 +46,7 @@ export default defineType({
       description:
         'Supplementary context for project - can be used in various ways across the site (e.g. as a caption on the homepage card).',
       type: 'array',
-      of: [{ type: 'block' }],
+      of: [richTextBlock],
     }),
     defineField({
       name: 'image',
@@ -125,14 +126,14 @@ export default defineType({
       title: 'Project Overview',
       description: 'Optional summary shown before the main body content on the project page.',
       type: 'array',
-      of: [defineArrayMember({ type: 'block' })],
+      of: [richTextBlock],
     }),
     defineField({
       name: 'body',
       title: 'Body',
       description: 'Main project/case study content.',
       type: 'array',
-      of: [defineArrayMember({ type: 'block' })],
+      of: [richTextBlock],
     }),
     defineField({
       name: 'relatedProjects',

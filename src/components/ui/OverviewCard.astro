@@ -1,0 +1,240 @@
+---
+import { toHTML } from '@portabletext/to-html'
+
+interface Props {
+  overview: any[]
+  accentColor?: string
+  backgroundColor?: string
+  textColor?: string
+  class?: string
+}
+
+const { overview, accentColor, backgroundColor, textColor, class: className = '' } = Astro.props
+
+const html = toHTML(overview)
+---
+
+<aside
+  class:list={['overview-card lsa no-repeat', className]}
+  style={`--oc-accent: ${accentColor || 'var(--color-secondary)'}; --oc-bg: ${backgroundColor || 'var(--color-neutral)'}; --oc-text: ${textColor || 'var(--color-neutral-content)'};`}
+>
+  <span class="overview-card__border" aria-hidden="true"></span>
+  <div class="overview-card__body-wrapper relative max-w-lg ml-auto">
+    <button
+      type="button"
+      class="overview-card__toggle"
+      aria-expanded="true"
+      aria-label="Toggle project overview"
+    >
+      <span class="overview-card__chevron" aria-hidden="true">»</span>
+    </button>
+    <div class="overview-card__body p-5 sm:p-7">
+      <div class="overview-card__content space-y-2" set:html={html} />
+    </div>
+  </div>
+</aside>
+
+<style>
+  @reference "../../styles/global.css";
+
+  .overview-card {
+    --oc-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    width: 100%;
+    position: relative;
+    color: var(--oc-text);
+  }
+
+  .overview-card__border {
+    display: block;
+    height: 4px;
+    background: var(--oc-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    will-change: transform;
+  }
+
+  .overview-card.active .overview-card__border {
+    animation: oc-border-draw 600ms var(--oc-ease) 300ms forwards;
+  }
+
+  @keyframes oc-border-draw {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  .overview-card__toggle {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 10;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    color: var(--oc-text);
+    opacity: 0;
+    will-change: opacity;
+  }
+
+  .overview-card.active .overview-card__toggle {
+    animation: oc-toggle-reveal 400ms ease 800ms forwards;
+  }
+
+  @keyframes oc-toggle-reveal {
+    to {
+      opacity: 0.6;
+    }
+  }
+
+  .overview-card__toggle:hover,
+  .overview-card__toggle:focus-visible {
+    opacity: 1 !important;
+  }
+
+  .overview-card__chevron {
+    display: inline-block;
+    font-size: 1.5rem;
+    line-height: 1;
+    transform: rotate(90deg);
+    transition: transform 400ms var(--oc-ease);
+  }
+
+  .overview-card.is-collapsed .overview-card__chevron {
+    transform: rotate(-90deg);
+  }
+
+  .overview-card__body {
+    background: var(--oc-bg);
+    clip-path: inset(0 0 100% 0);
+    opacity: 0;
+    will-change: clip-path, opacity;
+  }
+
+  .overview-card.active .overview-card__body {
+    animation: oc-body-reveal 1200ms var(--oc-ease) 600ms forwards;
+  }
+
+  .overview-card.is-collapsed .overview-card__body {
+    animation: oc-body-collapse 600ms var(--oc-ease) forwards !important;
+  }
+
+  .overview-card.is-expanded .overview-card__body {
+    animation: oc-body-reveal 800ms var(--oc-ease) forwards !important;
+  }
+
+  @keyframes oc-body-reveal {
+    from {
+      opacity: 0;
+      clip-path: inset(0 0 100% 0);
+    }
+    to {
+      opacity: 1;
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  @keyframes oc-body-collapse {
+    from {
+      opacity: 1;
+      clip-path: inset(0 0 0 0);
+    }
+    to {
+      opacity: 0;
+      clip-path: inset(0 0 100% 0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .overview-card__border {
+      animation: none !important;
+      transform: scaleX(1);
+      will-change: auto;
+    }
+
+    .overview-card__toggle {
+      animation: none !important;
+      opacity: 0.6;
+    }
+
+    .overview-card__body {
+      animation: none !important;
+      clip-path: none;
+      opacity: 1;
+      will-change: auto;
+    }
+
+    .overview-card.is-collapsed .overview-card__body {
+      display: none;
+    }
+  }
+
+  /* Rich text overrides within the card */
+  .overview-card__content :global(h2),
+  .overview-card__content :global(h3),
+  .overview-card__content :global(h4),
+  .overview-card__content :global(h5),
+  .overview-card__content :global(h6),
+  .overview-card__content :global(p),
+  .overview-card__content :global(a) {
+    color: var(--oc-text);
+  }
+
+  .overview-card__content :global(p) {
+    @apply text-sm sm:text-base font-factoria font-semibold;
+  }
+
+  .overview-card__content :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .overview-card__content :global(strong) {
+    color: var(--oc-accent);
+    font-weight: bolder;
+    font-family: var(--font-factoria);
+    text-transform: uppercase;
+  }
+
+  .overview-card__content :global(a) {
+    @apply relative inline-block;
+    text-decoration: none;
+  }
+
+  .overview-card__content :global(a::after) {
+    @apply absolute bottom-0 left-0 h-px w-full origin-right scale-x-0 bg-current transition-transform duration-300 ease-out content-[''];
+  }
+
+  .overview-card__content :global(a:hover::after),
+  .overview-card__content :global(a:focus-visible::after) {
+    @apply origin-left scale-x-100;
+  }
+</style>
+
+<script>
+  function initOverviewCards() {
+    document.querySelectorAll<HTMLElement>('.overview-card').forEach((card) => {
+      const toggle = card.querySelector<HTMLButtonElement>('.overview-card__toggle')
+      if (!toggle) return
+
+      toggle.addEventListener('click', () => {
+        const isCollapsed = card.classList.contains('is-collapsed')
+
+        if (isCollapsed) {
+          card.classList.remove('is-collapsed')
+          card.classList.add('is-expanded')
+          toggle.setAttribute('aria-expanded', 'true')
+        } else {
+          card.classList.remove('is-expanded')
+          card.classList.add('is-collapsed')
+          toggle.setAttribute('aria-expanded', 'false')
+        }
+      })
+    })
+  }
+
+  initOverviewCards()
+  document.addEventListener('astro:after-swap', initOverviewCards)
+</script>

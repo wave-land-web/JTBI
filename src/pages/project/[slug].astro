@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro'
 import PageHeader from '../../components/ui/PageHeader.astro'
+import OverviewCard from '../../components/ui/OverviewCard.astro'
 import { sanityClient } from '../../sanity/lib/client'
 import { toHTML } from '@portabletext/to-html'
 
@@ -13,6 +14,7 @@ const project = await sanityClient.fetch(
     title,
     "services": services[]->title,
     "serviceRefs": services[]._ref,
+    styling,
     projectOverview,
     body,
     "relatedProjects": select(
@@ -43,25 +45,30 @@ if (!project) {
 ---
 
 <Layout title={`${project.title} | JTB Imaginative LLC`}>
-  <PageHeader
-    eyebrow={project.services?.join(' / ')}
-    title={project.title}
-    fullHeight={false}
-    headerClass="text-center"
-    contentClass="flex flex-col items-center"
-  />
-
-  <main id="main-content" class="wrapper prose py-(--site-padding-3xl)">
+  <PageHeader title={project.title} fullHeight={false} contentClass="items-start gap-0!">
     {
       project.projectOverview && (
-        <section>
-          <h2>Project Overview</h2>
-          <Fragment set:html={toHTML(project.projectOverview)} />
-        </section>
+        <OverviewCard
+          overview={project.projectOverview}
+          accentColor={project.styling?.accentColor}
+          backgroundColor={project.styling?.cardBackgroundColor}
+          textColor={project.styling?.cardTextColor}
+          class="mt-(--site-padding-base)"
+        />
       )
     }
+  </PageHeader>
 
-    {project.body && <Fragment set:html={toHTML(project.body)} />}
+  <main id="main-content">
+    <section>
+      {
+        project.body && (
+          <div class="max-w-4xl ml-auto space-y-6 lsa no-repeat">
+            <Fragment set:html={toHTML(project.body)} />
+          </div>
+        )
+      }
+    </section>
 
     {
       project.relatedProjects?.length > 0 && (

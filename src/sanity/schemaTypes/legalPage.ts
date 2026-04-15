@@ -1,5 +1,6 @@
 import { DocumentTextIcon } from '@sanity/icons'
 import { defineField, defineType } from 'sanity'
+import { richTextBlock } from './shared/richText'
 
 export default defineType({
   name: 'legalPage',
@@ -24,7 +25,7 @@ export default defineType({
       name: 'body',
       title: 'Body',
       type: 'array',
-      of: [{ type: 'block' }],
+      of: [richTextBlock],
     }),
     defineField({
       name: 'seoDescription',
