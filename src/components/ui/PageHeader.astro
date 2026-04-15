@@ -80,7 +80,6 @@ const hasCarousel = carouselImages.length > 0
         ))}
       </div>
     </div>
-    <div class="page-header__overlay absolute inset-0" style="background-color: rgb(0 0 0 / var(--overlay-opacity, 0));" aria-hidden="true" />
   )}
 
   {backgroundImageSrc && backgroundImageWidth && backgroundImageHeight && !hasCarousel && (
@@ -94,7 +93,6 @@ const hasCarousel = carouselImages.length > 0
       height={backgroundImageHeight}
       priority
     />
-    <div class="page-header__overlay absolute inset-0" style="background-color: rgb(0 0 0 / var(--overlay-opacity, 0));" aria-hidden="true" />
   )}
   
   <div class={`${hasCarousel || backgroundImageSrc ? 'absolute' : 'relative'} flex flex-col items-center gap-3 wrapper z-40 ${contentClass || ''}`}>
@@ -155,32 +153,9 @@ const hasCarousel = carouselImages.length > 0
     })
   }
 
-  function initOverlayScroll() {
-    const headers = document.querySelectorAll<HTMLElement>('header:has(.page-header__overlay)')
-
-    headers.forEach((header) => {
-      const overlay = header.querySelector<HTMLElement>('.page-header__overlay')
-      if (!overlay) return
-
-      const update = () => {
-        const rect = header.getBoundingClientRect()
-        const headerHeight = header.offsetHeight
-        const scrolled = Math.max(0, -rect.top)
-        const progress = Math.min(scrolled / headerHeight, 1)
-        const opacity = 0 + progress * 0.9
-        overlay.style.setProperty('--overlay-opacity', String(opacity))
-      }
-
-      window.addEventListener('scroll', update, { passive: true })
-      update()
-    })
-  }
-
   initHeroCarousel()
-  initOverlayScroll()
   document.addEventListener('astro:after-swap', () => {
     initHeroCarousel()
-    initOverlayScroll()
   })
 </script>
 
