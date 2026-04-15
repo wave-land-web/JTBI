@@ -170,7 +170,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                 <h2 class="h3 uppercase text-left text-primary lsa lsa-slide-up no-repeat">
                   {block.heading || 'Services We Offer'}
                 </h2>
-                <div class="grid md:grid-cols-3 gap-8 md:gap-10">
+                <div class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-[clamp(40px,4vw,64px)]">
                   {block.items?.map((item) => {
                     // Generate inline styles for card based on its styling properties, w/ fallbacks to CSS variables or defaults
                     const cardStyles = `
@@ -198,7 +198,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                           imageAspect="square"
                           imageClass="relative z-10"
                           mediaClass="bg-(--card-media-bg)"
-                          contentClass="flex flex-col gap-2.5 p-4 text-left sm:p-5 bg-(--card-bg)"
+                          contentClass="flex h-full flex-col gap-2.5 p-4 text-left sm:p-5 bg-(--card-bg)"
                           class="h-full border-(--card-divider) text-(--card-text)"
                           accentBorderColor={item.accentColor || 'var(--color-primary)'}
                         />

@@ -80,11 +80,11 @@ const fallbackImageClasses = `h-full w-full bg-gradient-to-tr from-secondary/10 
     </div>
 
     <div
-      class={`grid ${
+      class={`${
         reversed && animationDirection === 'top-to-bottom'
-          ? 'md:grid-cols-[1fr_2fr]'
+          ? 'grid md:grid-cols-[1fr_2fr]'
           : !reversed && animationDirection === 'top-to-bottom'
-            ? 'md:grid-cols-[2fr_1fr]'
+            ? 'grid md:grid-cols-[2fr_1fr]'
             : ''
       } ${contentClass}`}
     >
@@ -94,7 +94,7 @@ const fallbackImageClasses = `h-full w-full bg-gradient-to-tr from-secondary/10 
 
         {
           ctaLabel && (
-            <p class="link-underline text-sm font-semibold uppercase tracking-widest text-(--card-cta)">
+            <p class="mt-auto link-underline text-sm font-semibold uppercase tracking-widest text-(--card-cta)">
               <span>{ctaLabel}</span>
               <span class="text-xl">»</span>
             </p>
@@ -102,7 +102,11 @@ const fallbackImageClasses = `h-full w-full bg-gradient-to-tr from-secondary/10 
         }
         <slot />
       </div>
-      <div class={`${reversed ? 'order-1' : 'order-2'}`}></div>
+      {
+        animationDirection === 'top-to-bottom' ? (
+          <div class={`${reversed ? 'order-1' : 'order-2'}`} />
+        ) : null
+      }
     </div>
   </div>
 </Tag>
@@ -131,13 +135,15 @@ const fallbackImageClasses = `h-full w-full bg-gradient-to-tr from-secondary/10 
 
   /* Card body reveal — narrow cards: left-to-right */
   .card__body {
+    height: 100%;
+    margin-left: 3px;
     clip-path: inset(0 100% 0 0);
     opacity: 0;
     will-change: clip-path, opacity;
-    margin-left: 3px;
   }
 
   :global(.active) .card__body {
+    height: 100%;
     animation: card-reveal-lr 1200ms cubic-bezier(0.22, 1, 0.36, 1) 600ms forwards;
   }
 
