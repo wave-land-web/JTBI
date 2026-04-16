@@ -22,7 +22,7 @@ export interface ProjectsBlock extends BlockBase {
     slug?: { current: string }
     description: string
     featureText: any[]
-    image?: { asset: any; alt?: string }
+    cardImage?: { asset: any; alt?: string }
     ctaLabel?: string
     reversed?: boolean
     styling?: { accentColor?: string; cardBackgroundColor?: string; cardTextColor?: string }

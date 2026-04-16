@@ -49,8 +49,27 @@ export default defineType({
       of: [richTextBlock],
     }),
     defineField({
-      name: 'image',
-      title: 'Image',
+      name: 'cardImage',
+      title: 'Card Image',
+      description: 'Image used for project cards on the homepage and related projects.',
+      type: 'image',
+      options: {
+        hotspot: true,
+      },
+      fields: [
+        defineField({
+          name: 'alt',
+          title: 'Alt Text',
+          type: 'string',
+          validation: (Rule) => Rule.required().error('Alt text is required for accessibility'),
+        }),
+      ],
+    }),
+    defineField({
+      name: 'heroImage',
+      title: 'Hero Image',
+      description:
+        'Full-width hero image for the project case study page. Falls back to Card Image if not set.',
       type: 'image',
       options: {
         hotspot: true,
@@ -167,7 +186,7 @@ export default defineType({
       title: 'title',
       subtitle: 'description',
       featured: 'featured',
-      media: 'image',
+      media: 'cardImage',
     },
     prepare({ title, subtitle, featured, media }) {
       return {

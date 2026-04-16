@@ -76,23 +76,13 @@ const html = toHTML(overview)
     cursor: pointer;
     padding: 0.5rem;
     color: var(--oc-text);
-    opacity: 0;
-    will-change: opacity;
-  }
-
-  .overview-card.active .overview-card__toggle {
-    animation: oc-toggle-reveal 400ms ease 800ms forwards;
-  }
-
-  @keyframes oc-toggle-reveal {
-    to {
-      opacity: 0.6;
-    }
+    opacity: 1;
+    transition: opacity 200ms ease;
   }
 
   .overview-card__toggle:hover,
   .overview-card__toggle:focus-visible {
-    opacity: 1 !important;
+    opacity: 0.6;
   }
 
   .overview-card__chevron {
@@ -157,7 +147,6 @@ const html = toHTML(overview)
 
     .overview-card__toggle {
       animation: none !important;
-      opacity: 0.6;
     }
 
     .overview-card__body {

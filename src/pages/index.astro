@@ -40,7 +40,7 @@ const homepage = await sanityClient.fetch(
           slug,
           description,
           featureText,
-          image,
+          cardImage,
           ctaLabel,
           reversed,
           styling
@@ -125,7 +125,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                   'Developing visual and marketing strategies for business acceleration.'}
               </h2>
               {projects.map((project) => {
-                const projImg = project.image ? imageProps(project.image, 1600) : undefined
+                const projImg = project.cardImage ? imageProps(project.cardImage, 1600) : undefined
                 return (
                   <MediaCardRow
                     featureText={toHTML(project.featureText)}
@@ -133,7 +133,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                     imageSrc={projImg?.src}
                     imageWidth={projImg?.width}
                     imageHeight={projImg?.height}
-                    imageAlt={project.image?.alt || 'Portfolio preview image'}
+                    imageAlt={project.cardImage?.alt || 'Portfolio preview image'}
                     accentColor={project.styling?.accentColor}
                     cardBackgroundColor={project.styling?.cardBackgroundColor}
                     cardTextColor={project.styling?.cardTextColor}

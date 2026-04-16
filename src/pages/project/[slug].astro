@@ -2,7 +2,9 @@
 import Layout from '../../layouts/Layout.astro'
 import PageHeader from '../../components/ui/PageHeader.astro'
 import OverviewCard from '../../components/ui/OverviewCard.astro'
+import { Picture } from 'astro:assets'
 import { sanityClient } from '../../sanity/lib/client'
+import { imageProps } from '../../sanity/lib/urlForImage'
 import { toHTML } from '@portabletext/to-html'
 
 export const prerender = false
@@ -14,6 +16,8 @@ const project = await sanityClient.fetch(
     title,
     "services": services[]->title,
     "serviceRefs": services[]._ref,
+    cardImage { asset, alt },
+    heroImage { asset, alt },
     styling,
     projectOverview,
     body,
@@ -22,7 +26,7 @@ const project = await sanityClient.fetch(
         _id,
         title,
         description,
-        image { asset, alt },
+        cardImage { asset, alt },
         href,
         slug
       },
@@ -30,11 +34,11 @@ const project = await sanityClient.fetch(
         _id,
         title,
         description,
-        image { asset, alt },
+        cardImage { asset, alt },
         href,
         slug
       }
-    )
+    )      
   }`,
   { slug },
 )
@@ -42,12 +46,40 @@ const project = await sanityClient.fetch(
 if (!project) {
   return Astro.redirect('/404')
 }
+
+const heroImgSource = project.heroImage || project.cardImage
+const heroImg = heroImgSource ? imageProps(heroImgSource, 2400) : undefined
+const heroAlt = (project.heroImage?.alt || project.cardImage?.alt) ?? ''
 ---
 
 <Layout title={`${project.title} | JTB Imaginative LLC`}>
   <PageHeader title={project.title} fullHeight={false} contentClass="items-start gap-0!">
     {
-      project.projectOverview && (
+      heroImg && (
+        <div class="project-hero relative w-full mt-(--site-padding-sm)">
+          <Picture
+            src={heroImg.src}
+            alt={heroAlt}
+            class={`w-full h-auto ${project.projectOverview ? 'mt-(--site-padding-base) md:mt-(--site-padding-lg)' : ''} object-cover`}
+            formats={['avif', 'webp']}
+            quality={85}
+            width={heroImg.width}
+            height={heroImg.height}
+          />
+          {project.projectOverview && (
+            <OverviewCard
+              overview={project.projectOverview}
+              accentColor={project.styling?.accentColor}
+              backgroundColor={project.styling?.cardBackgroundColor}
+              textColor={project.styling?.cardTextColor}
+              class="project-hero__overview"
+            />
+          )}
+        </div>
+      )
+    }
+    {
+      !heroImg && project.projectOverview && (
         <OverviewCard
           overview={project.projectOverview}
           accentColor={project.styling?.accentColor}
@@ -93,3 +125,32 @@ if (!project) {
     }
   </main>
 </Layout>
+
+<style>
+  .project-hero :global(picture) {
+    position: relative;
+    display: block;
+    width: 100vw;
+    left: 50%;
+    margin-left: -50vw;
+  }
+
+  .project-hero :global(.project-hero__overview) {
+    position: relative;
+    width: 100vw;
+    left: 50%;
+    margin-left: -50vw;
+  }
+
+  @media (min-width: 768px) {
+    .project-hero :global(.project-hero__overview) {
+      position: absolute;
+      width: 100%;
+      top: 0;
+      right: 0;
+      left: 0;
+      z-index: 10;
+      margin-left: 0;
+    }
+  }
+</style>
