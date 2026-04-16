@@ -19,7 +19,7 @@ export function imageProps(
   width: number,
   quality = 90,
 ): { src: string; width: number; height: number } {
-  const builder = imageBuilder.image(source).width(width).quality(quality)
+  const builder = imageBuilder.image(source).width(width).quality(quality).auto('format')
   const src = builder.url()
 
   // Extract original dimensions from the Sanity asset URL: `{hash}-{W}x{H}.{ext}`

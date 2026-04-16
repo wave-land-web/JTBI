@@ -7,7 +7,10 @@ import { sanityClient } from '../../sanity/lib/client'
 import { imageProps } from '../../sanity/lib/urlForImage'
 import { toHTML } from '@portabletext/to-html'
 
-export const prerender = false
+export async function getStaticPaths() {
+  const projects = await sanityClient.fetch(`*[_type == "project"]{ "slug": slug.current }`)
+  return projects.map((p: { slug: string }) => ({ params: { slug: p.slug } }))
+}
 
 const { slug } = Astro.params
 
