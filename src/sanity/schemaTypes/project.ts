@@ -148,6 +148,27 @@ export default defineType({
       of: [richTextBlock],
     }),
     defineField({
+      name: 'masonryGrid',
+      title: 'Masonry Grid',
+      description: 'Gallery of images displayed in a full-width masonry grid below the hero image.',
+      type: 'array',
+      of: [
+        defineArrayMember({
+          type: 'image',
+          options: { hotspot: true },
+          fields: [
+            defineField({
+              name: 'alt',
+              title: 'Alt Text',
+              type: 'string',
+              validation: (Rule) => Rule.required().error('Alt text is required for accessibility'),
+            }),
+          ],
+        }),
+      ],
+      validation: (Rule) => Rule.max(20),
+    }),
+    defineField({
       name: 'body',
       title: 'Body',
       description: 'Main project/case study content.',

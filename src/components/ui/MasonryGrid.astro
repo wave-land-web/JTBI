@@ -1,0 +1,66 @@
+---
+import { Picture } from 'astro:assets'
+
+export interface MasonryImage {
+  src: string
+  width: number
+  height: number
+  alt: string
+}
+
+interface Props {
+  images: MasonryImage[]
+  class?: string
+}
+
+const { images, class: className } = Astro.props
+---
+
+{
+  images.length > 0 && (
+    <div class:list={['masonry-grid-wrapper', className]}>
+      <div class="masonry-grid">
+        {images.map((img, i) => (
+          <div
+            class="masonry-grid__item lsa lsa-slide-up no-repeat"
+            style={`transition-delay: ${i * 100}ms`}
+          >
+            <Picture
+              src={img.src}
+              alt={img.alt}
+              width={img.width}
+              height={img.height}
+              formats={['avif', 'webp']}
+              quality={85}
+              class="w-full h-auto block"
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+<style>
+  .masonry-grid-wrapper {
+    position: relative;
+    width: 100vw;
+    left: 50%;
+    margin-left: -50vw;
+    padding-top: var(--masonry-gap, 4px);
+  }
+
+  .masonry-grid {
+    columns: var(--masonry-cols, 3);
+    gap: var(--masonry-gap, 4px);
+  }
+
+  .masonry-grid__item {
+    break-inside: avoid;
+    margin-bottom: var(--masonry-gap, 4px);
+  }
+
+  .masonry-grid__item :global(picture) {
+    display: block;
+  }
+</style>

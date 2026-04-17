@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro'
 import PageHeader from '../../components/ui/PageHeader.astro'
 import OverviewCard from '../../components/ui/OverviewCard.astro'
+import MasonryGrid from '../../components/ui/MasonryGrid.astro'
 import { Picture } from 'astro:assets'
 import { sanityClient } from '../../sanity/lib/client'
 import { imageProps } from '../../sanity/lib/urlForImage'
@@ -23,6 +24,7 @@ const project = await sanityClient.fetch(
     heroImage { asset, alt },
     styling,
     projectOverview,
+    masonryGrid[asset != null] { asset, alt },
     body,
     "relatedProjects": select(
       count(relatedProjects) > 0 => relatedProjects[]->{
@@ -53,6 +55,13 @@ if (!project) {
 const heroImgSource = project.heroImage || project.cardImage
 const heroImg = heroImgSource ? imageProps(heroImgSource, 2400) : undefined
 const heroAlt = (project.heroImage?.alt || project.cardImage?.alt) ?? ''
+
+const masonryImages = (project.masonryGrid ?? [])
+  .filter((img: any) => img?.asset)
+  .map((img: any) => ({
+    ...imageProps(img, 800),
+    alt: img.alt ?? '',
+  }))
 ---
 
 <Layout title={`${project.title} | JTB Imaginative LLC`}>
@@ -63,7 +72,7 @@ const heroAlt = (project.heroImage?.alt || project.cardImage?.alt) ?? ''
           <Picture
             src={heroImg.src}
             alt={heroAlt}
-            class={`w-full h-auto ${project.projectOverview ? 'mt-(--site-padding-base) md:mt-(--site-padding-lg)' : ''} object-cover`}
+            class={`w-full h-auto lsa no-repeat ${project.projectOverview ? 'mt-(--site-padding-base) md:mt-(--site-padding-lg)' : ''} object-cover`}
             formats={['avif', 'webp']}
             quality={85}
             width={heroImg.width}
@@ -92,6 +101,7 @@ const heroAlt = (project.heroImage?.alt || project.cardImage?.alt) ?? ''
         />
       )
     }
+    {masonryImages.length > 0 && <MasonryGrid images={masonryImages} />}
   </PageHeader>
 
   <main id="main-content">
@@ -130,16 +140,10 @@ const heroAlt = (project.heroImage?.alt || project.cardImage?.alt) ?? ''
 </Layout>
 
 <style>
-  .project-hero :global(picture) {
-    position: relative;
-    display: block;
-    width: 100vw;
-    left: 50%;
-    margin-left: -50vw;
-  }
-
+  .project-hero :global(picture),
   .project-hero :global(.project-hero__overview) {
     position: relative;
+    display: block;
     width: 100vw;
     left: 50%;
     margin-left: -50vw;
@@ -155,5 +159,10 @@ const heroAlt = (project.heroImage?.alt || project.cardImage?.alt) ?? ''
       z-index: 10;
       margin-left: 0;
     }
+  }
+
+  .project-hero :global(img),
+  :global(.masonry-grid__item img) {
+    border-radius: 4px;
   }
 </style>

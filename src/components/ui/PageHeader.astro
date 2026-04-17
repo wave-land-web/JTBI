@@ -58,7 +58,7 @@ const hasCarousel = carouselImages.length > 0
 
 <header
   id={id || undefined}
-  class={`relative flex justify-center items-center max-w-none overflow-hidden ${fullHeight || backgroundImageSrc || hasCarousel ? 'h-screen' : 'pt-[calc(var(--nav-height)+var(--site-padding-2xl))]'} ${headerClass || ''}`}
+  class={`relative flex justify-center items-center overflow-hidden ${fullHeight || backgroundImageSrc || hasCarousel ? 'h-screen' : 'pt-[calc(var(--nav-height)+var(--site-padding-2xl))]'} ${headerClass || ''}`}
 >
   {hasCarousel && (
     <div class="hero-carousel swiper absolute w-full h-full inset-0 pointer-events-none select-none">
