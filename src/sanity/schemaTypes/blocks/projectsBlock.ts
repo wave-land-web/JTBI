@@ -14,7 +14,7 @@ export default defineType({
       title: 'Section Heading',
       description: 'Heading displayed above the list of projects.',
       type: 'string',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('A section heading is required.'),
     }),
     defineField({
       name: 'projects',

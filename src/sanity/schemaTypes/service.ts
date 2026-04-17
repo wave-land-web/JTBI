@@ -19,7 +19,7 @@ export default defineType({
       description: 'Name of the service (used in cards and navigation).',
       type: 'string',
       group: 'content',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('A service title is required.'),
     }),
     defineField({
       name: 'description',
@@ -28,12 +28,12 @@ export default defineType({
       type: 'text',
       rows: 2,
       group: 'content',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('A short description is required.'),
     }),
     defineField({
       name: 'image',
       title: 'Image',
-      description: 'Image used on the service card.',
+      description: 'Image used on the service card. Recommended: 800×800 (1:1 square).',
       type: 'image',
       group: 'content',
       options: { hotspot: true },
@@ -57,9 +57,16 @@ export default defineType({
     defineField({
       name: 'ctaLabel',
       title: 'CTA Label',
-      description: 'Button text for the link (e.g. "Learn More"). Required if Link is set.',
+      description: 'Button text for the link (e.g. "Learn More").',
       type: 'string',
       group: 'link',
+      hidden: ({ parent }) => !parent?.href,
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          const parent = context.parent as { href?: string } | undefined
+          if (parent?.href && !value?.trim()) return 'Add button text or remove the link.'
+          return true
+        }),
     }),
     defineField({
       name: 'styling',

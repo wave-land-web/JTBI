@@ -21,7 +21,7 @@ export default defineType({
       title: 'Title',
       type: 'string',
       group: 'details',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('A project title is required.'),
     }),
     defineField({
       name: 'slug',
@@ -29,7 +29,7 @@ export default defineType({
       type: 'slug',
       group: 'details',
       options: { source: 'title' },
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('A URL slug is required.'),
     }),
     defineField({
       name: 'services',
@@ -42,7 +42,7 @@ export default defineType({
           to: [{ type: 'service' }],
         }),
       ],
-      validation: (Rule) => Rule.required().min(1),
+      validation: (Rule) => Rule.required().min(1).error('Select at least one service.'),
     }),
     defineField({
       name: 'description',
@@ -50,7 +50,7 @@ export default defineType({
       type: 'text',
       rows: 3,
       group: 'details',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('A short description is required.'),
     }),
     defineField({
       name: 'styling',
@@ -88,7 +88,8 @@ export default defineType({
     defineField({
       name: 'cardImage',
       title: 'Card Image',
-      description: 'Image used for project cards on the homepage and related projects.',
+      description:
+        'Image used for project cards on the homepage and related projects. Recommended: 1200x900 (4:3 landscape).',
       type: 'image',
       group: 'card',
       options: {
@@ -129,10 +130,11 @@ export default defineType({
     defineField({
       name: 'reversed',
       title: 'Reversed Layout',
-      description: 'Flip the card layout so the image appears on the left.',
+      description: 'Flip the homepage card layout so the image appears on the left.',
       type: 'boolean',
       group: 'card',
       initialValue: false,
+      hidden: ({ parent }) => !parent?.featured,
     }),
     defineField({
       name: 'sortOrder',
@@ -141,6 +143,7 @@ export default defineType({
       type: 'number',
       group: 'card',
       initialValue: 0,
+      hidden: ({ parent }) => !parent?.featured,
     }),
 
     // ── Project Page ─────────────────────────────────
@@ -148,7 +151,7 @@ export default defineType({
       name: 'heroImage',
       title: 'Hero Image',
       description:
-        'Full-width hero image for the project page. Falls back to Card Image if not set.',
+        'Full-width hero image for the project page. Falls back to Card Image if not set. Recommended: 2400x1200 (2:1 landscape).',
       type: 'image',
       group: 'page',
       options: {
@@ -174,7 +177,8 @@ export default defineType({
     defineField({
       name: 'masonryGrid',
       title: 'Masonry Grid',
-      description: 'Gallery of images displayed in a full-width masonry grid below the hero.',
+      description:
+        'Gallery of images displayed in a full-width masonry grid below the hero. Mix of portrait and landscape works best. Recommended: min 1200px on the long edge.',
       type: 'array',
       group: 'page',
       of: [

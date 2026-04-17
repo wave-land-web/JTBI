@@ -13,7 +13,7 @@ export default defineType({
       title: 'Title',
       description: 'Page title (e.g. "Privacy Policy", "Terms of Service").',
       type: 'string',
-      validation: (rule) => rule.required(),
+      validation: (rule) => rule.required().error('A page title is required.'),
     }),
     defineField({
       name: 'slug',
@@ -21,7 +21,7 @@ export default defineType({
       description: 'URL path for this page (e.g. /legal/privacy).',
       type: 'slug',
       options: { source: 'title' },
-      validation: (rule) => rule.required(),
+      validation: (rule) => rule.required().error('A URL slug is required.'),
     }),
     defineField({
       name: 'body',

@@ -1,4 +1,5 @@
 import {
+  BellIcon,
   CloseIcon,
   CogIcon,
   DashboardIcon,
@@ -7,12 +8,50 @@ import {
   FolderIcon,
   HomeIcon,
   ProjectsIcon,
+  StarIcon,
 } from '@sanity/icons'
 
 export const structure = (S: any) => {
   return S.list()
     .title('JTBI Content')
     .items([
+      // ── Needs Attention ───────────────────────────────
+      S.listItem()
+        .title('Needs Attention')
+        .icon(BellIcon)
+        .child(
+          S.list()
+            .title('Needs Attention')
+            .items([
+              S.listItem()
+                .title('New Contact Submissions')
+                .icon(EnvelopeIcon)
+                .child(
+                  S.documentList()
+                    .title('New Contact Submissions')
+                    .schemaType('contactSubmission')
+                    .filter('_type == "contactSubmission" && status == "new"')
+                    .defaultOrdering([{ field: 'submittedAt', direction: 'desc' }]),
+                ),
+              S.listItem()
+                .title('In Progress')
+                .icon(StarIcon)
+                .child(
+                  S.documentList()
+                    .title('In Progress Submissions')
+                    .schemaType('contactSubmission')
+                    .filter('_type == "contactSubmission" && status == "in-progress"')
+                    .defaultOrdering([{ field: 'submittedAt', direction: 'desc' }]),
+                ),
+            ]),
+        ),
+      S.divider(),
+
+      // ── Quick Edit ────────────────────────────────────
+      S.listItem()
+        .title('Homepage')
+        .icon(HomeIcon)
+        .child(S.document().schemaType('homepage').documentId('homepage').title('Homepage')),
       S.listItem()
         .title('Site Settings')
         .icon(CogIcon)
@@ -20,25 +59,34 @@ export const structure = (S: any) => {
           S.document().schemaType('siteSettings').documentId('siteSettings').title('Site Settings'),
         ),
       S.divider(),
+
+      // ── Content ───────────────────────────────────────
       S.listItem()
-        .title('Pages')
+        .title('Projects')
+        .icon(ProjectsIcon)
+        .child(
+          S.documentTypeList('project')
+            .title('Projects')
+            .defaultOrdering([{ field: 'sortOrder', direction: 'asc' }]),
+        ),
+      S.listItem()
+        .title('Services')
+        .icon(DashboardIcon)
+        .child(S.documentTypeList('service').title('Services')),
+      S.divider(),
+
+      // ── Other Pages ───────────────────────────────────
+      S.listItem()
+        .title('Other Pages')
         .icon(FolderIcon)
         .child(
           S.list()
-            .title('Pages')
+            .title('Other Pages')
             .items([
-              S.listItem()
-                .title('Homepage')
-                .icon(HomeIcon)
-                .child(
-                  S.document().schemaType('homepage').documentId('homepage').title('Homepage'),
-                ),
-              S.divider(),
               S.listItem()
                 .title('Legal Pages')
                 .icon(DocumentTextIcon)
                 .child(S.documentTypeList('legalPage').title('Legal Pages')),
-              S.divider(),
               S.listItem()
                 .title('404 Page')
                 .icon(CloseIcon)
@@ -51,26 +99,14 @@ export const structure = (S: any) => {
             ]),
         ),
       S.divider(),
+
+      // ── Inbox ─────────────────────────────────────────
       S.listItem()
-        .title('Projects')
-        .icon(ProjectsIcon)
-        .child(
-          S.documentTypeList('project')
-            .title('Projects')
-            .defaultOrdering([{ field: 'sortOrder', direction: 'asc' }]),
-        ),
-      S.divider(),
-      S.listItem()
-        .title('Services')
-        .icon(DashboardIcon)
-        .child(S.documentTypeList('service').title('Services')),
-      S.divider(),
-      S.listItem()
-        .title('Contact Submissions')
+        .title('All Contact Submissions')
         .icon(EnvelopeIcon)
         .child(
           S.documentTypeList('contactSubmission')
-            .title('Contact Submissions')
+            .title('All Contact Submissions')
             .defaultOrdering([{ field: 'submittedAt', direction: 'desc' }]),
         ),
     ])

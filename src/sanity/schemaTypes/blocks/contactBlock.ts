@@ -14,7 +14,7 @@ export default defineType({
       title: 'Heading',
       description: 'Primary heading for the contact section.',
       type: 'string',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('A section heading is required.'),
     }),
     defineField({
       name: 'subheading',

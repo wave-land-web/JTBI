@@ -20,7 +20,7 @@ export default defineType({
       description: 'First line of the hero heading.',
       type: 'string',
       group: 'content',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('The first heading line is required.'),
     }),
     defineField({
       name: 'headline2',
@@ -28,18 +28,20 @@ export default defineType({
       description: 'Second line of the hero heading.',
       type: 'string',
       group: 'content',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('The second heading line is required.'),
     }),
     defineField({
       name: 'backgroundImage',
       title: 'Background Image',
       description:
-        'Full-width background image for the hero section. Used when no Carousel Images are set.',
+        'Full-width background image for the hero section. Used when no Carousel Images are set. Recommended: 2400x1200 (landscape, at least 1MB quality).',
       type: 'image',
       group: 'media',
       options: {
         hotspot: true,
       },
+      hidden: ({ parent }) =>
+        Array.isArray(parent?.carouselImages) && parent.carouselImages.length > 0,
       fields: [
         defineField({
           name: 'alt',
@@ -54,7 +56,7 @@ export default defineType({
       name: 'carouselImages',
       title: 'Carousel Images',
       description:
-        'Optional set of images that cycle in the hero with a crossfade effect. When provided, these replace the single background image.',
+        'Optional set of images that cycle in the hero with a crossfade effect. When provided, these replace the single background image. Recommended: 2400x1200 each, matching aspect ratio.',
       type: 'array',
       group: 'media',
       of: [

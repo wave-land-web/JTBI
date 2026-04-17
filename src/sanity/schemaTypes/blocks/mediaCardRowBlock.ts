@@ -31,7 +31,7 @@ export default defineType({
       type: 'array',
       group: 'content',
       of: [richTextBlock],
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('Feature text is required.'),
     }),
     defineField({
       name: 'title',
@@ -39,7 +39,7 @@ export default defineType({
       description: 'Primary heading inside the card.',
       type: 'string',
       group: 'content',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('A card title is required.'),
     }),
     defineField({
       name: 'description',
@@ -48,12 +48,13 @@ export default defineType({
       type: 'text',
       rows: 3,
       group: 'content',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('A card description is required.'),
     }),
     defineField({
       name: 'image',
       title: 'Image',
-      description: 'Image displayed next to the card content.',
+      description:
+        'Image displayed next to the card content. Recommended: 1200x900 (4:3 landscape).',
       type: 'image',
       group: 'media',
       options: { hotspot: true },
@@ -77,10 +78,16 @@ export default defineType({
     defineField({
       name: 'ctaLabel',
       title: 'CTA Label',
-      description:
-        'Button text for the link (e.g. "Read More", "Learn More"). Required if Link is set.',
+      description: 'Button text for the link (e.g. "Read More", "Learn More").',
       type: 'string',
       group: 'link',
+      hidden: ({ parent }) => !parent?.href,
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          const parent = context.parent as { href?: string } | undefined
+          if (parent?.href && !value?.trim()) return 'Add button text or remove the link.'
+          return true
+        }),
     }),
     defineField({
       name: 'reversed',
