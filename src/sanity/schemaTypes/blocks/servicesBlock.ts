@@ -1,5 +1,6 @@
 import { DashboardIcon } from '@sanity/icons'
 import { defineArrayMember, defineField, defineType } from 'sanity'
+import { sectionIdField } from '../shared/sectionId'
 
 export default defineType({
   name: 'servicesBlock',
@@ -7,22 +8,18 @@ export default defineType({
   type: 'object',
   icon: DashboardIcon,
   fields: [
-    defineField({
-      name: 'sectionId',
-      title: 'Section ID',
-      description:
-        'Optional HTML id for anchor links (e.g. "services"). No spaces or special characters.',
-      type: 'string',
-    }),
+    sectionIdField,
     defineField({
       name: 'heading',
       title: 'Section Heading',
+      description: 'Heading displayed above the services grid.',
       type: 'string',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'items',
       title: 'Services',
+      description: 'Drag to reorder. Select up to six service documents to feature.',
       type: 'array',
       of: [
         defineArrayMember({

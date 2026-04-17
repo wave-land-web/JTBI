@@ -2,6 +2,8 @@
 import Layout from '../../layouts/Layout.astro'
 import PageHeader from '../../components/ui/PageHeader.astro'
 import OverviewCard from '../../components/ui/OverviewCard.astro'
+import MediaCardRow from '../../components/ui/MediaCardRow.astro'
+import Card from '../../components/ui/Card.astro'
 import MasonryGrid from '../../components/ui/MasonryGrid.astro'
 import { Picture } from 'astro:assets'
 import { sanityClient } from '../../sanity/lib/client'
@@ -33,15 +35,17 @@ const project = await sanityClient.fetch(
         description,
         cardImage { asset, alt },
         href,
-        slug
+        slug,
+        styling
       },
-      *[_type == "project" && count(services[_ref in ^.^.serviceRefs]) > 0 && _id != ^._id][0...3]{
+      *[_type == "project" && count(services[_ref in ^.^.services[]._ref]) > 0 && _id != ^._id][0...3]{
         _id,
         title,
         description,
         cardImage { asset, alt },
         href,
-        slug
+        slug,
+        styling
       }
     )      
   }`,
@@ -62,25 +66,56 @@ const masonryImages = (project.masonryGrid ?? [])
     ...imageProps(img, 800),
     alt: img.alt ?? '',
   }))
+
+// Separate projectOverview text blocks for the OverviewCard
+const overviewTextBlocks = (project.projectOverview ?? []).filter((b: any) => b._type === 'block')
+
+// Group body blocks into consecutive runs of text vs mediaCardRowBlock
+const bodyGroups: { type: 'text' | 'mediaCardRow'; blocks: any[] }[] = []
+for (const block of project.body ?? []) {
+  if (block._type === 'mediaCardRowBlock') {
+    bodyGroups.push({ type: 'mediaCardRow', blocks: [block] })
+  } else {
+    const last = bodyGroups[bodyGroups.length - 1]
+    if (last?.type === 'text') {
+      last.blocks.push(block)
+    } else {
+      bodyGroups.push({ type: 'text', blocks: [block] })
+    }
+  }
+}
 ---
 
 <Layout title={`${project.title} | JTB Imaginative LLC`}>
   <PageHeader title={project.title} fullHeight={false} contentClass="items-start gap-0!">
+    {
+      !heroImg && overviewTextBlocks.length > 0 && (
+        <OverviewCard
+          overview={overviewTextBlocks}
+          accentColor={project.styling?.accentColor}
+          backgroundColor={project.styling?.cardBackgroundColor}
+          textColor={project.styling?.cardTextColor}
+          class="mt-(--site-padding-base)"
+        />
+      )
+    }
+
     {
       heroImg && (
         <div class="project-hero relative w-full mt-(--site-padding-sm)">
           <Picture
             src={heroImg.src}
             alt={heroAlt}
-            class={`w-full h-auto lsa no-repeat ${project.projectOverview ? 'mt-(--site-padding-base) md:mt-(--site-padding-lg)' : ''} object-cover`}
+            class={`w-full h-auto lsa no-repeat ${overviewTextBlocks.length > 0 ? 'mt-(--site-padding-base) md:mt-(--site-padding-lg)' : ''} object-cover`}
             formats={['avif', 'webp']}
             quality={85}
             width={heroImg.width}
             height={heroImg.height}
+            priority
           />
-          {project.projectOverview && (
+          {overviewTextBlocks.length > 0 && (
             <OverviewCard
-              overview={project.projectOverview}
+              overview={overviewTextBlocks}
               accentColor={project.styling?.accentColor}
               backgroundColor={project.styling?.cardBackgroundColor}
               textColor={project.styling?.cardTextColor}
@@ -90,49 +125,85 @@ const masonryImages = (project.masonryGrid ?? [])
         </div>
       )
     }
-    {
-      !heroImg && project.projectOverview && (
-        <OverviewCard
-          overview={project.projectOverview}
-          accentColor={project.styling?.accentColor}
-          backgroundColor={project.styling?.cardBackgroundColor}
-          textColor={project.styling?.cardTextColor}
-          class="mt-(--site-padding-base)"
-        />
-      )
-    }
+
     {masonryImages.length > 0 && <MasonryGrid images={masonryImages} />}
   </PageHeader>
 
-  <main id="main-content">
-    <section>
-      {
-        project.body && (
+  <main id="main-content" class="section space-y-6">
+    {
+      bodyGroups.map((group) => {
+        if (group.type === 'mediaCardRow') {
+          const block = group.blocks[0]
+          const blockImg = block.image ? imageProps(block.image, 1600) : undefined
+          return (
+            <MediaCardRow
+              reversed={block.reversed}
+              featureText={block.featureText ? toHTML(block.featureText) : ''}
+              imageSrc={blockImg?.src}
+              imageWidth={blockImg?.width}
+              imageHeight={blockImg?.height}
+              imageAlt={block.image?.alt || ''}
+              accentColor={block.styling?.accentColor}
+              cardBackgroundColor={block.styling?.cardBackgroundColor}
+              cardTextColor={block.styling?.cardTextColor}
+              title={block.title || ''}
+              description={block.description || ''}
+              href={block.href}
+              ctaLabel={block.ctaLabel}
+            />
+          )
+        }
+        return (
           <div class="max-w-4xl ml-auto space-y-6 lsa no-repeat">
-            <Fragment set:html={toHTML(project.body)} />
+            <Fragment set:html={toHTML(group.blocks)} />
           </div>
         )
-      }
-    </section>
+      })
+    }
 
     {
       project.relatedProjects?.length > 0 && (
-        <section>
-          <h2>Related Projects</h2>
-          <ul>
-            {project.relatedProjects.map((related: any) => (
-              <li>
-                <a
-                  href={
-                    related.slug?.current ? `/project/${related.slug.current}` : related.href || '#'
-                  }
-                >
-                  {related.title}
-                </a>
-                {related.description && <span> — {related.description}</span>}
-              </li>
-            ))}
-          </ul>
+        <section class="text-center px-0">
+          <div class="flex flex-col gap-8 md:gap-10">
+            <h2 class="h3 uppercase text-left text-primary lsa lsa-slide-up no-repeat">
+              Related Projects
+            </h2>
+            <div class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-[clamp(40px,4vw,64px)]">
+              {project.relatedProjects.map((related: any) => {
+                const relImg = related.cardImage ? imageProps(related.cardImage, 1200) : undefined
+                const relHref = related.slug?.current
+                  ? `/project/${related.slug.current}`
+                  : related.href || '#'
+                const cardStyles = `
+                  --card-accent: ${related.styling?.accentColor || 'var(--color-primary)'};
+                  --card-bg: ${related.styling?.cardBackgroundColor || related.styling?.accentColor};
+                  --card-text: ${related.styling?.cardTextColor || related.styling?.accentColor || 'var(--color-primary)'};
+                  --card-cta: ${related.styling?.cardTextColor || related.styling?.accentColor || 'var(--color-primary)'};
+                  --card-media-bg: ${related.styling?.cardBackgroundColor || related.styling?.accentColor || 'var(--color-base-200)'};
+                  --card-divider: color-mix(in srgb, ${related.styling?.cardTextColor || related.styling?.accentColor || 'var(--color-primary)'} 14%, transparent);
+                `
+                return (
+                  <div class="lsa no-repeat w-full" style={cardStyles}>
+                    <Card
+                      title={related.title}
+                      description={related.description || ''}
+                      href={relHref}
+                      ctaLabel="View Project"
+                      imageSrc={relImg?.src}
+                      imageWidth={relImg?.width}
+                      imageHeight={relImg?.height}
+                      imageAlt={related.cardImage?.alt || related.title}
+                      imageClass="relative z-10"
+                      mediaClass="bg-(--card-media-bg)"
+                      contentClass="flex h-full flex-col gap-2.5 p-4 text-left sm:p-5 bg-(--card-bg)"
+                      class="h-full border-(--card-divider) text-(--card-text)"
+                      accentBorderColor={related.styling?.accentColor || 'var(--color-primary)'}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          </div>
         </section>
       )
     }
@@ -164,5 +235,16 @@ const masonryImages = (project.masonryGrid ?? [])
   .project-hero :global(img),
   :global(.masonry-grid__item img) {
     border-radius: 4px;
+  }
+
+  /* On project pages, re-proportion the grid so the card column matches max-w-4xl (56rem) */
+  @media (min-width: 768px) {
+    main :global(.portfolio-item) {
+      grid-template-columns: 1fr minmax(0, 56rem);
+    }
+
+    main :global(.portfolio-item--reversed) {
+      grid-template-columns: minmax(0, 56rem) 1fr;
+    }
   }
 </style>

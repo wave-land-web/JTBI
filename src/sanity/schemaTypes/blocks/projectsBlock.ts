@@ -1,5 +1,6 @@
 import { InlineElementIcon } from '@sanity/icons'
 import { defineArrayMember, defineField, defineType } from 'sanity'
+import { sectionIdField } from '../shared/sectionId'
 
 export default defineType({
   name: 'projectsBlock',
@@ -7,16 +8,11 @@ export default defineType({
   type: 'object',
   icon: InlineElementIcon,
   fields: [
-    defineField({
-      name: 'sectionId',
-      title: 'Section ID',
-      description:
-        'Optional HTML id for anchor links (e.g. "portfolio"). No spaces or special characters.',
-      type: 'string',
-    }),
+    sectionIdField,
     defineField({
       name: 'heading',
       title: 'Section Heading',
+      description: 'Heading displayed above the list of projects.',
       type: 'string',
       validation: (Rule) => Rule.required(),
     }),

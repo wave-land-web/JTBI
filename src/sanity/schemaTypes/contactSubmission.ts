@@ -46,6 +46,7 @@ export default defineType({
     defineField({
       name: 'isSubscribed',
       title: 'Newsletter Subscription',
+      description: 'Whether the submitter opted in to the newsletter.',
       type: 'boolean',
       initialValue: false,
     }),
@@ -59,6 +60,7 @@ export default defineType({
     defineField({
       name: 'status',
       title: 'Status',
+      description: 'Workflow status for this submission.',
       type: 'string',
       initialValue: 'new',
       options: {
@@ -66,6 +68,7 @@ export default defineType({
           { title: 'New', value: 'new' },
           { title: 'Reviewed', value: 'reviewed' },
           { title: 'Archived', value: 'archived' },
+          { title: 'Spam', value: 'spam' },
         ],
         layout: 'radio',
       },
@@ -91,6 +94,19 @@ export default defineType({
       name: 'submittedAtDesc',
       by: [{ field: 'submittedAt', direction: 'desc' }],
     },
+    {
+      title: 'Oldest first',
+      name: 'submittedAtAsc',
+      by: [{ field: 'submittedAt', direction: 'asc' }],
+    },
+    {
+      title: 'Status',
+      name: 'statusAsc',
+      by: [
+        { field: 'status', direction: 'asc' },
+        { field: 'submittedAt', direction: 'desc' },
+      ],
+    },
   ],
   preview: {
     select: {
@@ -108,7 +124,7 @@ export default defineType({
       const media =
         status === 'reviewed'
           ? CheckmarkCircleIcon
-          : status === 'archived'
+          : status === 'archived' || status === 'spam'
             ? ArchiveIcon
             : EnvelopeIcon
 

@@ -9,8 +9,9 @@ export default defineType({
   fields: [
     defineField({
       name: 'pageBuilder',
-      title: 'Page Builder',
-      description: 'Add and reorder sections to compose the page.',
+      title: 'Sections',
+      description:
+        'Add and reorder sections to compose the homepage. Each section renders in the order listed here.',
       type: 'array',
       of: [
         defineArrayMember({ type: 'heroBlock' }),
@@ -25,7 +26,7 @@ export default defineType({
     prepare() {
       return {
         title: 'Homepage',
-        subtitle: 'Page Builder',
+        subtitle: 'Page Sections',
       }
     },
   },

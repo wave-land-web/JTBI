@@ -11,12 +11,14 @@ export default defineType({
     defineField({
       name: 'title',
       title: 'Title',
+      description: 'Page title (e.g. "Privacy Policy", "Terms of Service").',
       type: 'string',
       validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'slug',
       title: 'Slug',
+      description: 'URL path for this page (e.g. /legal/privacy).',
       type: 'slug',
       options: { source: 'title' },
       validation: (rule) => rule.required(),
@@ -24,12 +26,14 @@ export default defineType({
     defineField({
       name: 'body',
       title: 'Body',
+      description: 'Main legal content rendered on the page.',
       type: 'array',
       of: [richTextBlock],
     }),
     defineField({
       name: 'seoDescription',
       title: 'SEO Description',
+      description: 'Meta description shown in search results and social shares.',
       type: 'text',
       rows: 3,
     }),
@@ -37,6 +41,13 @@ export default defineType({
   preview: {
     select: {
       title: 'title',
+      slug: 'slug.current',
+    },
+    prepare({ title, slug }) {
+      return {
+        title: title || 'Untitled',
+        subtitle: slug ? `/legal/${slug}` : 'No slug',
+      }
     },
   },
 })

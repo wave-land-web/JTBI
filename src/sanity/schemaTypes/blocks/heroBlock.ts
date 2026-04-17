@@ -1,24 +1,42 @@
-import { BlockContentIcon } from '@sanity/icons'
+import { StarIcon } from '@sanity/icons'
 import { defineField, defineType } from 'sanity'
+import { sectionIdField } from '../shared/sectionId'
 
 export default defineType({
   name: 'heroBlock',
   title: 'Hero',
   type: 'object',
-  icon: BlockContentIcon,
+  icon: StarIcon,
+  groups: [
+    { name: 'content', title: 'Content', default: true },
+    { name: 'media', title: 'Media' },
+    { name: 'styling', title: 'Styling' },
+  ],
   fields: [
+    { ...sectionIdField, group: 'content' },
     defineField({
-      name: 'sectionId',
-      title: 'Section ID',
-      description:
-        'Optional HTML id for anchor links (e.g. "hero"). No spaces or special characters.',
+      name: 'headline1',
+      title: 'Heading Line 1',
+      description: 'First line of the hero heading.',
       type: 'string',
+      group: 'content',
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'headline2',
+      title: 'Heading Line 2',
+      description: 'Second line of the hero heading.',
+      type: 'string',
+      group: 'content',
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'backgroundImage',
       title: 'Background Image',
-      description: 'Full-width background image for the hero section.',
+      description:
+        'Full-width background image for the hero section. Used when no Carousel Images are set.',
       type: 'image',
+      group: 'media',
       options: {
         hotspot: true,
       },
@@ -27,7 +45,8 @@ export default defineType({
           name: 'alt',
           type: 'string',
           title: 'Alternative Text',
-          validation: (Rule) => Rule.required().warning('Alt text is important for accessibility'),
+          validation: (Rule) =>
+            Rule.required().error('Alt text is required for SEO and accessibility.'),
         }),
       ],
     }),
@@ -37,6 +56,7 @@ export default defineType({
       description:
         'Optional set of images that cycle in the hero with a crossfade effect. When provided, these replace the single background image.',
       type: 'array',
+      group: 'media',
       of: [
         {
           type: 'image',
@@ -47,23 +67,18 @@ export default defineType({
               type: 'string',
               title: 'Alternative Text',
               validation: (Rule) =>
-                Rule.required().warning('Alt text is important for accessibility'),
+                Rule.required().error('Alt text is required for SEO and accessibility.'),
             }),
           ],
         },
       ],
     }),
     defineField({
-      name: 'headline1',
-      title: 'Heading Line 1',
-      type: 'string',
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
       name: 'headline1Color',
       title: 'Heading Line 1 Color',
-      description: 'Choose "dark" for primary text or "light" for white text.',
+      description: 'Choose "Dark" for primary text or "Light" for white text.',
       type: 'string',
+      group: 'styling',
       options: {
         list: [
           { title: 'Light', value: 'light' },
@@ -75,16 +90,11 @@ export default defineType({
       initialValue: 'light',
     }),
     defineField({
-      name: 'headline2',
-      title: 'Heading Line 2',
-      type: 'string',
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
       name: 'headline2Color',
       title: 'Heading Line 2 Color',
-      description: 'Choose "dark" for primary text or "light" for white text.',
+      description: 'Choose "Dark" for primary text or "Light" for white text.',
       type: 'string',
+      group: 'styling',
       options: {
         list: [
           { title: 'Light', value: 'light' },
@@ -101,8 +111,8 @@ export default defineType({
     prepare({ line1, line2, media }) {
       return {
         title: line1 || 'Untitled Hero',
-        subtitle: line2 || 'Hero',
-        media: media || BlockContentIcon,
+        subtitle: line2 ? `Hero · ${line2}` : 'Hero',
+        media: media || StarIcon,
       }
     },
   },

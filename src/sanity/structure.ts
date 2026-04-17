@@ -11,7 +11,7 @@ import {
 
 export const structure = (S: any) => {
   return S.list()
-    .title('Sanity Studio')
+    .title('JTBI Content')
     .items([
       S.listItem()
         .title('Site Settings')
@@ -66,21 +66,12 @@ export const structure = (S: any) => {
         .child(S.documentTypeList('service').title('Services')),
       S.divider(),
       S.listItem()
-        .title('Forms')
-        .icon(FolderIcon)
+        .title('Contact Submissions')
+        .icon(EnvelopeIcon)
         .child(
-          S.list()
-            .title('Forms')
-            .items([
-              S.listItem()
-                .title('Contact')
-                .icon(EnvelopeIcon)
-                .child(
-                  S.documentTypeList('contactSubmission')
-                    .title('Contact')
-                    .defaultOrdering([{ field: 'submittedAt', direction: 'desc' }]),
-                ),
-            ]),
+          S.documentTypeList('contactSubmission')
+            .title('Contact Submissions')
+            .defaultOrdering([{ field: 'submittedAt', direction: 'desc' }]),
         ),
     ])
 }

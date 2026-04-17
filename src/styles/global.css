@@ -131,7 +131,8 @@
     @apply w-full max-w-screen-2xl mx-auto pt-(--nav-height);
   }
 
-  section {
+  section,
+  .section {
     @apply w-full mx-auto max-w-(--nav-width) px-(--site-padding-base) py-(--site-padding-2xl);
   }
 

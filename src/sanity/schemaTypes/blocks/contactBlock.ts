@@ -1,5 +1,6 @@
 import { EnvelopeIcon } from '@sanity/icons'
 import { defineField, defineType } from 'sanity'
+import { sectionIdField } from '../shared/sectionId'
 
 export default defineType({
   name: 'contactBlock',
@@ -7,22 +8,18 @@ export default defineType({
   type: 'object',
   icon: EnvelopeIcon,
   fields: [
-    defineField({
-      name: 'sectionId',
-      title: 'Section ID',
-      description:
-        'Optional HTML id for anchor links (e.g. "contact"). No spaces or special characters.',
-      type: 'string',
-    }),
+    sectionIdField,
     defineField({
       name: 'heading',
       title: 'Heading',
+      description: 'Primary heading for the contact section.',
       type: 'string',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'subheading',
       title: 'Subheading',
+      description: 'Smaller heading displayed above the form.',
       type: 'string',
     }),
     defineField({
@@ -34,6 +31,7 @@ export default defineType({
     defineField({
       name: 'body',
       title: 'Body Text',
+      description: 'Short paragraph displayed above the contact form.',
       type: 'text',
       rows: 3,
     }),
