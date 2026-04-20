@@ -15,13 +15,13 @@ export const structure = (S: any) => {
   return S.list()
     .title('JTBI Content')
     .items([
-      // ── Needs Attention ───────────────────────────────
+      // ── Notifications ───────────────────────────────
       S.listItem()
-        .title('Needs Attention')
+        .title('Notifications')
         .icon(BellIcon)
         .child(
           S.list()
-            .title('Needs Attention')
+            .title('Notifications')
             .items([
               S.listItem()
                 .title('New Contact Submissions')
@@ -49,15 +49,15 @@ export const structure = (S: any) => {
 
       // ── Quick Edit ────────────────────────────────────
       S.listItem()
-        .title('Homepage')
-        .icon(HomeIcon)
-        .child(S.document().schemaType('homepage').documentId('homepage').title('Homepage')),
-      S.listItem()
         .title('Site Settings')
         .icon(CogIcon)
         .child(
           S.document().schemaType('siteSettings').documentId('siteSettings').title('Site Settings'),
         ),
+      S.listItem()
+        .title('Homepage')
+        .icon(HomeIcon)
+        .child(S.document().schemaType('homepage').documentId('homepage').title('Homepage')),
       S.divider(),
 
       // ── Content ───────────────────────────────────────
