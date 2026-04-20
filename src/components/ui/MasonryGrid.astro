@@ -18,7 +18,7 @@ const { images, class: className } = Astro.props
 
 {
   images.length > 0 && (
-    <div class:list={['masonry-grid-wrapper', className]}>
+    <div class:list={['masonry-grid-wrapper full-bleed', className]}>
       <div class="masonry-grid">
         {images.map((img, i) => (
           <div
@@ -44,9 +44,6 @@ const { images, class: className } = Astro.props
 <style>
   .masonry-grid-wrapper {
     position: relative;
-    width: 100vw;
-    left: 50%;
-    margin-left: -50vw;
     padding-top: var(--masonry-gap, 4px);
   }
 

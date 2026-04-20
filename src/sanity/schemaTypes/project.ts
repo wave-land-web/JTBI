@@ -203,7 +203,11 @@ export default defineType({
       description: 'Main project/case study content.',
       type: 'array',
       group: 'page',
-      of: [richTextBlock, defineArrayMember({ type: 'mediaCardRowBlock' })],
+      of: [
+        richTextBlock,
+        defineArrayMember({ type: 'mediaCardRowBlock' }),
+        defineArrayMember({ type: 'imageGalleryBlock' }),
+      ],
     }),
     defineField({
       name: 'relatedProjects',

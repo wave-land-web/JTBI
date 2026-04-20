@@ -5,19 +5,99 @@ import OverviewCard from '../../components/ui/OverviewCard.astro'
 import MediaCardRow from '../../components/ui/MediaCardRow.astro'
 import Card from '../../components/ui/Card.astro'
 import MasonryGrid from '../../components/ui/MasonryGrid.astro'
+import ImageGallery from '../../components/ui/ImageGallery.astro'
 import { Picture } from 'astro:assets'
 import { sanityClient } from '../../sanity/lib/client'
 import { imageProps } from '../../sanity/lib/urlForImage'
 import { toHTML } from '@portabletext/to-html'
+import type { PortableTextBlock, TypedObject } from '@portabletext/types'
+import type { SanityAsset } from '@sanity/image-url/lib/types/types'
+
+// --- Types ---------------------------------------------------------------
+
+interface SanityImage {
+  asset?: { _ref: string; _type: string } | null
+  alt?: string
+}
+
+interface Styling {
+  accentColor?: string
+  cardBackgroundColor?: string
+  cardTextColor?: string
+}
+
+interface MediaCardRowBlock extends TypedObject {
+  _type: 'mediaCardRowBlock'
+  title?: string
+  description?: string
+  featureText?: PortableTextBlock[]
+  image?: SanityImage
+  href?: string
+  ctaLabel?: string
+  reversed?: boolean
+  styling?: Styling
+}
+
+interface ImageGalleryBlock extends TypedObject {
+  _type: 'imageGalleryBlock'
+  images?: SanityImage[]
+  columns?: number
+  fullWidth?: boolean
+}
+
+type BodyBlock = PortableTextBlock | MediaCardRowBlock | ImageGalleryBlock
+
+interface RelatedProject {
+  _id: string
+  title: string
+  description?: string
+  cardImage?: SanityImage
+  href?: string
+  slug?: { current: string }
+  styling?: Styling
+}
+
+interface Project {
+  title: string
+  services?: string[]
+  serviceRefs?: string[]
+  cardImage?: SanityImage
+  heroImage?: SanityImage
+  styling?: Styling
+  projectOverview?: PortableTextBlock[]
+  masonryGrid?: SanityImage[]
+  body?: BodyBlock[]
+  relatedProjects?: RelatedProject[]
+}
+
+type BodyGroup =
+  | { type: 'text'; blocks: PortableTextBlock[] }
+  | { type: 'mediaCardRow'; blocks: [MediaCardRowBlock] }
+  | { type: 'imageGallery'; blocks: [ImageGalleryBlock] }
+
+// --- Data ----------------------------------------------------------------
 
 export async function getStaticPaths() {
-  const projects = await sanityClient.fetch(`*[_type == "project"]{ "slug": slug.current }`)
-  return projects.map((p: { slug: string }) => ({ params: { slug: p.slug } }))
+  const projects = await sanityClient.fetch<{ slug: string }[]>(
+    `*[_type == "project"]{ "slug": slug.current }`,
+  )
+  return projects.map((p) => ({ params: { slug: p.slug } }))
 }
 
 const { slug } = Astro.params
 
-const project = await sanityClient.fetch(
+// Shared projection for related project cards
+const relatedProjectFields = `{
+  _id,
+  title,
+  description,
+  cardImage { asset, alt },
+  href,
+  slug,
+  styling
+}`
+
+const project = await sanityClient.fetch<Project | null>(
   `*[_type == "project" && slug.current == $slug][0]{
     title,
     "services": services[]->title,
@@ -27,27 +107,21 @@ const project = await sanityClient.fetch(
     styling,
     projectOverview,
     masonryGrid[asset != null] { asset, alt },
-    body,
-    "relatedProjects": select(
-      count(relatedProjects) > 0 => relatedProjects[]->{
-        _id,
-        title,
-        description,
-        cardImage { asset, alt },
-        href,
-        slug,
-        styling
+    body[]{
+      ...,
+      _type == "imageGalleryBlock" => {
+        ...,
+        images[asset != null] { asset, alt }
       },
-      *[_type == "project" && count(services[_ref in ^.^.services[]._ref]) > 0 && _id != ^._id][0...3]{
-        _id,
-        title,
-        description,
-        cardImage { asset, alt },
-        href,
-        slug,
-        styling
+      _type == "mediaCardRowBlock" => {
+        ...,
+        image { asset, alt, ... }
       }
-    )      
+    },
+    "relatedProjects": select(
+      count(relatedProjects) > 0 => relatedProjects[]->${relatedProjectFields},
+      *[_type == "project" && count(services[_ref in ^.^.services[]._ref]) > 0 && _id != ^._id][0...3]${relatedProjectFields}
+    )
   }`,
   { slug },
 )
@@ -56,33 +130,63 @@ if (!project) {
   return Astro.redirect('/404')
 }
 
-const heroImgSource = project.heroImage || project.cardImage
-const heroImg = heroImgSource ? imageProps(heroImgSource, 2400) : undefined
-const heroAlt = (project.heroImage?.alt || project.cardImage?.alt) ?? ''
+// --- Helpers -------------------------------------------------------------
 
-const masonryImages = (project.masonryGrid ?? [])
-  .filter((img: any) => img?.asset)
-  .map((img: any) => ({
-    ...imageProps(img, 800),
-    alt: img.alt ?? '',
-  }))
+// Map a list of Sanity image objects into Picture-ready props
+const toImages = (arr: SanityImage[] | undefined, width: number) =>
+  (arr ?? [])
+    .filter((img): img is SanityImage & { asset: NonNullable<SanityImage['asset']> } =>
+      Boolean(img?.asset),
+    )
+    .map((img) => ({ ...imageProps(img as unknown as SanityAsset, width), alt: img.alt ?? '' }))
+
+const heroSource = project.heroImage || project.cardImage
+const heroImg = heroSource?.asset
+  ? { ...imageProps(heroSource as unknown as SanityAsset, 2400), alt: heroSource.alt ?? '' }
+  : undefined
+
+const masonryImages = toImages(project.masonryGrid, 800)
 
 // Separate projectOverview text blocks for the OverviewCard
-const overviewTextBlocks = (project.projectOverview ?? []).filter((b: any) => b._type === 'block')
+const overviewTextBlocks = (project.projectOverview ?? []).filter(
+  (b): b is PortableTextBlock => b._type === 'block',
+)
 
-// Group body blocks into consecutive runs of text vs mediaCardRowBlock
-const bodyGroups: { type: 'text' | 'mediaCardRow'; blocks: any[] }[] = []
+// Shared OverviewCard style props derived from project-level styling
+const overviewStyleProps = {
+  accentColor: project.styling?.accentColor,
+  backgroundColor: project.styling?.cardBackgroundColor,
+  textColor: project.styling?.cardTextColor,
+}
+
+// Group body blocks into consecutive runs of text vs non-text blocks
+const bodyGroups: BodyGroup[] = []
 for (const block of project.body ?? []) {
   if (block._type === 'mediaCardRowBlock') {
-    bodyGroups.push({ type: 'mediaCardRow', blocks: [block] })
+    bodyGroups.push({ type: 'mediaCardRow', blocks: [block as MediaCardRowBlock] })
+  } else if (block._type === 'imageGalleryBlock') {
+    bodyGroups.push({ type: 'imageGallery', blocks: [block as ImageGalleryBlock] })
   } else {
     const last = bodyGroups[bodyGroups.length - 1]
-    if (last?.type === 'text') {
-      last.blocks.push(block)
-    } else {
-      bodyGroups.push({ type: 'text', blocks: [block] })
-    }
+    if (last?.type === 'text') last.blocks.push(block as PortableTextBlock)
+    else bodyGroups.push({ type: 'text', blocks: [block as PortableTextBlock] })
   }
+}
+
+// Build CSS custom property string for a related project's styling
+const getCardVars = (styling: Styling = {}) => {
+  const accent = styling.accentColor || 'var(--color-primary)'
+  const text = styling.cardTextColor || styling.accentColor || 'var(--color-primary)'
+  const bg = styling.cardBackgroundColor || styling.accentColor
+  const mediaBg = styling.cardBackgroundColor || styling.accentColor || 'var(--color-base-200)'
+  return `
+    --card-accent: ${accent};
+    --card-bg: ${bg};
+    --card-text: ${text};
+    --card-cta: ${text};
+    --card-media-bg: ${mediaBg};
+    --card-divider: color-mix(in srgb, ${text} 14%, transparent);
+  `
 }
 ---
 
@@ -92,42 +196,38 @@ for (const block of project.body ?? []) {
       !heroImg && overviewTextBlocks.length > 0 && (
         <OverviewCard
           overview={overviewTextBlocks}
-          accentColor={project.styling?.accentColor}
-          backgroundColor={project.styling?.cardBackgroundColor}
-          textColor={project.styling?.cardTextColor}
+          {...overviewStyleProps}
           class="mt-(--site-padding-base)"
         />
       )
     }
-
-    {
-      heroImg && (
-        <div class="project-hero relative w-full mt-(--site-padding-sm)">
-          <Picture
-            src={heroImg.src}
-            alt={heroAlt}
-            class={`w-full h-auto lsa no-repeat ${overviewTextBlocks.length > 0 ? 'mt-(--site-padding-base) md:mt-(--site-padding-lg)' : ''} object-cover`}
-            formats={['avif', 'webp']}
-            quality={85}
-            width={heroImg.width}
-            height={heroImg.height}
-            priority
-          />
-          {overviewTextBlocks.length > 0 && (
-            <OverviewCard
-              overview={overviewTextBlocks}
-              accentColor={project.styling?.accentColor}
-              backgroundColor={project.styling?.cardBackgroundColor}
-              textColor={project.styling?.cardTextColor}
-              class="project-hero__overview"
-            />
-          )}
-        </div>
-      )
-    }
-
-    {masonryImages.length > 0 && <MasonryGrid images={masonryImages} />}
   </PageHeader>
+
+  {
+    heroImg && (
+      <div class="project-hero relative mt-(--site-padding-base) md:mt-(--site-padding-sm)">
+        <Picture
+          src={heroImg.src}
+          alt={heroImg.alt}
+          class="w-full h-auto lsa no-repeat object-cover"
+          formats={['avif', 'webp']}
+          quality={85}
+          width={heroImg.width}
+          height={heroImg.height}
+          priority
+        />
+        {overviewTextBlocks.length > 0 && (
+          <OverviewCard
+            overview={overviewTextBlocks}
+            {...overviewStyleProps}
+            class="project-hero__overview"
+          />
+        )}
+      </div>
+    )
+  }
+
+  {masonryImages.length > 0 && <MasonryGrid images={masonryImages} />}
 
   <main id="main-content" class="section space-y-6">
     {
@@ -153,6 +253,16 @@ for (const block of project.body ?? []) {
             />
           )
         }
+        if (group.type === 'imageGallery') {
+          const block = group.blocks[0]
+          return (
+            <ImageGallery
+              images={toImages(block.images, 1200)}
+              columns={block.columns ?? 5}
+              fullWidth={block.fullWidth ?? true}
+            />
+          )
+        }
         return (
           <div class="max-w-4xl ml-auto space-y-6 lsa no-repeat">
             <Fragment set:html={toHTML(group.blocks)} />
@@ -162,28 +272,22 @@ for (const block of project.body ?? []) {
     }
 
     {
-      project.relatedProjects?.length > 0 && (
+      project.relatedProjects && project.relatedProjects.length > 0 && (
         <section class="text-center px-0">
           <div class="flex flex-col gap-8 md:gap-10">
             <h2 class="h3 uppercase text-left text-primary lsa lsa-slide-up no-repeat">
               Related Projects
             </h2>
             <div class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-[clamp(40px,4vw,64px)]">
-              {project.relatedProjects.map((related: any) => {
-                const relImg = related.cardImage ? imageProps(related.cardImage, 1200) : undefined
+              {project.relatedProjects.map((related) => {
+                const relImg = related.cardImage
+                  ? imageProps(related.cardImage as unknown as SanityAsset, 1200)
+                  : undefined
                 const relHref = related.slug?.current
                   ? `/project/${related.slug.current}`
                   : related.href || '#'
-                const cardStyles = `
-                  --card-accent: ${related.styling?.accentColor || 'var(--color-primary)'};
-                  --card-bg: ${related.styling?.cardBackgroundColor || related.styling?.accentColor};
-                  --card-text: ${related.styling?.cardTextColor || related.styling?.accentColor || 'var(--color-primary)'};
-                  --card-cta: ${related.styling?.cardTextColor || related.styling?.accentColor || 'var(--color-primary)'};
-                  --card-media-bg: ${related.styling?.cardBackgroundColor || related.styling?.accentColor || 'var(--color-base-200)'};
-                  --card-divider: color-mix(in srgb, ${related.styling?.cardTextColor || related.styling?.accentColor || 'var(--color-primary)'} 14%, transparent);
-                `
                 return (
-                  <div class="lsa no-repeat w-full" style={cardStyles}>
+                  <div class="lsa no-repeat w-full" style={getCardVars(related.styling)}>
                     <Card
                       title={related.title}
                       description={related.description || ''}
@@ -211,25 +315,10 @@ for (const block of project.body ?? []) {
 </Layout>
 
 <style>
-  .project-hero :global(picture),
   .project-hero :global(.project-hero__overview) {
-    position: relative;
     display: block;
-    width: 100vw;
-    left: 50%;
-    margin-left: -50vw;
-  }
-
-  @media (min-width: 768px) {
-    .project-hero :global(.project-hero__overview) {
-      position: absolute;
-      width: 100%;
-      top: 0;
-      right: 0;
-      left: 0;
-      z-index: 10;
-      margin-left: 0;
-    }
+    max-width: var(--nav-width);
+    margin: auto;
   }
 
   .project-hero :global(img),
@@ -237,8 +326,18 @@ for (const block of project.body ?? []) {
     border-radius: 4px;
   }
 
-  /* On project pages, re-proportion the grid so the card column matches max-w-4xl (56rem) */
   @media (min-width: 768px) {
+    .project-hero {
+      padding-top: var(--site-padding-lg);
+    }
+
+    .project-hero :global(.project-hero__overview) {
+      position: absolute;
+      inset: 0 0 auto 0;
+      z-index: 10;
+      padding: 0 var(--site-padding-base);
+    }
+
     main :global(.portfolio-item) {
       grid-template-columns: 1fr minmax(0, 56rem);
     }
