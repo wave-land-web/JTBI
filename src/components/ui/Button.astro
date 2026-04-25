@@ -10,7 +10,7 @@ interface Props {
 const { label, href, type = 'button', tagClass = '', wrapperClass = '' } = Astro.props
 
 const Tag = href ? 'a' : 'button'
-const attrs: Record<string, any> = href ? { href } : { type }
+const attrs: Record<string, string> = href ? { href } : { type }
 ---
 
 <div class={`flex ${wrapperClass}`}>
@@ -29,6 +29,7 @@ const attrs: Record<string, any> = href ? { href } : { type }
       <svg
         class="-rotate-45 group-hover:rotate-0 group-focus:rotate-0 transition-transform duration-200"
         viewBox="0 0 20 20"
+        aria-hidden="true"
       >
         <path
           fill-rule="evenodd"

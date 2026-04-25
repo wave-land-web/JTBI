@@ -1,7 +1,7 @@
 import { ProjectsIcon } from '@sanity/icons'
 import { defineArrayMember, defineField, defineType } from 'sanity'
-import { richTextBlock } from './shared/richText'
 import { COLOR_FIELD_DESCRIPTION, cssColorValidation } from './shared/cssColor'
+import { richTextBlock } from './shared/richText'
 
 export default defineType({
   name: 'project',

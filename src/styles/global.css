@@ -112,7 +112,7 @@
 @layer base {
   * {
     scrollbar-width: thin;
-    scrollbar-color: var(--color-primary) var(--color-base-300) !important;
+    scrollbar-color: var(--color-primary) var(--color-base-300);
   }
 
   ::selection {

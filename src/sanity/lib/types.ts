@@ -1,3 +1,14 @@
+import type { PortableTextBlock } from '@portabletext/types'
+
+export interface SanityImage {
+  _type: 'image'
+  asset: {
+    _type: 'reference'
+    _ref: string
+  }
+  alt?: string
+}
+
 export interface BlockBase {
   _key: string
   sectionId?: string
@@ -5,8 +16,8 @@ export interface BlockBase {
 
 export interface HeroBlock extends BlockBase {
   _type: 'heroBlock'
-  backgroundImage?: { asset: any; alt?: string }
-  carouselImages?: { asset: any; alt?: string }[]
+  backgroundImage?: SanityImage
+  carouselImages?: SanityImage[]
   headline1?: string
   headline1Color?: 'light' | 'dark'
   headline2?: string
@@ -21,8 +32,8 @@ export interface ProjectsBlock extends BlockBase {
     title: string
     slug?: { current: string }
     description: string
-    featureText: any[]
-    cardImage?: { asset: any; alt?: string }
+    featureText: PortableTextBlock[]
+    cardImage?: SanityImage
     ctaLabel?: string
     reversed?: boolean
     styling?: { accentColor?: string; cardBackgroundColor?: string; cardTextColor?: string }
@@ -32,10 +43,10 @@ export interface ProjectsBlock extends BlockBase {
 export interface MediaCardRowBlock extends BlockBase {
   _type: 'mediaCardRowBlock'
   heading?: string
-  featureText?: any[]
+  featureText?: PortableTextBlock[]
   title?: string
   description?: string
-  image?: { asset: any; alt?: string }
+  image?: SanityImage
   href?: string
   ctaLabel?: string
   reversed?: boolean
@@ -49,7 +60,7 @@ export interface ServicesBlock extends BlockBase {
     _id: string
     title: string
     description: string
-    image?: { asset: any; alt?: string }
+    image?: SanityImage
     href?: string
     ctaLabel?: string
     styling?: {

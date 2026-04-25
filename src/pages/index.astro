@@ -1,15 +1,15 @@
 ---
-import Layout from '../layouts/Layout.astro'
-import PageHeader from '../components/ui/PageHeader.astro'
-import MediaCardRow from '../components/ui/MediaCardRow.astro'
-import Card from '../components/ui/Card.astro'
-import ContactBg from '../assets/images/textures/jtbi-cloud-background-sample.svg'
-import ContactForm from '../components/ui/forms/Contact.astro'
-import { sanityClient } from '../sanity/lib/client'
-import { imageProps } from '../sanity/lib/urlForImage'
 import { toHTML } from '@portabletext/to-html'
+import ContactBg from '../assets/images/textures/jtbi-cloud-background-sample.svg'
+import Card from '../components/ui/Card.astro'
+import ContactForm from '../components/ui/forms/Contact.astro'
+import MediaCardRow from '../components/ui/MediaCardRow.astro'
+import PageHeader from '../components/ui/PageHeader.astro'
 import { SITE_TITLE } from '../consts'
+import Layout from '../layouts/Layout.astro'
+import { sanityClient } from '../sanity/lib/client'
 import type { PageBlock } from '../sanity/lib/types'
+import { imageProps } from '../sanity/lib/urlForImage'
 
 const homepage = await sanityClient.fetch(
   `*[_id == "homepage"][0]{

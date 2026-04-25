@@ -1,11 +1,11 @@
 ---
 import { Font } from 'astro:assets'
-import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from '../consts'
+import backgroundImage from '../assets/images/textures/jtbi-cloud-background-tan-variant.jpg'
 import Footer from '../components/ui/Footer.astro'
 import Navigation from '../components/ui/Navigation.astro'
+import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from '../consts'
 import { ANNOUNCEMENT_BAR_STORAGE_KEY, getAnnouncementBarId } from '../lib/announcementBar'
 import sanityClient from '../sanity/lib/client'
-import backgroundImage from '../assets/images/textures/jtbi-cloud-background-tan-variant.jpg'
 import '../styles/global.css'
 
 export interface Props {
@@ -105,13 +105,11 @@ const announcementBarId =
             is:inline
             define:vars={{ announcementBarId, announcementBarStorageKey: ANNOUNCEMENT_BAR_STORAGE_KEY }}
           >
-            try {
               if (sessionStorage.getItem(announcementBarStorageKey) === announcementBarId) {
-                document.documentElement.dataset.dismissedAnnouncementBar = 'true'
+                document.documentElement.setAttribute('data-dismissed-announcement-bar', 'true')
+              } else {
+                document.documentElement.removeAttribute('data-dismissed-announcement-bar')
               }
-            } catch {
-              delete document.documentElement.dataset.dismissedAnnouncementBar
-            }
           </script>
         </>
       )

@@ -2,7 +2,7 @@
 import { toHTML } from '@portabletext/to-html'
 
 interface Props {
-  overview: any[]
+  overview: any[] // PortableTextBlock[]
   accentColor?: string
   backgroundColor?: string
   textColor?: string
@@ -35,6 +35,7 @@ const html = toHTML(overview)
 </aside>
 
 <style>
+  /* // biome-ignore lint/parse: Astro @reference is not standard CSS */
   @reference "../../styles/global.css";
 
   .overview-card {
@@ -109,11 +110,11 @@ const html = toHTML(overview)
   }
 
   .overview-card.is-collapsed .overview-card__body {
-    animation: oc-body-collapse 600ms var(--oc-ease) forwards !important;
+    animation: oc-body-collapse 600ms var(--oc-ease) forwards;
   }
 
   .overview-card.is-expanded .overview-card__body {
-    animation: oc-body-reveal 800ms var(--oc-ease) forwards !important;
+    animation: oc-body-reveal 800ms var(--oc-ease) forwards;
   }
 
   @keyframes oc-body-reveal {
@@ -140,17 +141,17 @@ const html = toHTML(overview)
 
   @media (prefers-reduced-motion: reduce) {
     .overview-card__border {
-      animation: none !important;
+      animation: none;
       transform: scaleX(1);
       will-change: auto;
     }
 
     .overview-card__toggle {
-      animation: none !important;
+      animation: none;
     }
 
     .overview-card__body {
-      animation: none !important;
+      animation: none;
       clip-path: none;
       opacity: 1;
       will-change: auto;

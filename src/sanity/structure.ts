@@ -10,8 +10,9 @@ import {
   ProjectsIcon,
   StarIcon,
 } from '@sanity/icons'
+import type { StructureResolver } from 'sanity/structure'
 
-export const structure = (S: any) => {
+export const structure: StructureResolver = (S) => {
   return S.list()
     .title('JTBI Content')
     .items([

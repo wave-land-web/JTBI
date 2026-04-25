@@ -12,6 +12,7 @@ import {
 } from '@react-email/components'
 import { SITE_URL } from '../../consts'
 import { capitalize } from '../../lib/text'
+
 interface UnsubscribeProps {
   firstName: string
 }

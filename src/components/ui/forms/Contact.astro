@@ -133,7 +133,7 @@ import Button from '../Button.astro'
 </form>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('contact-form') as HTMLFormElement
     const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement
     const submitText = submitButton.querySelector('span')
@@ -209,7 +209,11 @@ import Button from '../Button.astro'
             body: formData,
           })
 
-          let result: any = null
+          let result: {
+            success?: boolean
+            isSubscribed: boolean
+            message?: string
+          } | null = null
           try {
             result = await response.json()
           } catch {

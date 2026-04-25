@@ -16,11 +16,8 @@ export const getAnnouncementBarId = ({
   const seed = [label, message, linkText, href].filter(Boolean).join('|')
 
   let hash = 0
-
   for (const character of seed) {
-    hash = (hash << 5) - hash + character.charCodeAt(0)
-    hash |= 0
+    hash += character.charCodeAt(0)
   }
-
-  return Math.abs(hash).toString(36)
+  return hash.toString(36)
 }

@@ -1,5 +1,6 @@
 export const prerender = false
 
+import { AKISMET_API_KEY, RESEND_AUDIENCE_ID } from 'astro:env/server'
 import { render } from '@react-email/render'
 import type { APIRoute } from 'astro'
 import { z } from 'zod'
@@ -7,7 +8,6 @@ import Notification from '../../../components/emails/Notification'
 import Welcome from '../../../components/emails/Welcome'
 import { resend } from '../../../lib/resend'
 import sanityClient from '../../../sanity/lib/client'
-import { AKISMET_API_KEY, RESEND_AUDIENCE_ID } from 'astro:env/server'
 
 // Validation schema
 const contactFormSchema = z.object({
@@ -261,6 +261,7 @@ export const POST: APIRoute = async ({ request }) => {
           // Don't fail the entire request if batch email fails
         } else {
           console.log(`Successfully sent ${emailsToSend.length} emails in batch`)
+          console.log('Batch email response:', batchData)
         }
       } catch (batchError) {
         console.error('Error sending batch emails:', batchError)
