@@ -8,7 +8,7 @@ export interface Props {
   imageWidth?: number
   imageHeight?: number
   imageAlt?: string
-  imageAspect?: 'video' | 'square'
+  imageAspect?: 'video' | 'square' | 'auto'
   imageClass?: string
   mediaClass?: string
   contentClass?: string
@@ -29,8 +29,8 @@ const {
   imageWidth,
   imageHeight,
   imageAlt = '',
-  imageAspect = 'video',
-  imageClass = 'h-full w-full object-cover',
+  imageAspect = 'auto',
+  imageClass,
   mediaClass = '',
   contentClass = '',
   showFallback = false,
@@ -67,13 +67,7 @@ const fallbackImageClasses = `h-full w-full bg-gradient-to-tr from-secondary/10 
       animationDirection === 'top-to-bottom' && 'card__body--tb',
     ]}
   >
-    <div
-      class:list={[
-        'relative overflow-hidden',
-        imageAspect === 'video' ? 'aspect-video' : 'aspect-square',
-        mediaClass,
-      ]}
-    >
+    <div class:list={['relative overflow-hidden', `aspect-${imageAspect}`, mediaClass]}>
       {
         imageSrc && imageWidth && imageHeight ? (
           <Picture

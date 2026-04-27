@@ -300,8 +300,9 @@ const getCardVars = (styling: Styling = {}) => {
                         imageSrc={relImg?.src}
                         imageWidth={relImg?.width}
                         imageHeight={relImg?.height}
+                        imageAspect="video"
                         imageAlt={related.cardImage?.alt || related.title}
-                        imageClass="relative z-10"
+                        imageClass="relative z-10 h-full w-full object-cover"
                         mediaClass="bg-(--card-media-bg)"
                         contentClass="flex h-full flex-col gap-2.5 p-4 text-left sm:p-5 bg-(--card-bg)"
                         class="h-full border-(--card-divider) text-(--card-text)"
@@ -323,11 +324,6 @@ const getCardVars = (styling: Styling = {}) => {
     display: block;
     max-width: var(--nav-width);
     margin: auto;
-  }
-
-  .project-hero :global(img),
-  :global(.masonry-grid__item img) {
-    border-radius: 4px;
   }
 
   @media (min-width: 768px) {
