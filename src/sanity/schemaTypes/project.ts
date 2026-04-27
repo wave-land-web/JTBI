@@ -175,6 +175,14 @@ export default defineType({
       group: 'page',
       of: [richTextBlock],
     }),
+    {
+      ...hiddenField,
+      name: 'hideMasonryGrid',
+      title: 'Hide Masonry Grid Section',
+      description:
+        'If checked, the Masonry Grid section will be hidden on the project page but its content will be saved.',
+      group: 'page',
+    },
     defineField({
       name: 'masonryGrid',
       title: 'Masonry Grid',

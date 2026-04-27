@@ -65,6 +65,7 @@ interface Project {
   heroImage?: SanityImage
   styling?: Styling
   projectOverview?: PortableTextBlock[]
+  hideMasonryGrid?: boolean
   masonryGrid?: SanityImage[]
   body?: BodyBlock[]
   relatedProjects?: RelatedProject[]
@@ -107,6 +108,7 @@ const project = await sanityClient.fetch<Project | null>(
     heroImage { asset, alt },
     styling,
     projectOverview,
+    hideMasonryGrid,
     masonryGrid[asset != null] { asset, alt },
     body[]{
       ...,
@@ -229,7 +231,11 @@ const getCardVars = (styling: Styling = {}) => {
     )
   }
 
-  {masonryImages.length > 0 && <MasonryGrid images={masonryImages} />}
+  {
+    masonryImages.length > 0 && project.hideMasonryGrid !== true && (
+      <MasonryGrid images={masonryImages} />
+    )
+  }
 
   <main id="main-content" class="section space-y-6">
     {
