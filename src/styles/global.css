@@ -110,13 +110,14 @@
 }
 
 @layer base {
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: var(--color-primary) var(--color-base-300);
-  }
-
   ::selection {
     @apply bg-primary text-primary-content;
+  }
+
+  html,
+  body {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary) var(--color-base-300);
   }
 
   html {

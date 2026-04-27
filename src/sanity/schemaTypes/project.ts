@@ -210,6 +210,14 @@ export default defineType({
       ],
     }),
     defineField({
+      name: 'showRelatedProjects',
+      title: 'Show Related Projects',
+      description: 'Toggle to show or hide the Related Projects section on the project page.',
+      type: 'boolean',
+      group: 'page',
+      initialValue: true,
+    }),
+    defineField({
       name: 'relatedProjects',
       title: 'Related Projects',
       description:
