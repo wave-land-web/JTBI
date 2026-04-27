@@ -1,5 +1,6 @@
 import { StarIcon } from '@sanity/icons'
 import { defineField, defineType } from 'sanity'
+import { hiddenField } from '../shared/hidden'
 import { sectionIdField } from '../shared/sectionId'
 
 export default defineType({
@@ -13,6 +14,7 @@ export default defineType({
     { name: 'styling', title: 'Styling' },
   ],
   fields: [
+    { ...hiddenField, group: 'content' },
     { ...sectionIdField, group: 'content' },
     defineField({
       name: 'headline1',

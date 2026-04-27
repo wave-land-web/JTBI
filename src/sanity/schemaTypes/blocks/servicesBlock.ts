@@ -1,5 +1,6 @@
 import { DashboardIcon } from '@sanity/icons'
 import { defineArrayMember, defineField, defineType } from 'sanity'
+import { hiddenField } from '../shared/hidden'
 import { sectionIdField } from '../shared/sectionId'
 
 export default defineType({
@@ -8,6 +9,7 @@ export default defineType({
   type: 'object',
   icon: DashboardIcon,
   fields: [
+    hiddenField,
     sectionIdField,
     defineField({
       name: 'heading',

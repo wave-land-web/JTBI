@@ -1,5 +1,6 @@
 import { EnvelopeIcon } from '@sanity/icons'
 import { defineField, defineType } from 'sanity'
+import { hiddenField } from '../shared/hidden'
 import { sectionIdField } from '../shared/sectionId'
 
 export default defineType({
@@ -8,6 +9,7 @@ export default defineType({
   type: 'object',
   icon: EnvelopeIcon,
   fields: [
+    hiddenField,
     sectionIdField,
     defineField({
       name: 'heading',

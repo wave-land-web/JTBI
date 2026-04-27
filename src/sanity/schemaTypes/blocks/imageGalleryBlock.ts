@@ -1,5 +1,6 @@
 import { ImagesIcon } from '@sanity/icons'
 import { defineArrayMember, defineField, defineType } from 'sanity'
+import { hiddenField } from '../shared/hidden'
 
 export default defineType({
   name: 'imageGalleryBlock',
@@ -7,6 +8,7 @@ export default defineType({
   type: 'object',
   icon: ImagesIcon,
   fields: [
+    hiddenField,
     defineField({
       name: 'images',
       title: 'Images',

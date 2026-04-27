@@ -16,6 +16,7 @@ export interface BlockBase {
 
 export interface HeroBlock extends BlockBase {
   _type: 'heroBlock'
+  hidden?: boolean
   backgroundImage?: SanityImage
   carouselImages?: SanityImage[]
   headline1?: string
@@ -26,6 +27,7 @@ export interface HeroBlock extends BlockBase {
 
 export interface ProjectsBlock extends BlockBase {
   _type: 'projectsBlock'
+  hidden?: boolean
   heading?: string
   projects?: {
     _id: string
@@ -42,6 +44,7 @@ export interface ProjectsBlock extends BlockBase {
 
 export interface MediaCardRowBlock extends BlockBase {
   _type: 'mediaCardRowBlock'
+  hidden?: boolean
   heading?: string
   featureText?: PortableTextBlock[]
   title?: string
@@ -55,6 +58,7 @@ export interface MediaCardRowBlock extends BlockBase {
 
 export interface ServicesBlock extends BlockBase {
   _type: 'servicesBlock'
+  hidden?: boolean
   heading?: string
   items?: {
     _id: string
@@ -75,6 +79,7 @@ export interface ServicesBlock extends BlockBase {
 
 export interface ContactBlock extends BlockBase {
   _type: 'contactBlock'
+  hidden?: boolean
   heading?: string
   subheading?: string
   subheadingAccent?: string

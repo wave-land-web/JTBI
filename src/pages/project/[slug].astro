@@ -68,7 +68,7 @@ interface Project {
   masonryGrid?: SanityImage[]
   body?: BodyBlock[]
   relatedProjects?: RelatedProject[]
-  showRelatedProjects?: boolean
+  hideRelatedProjects?: boolean
 }
 
 type BodyGroup =
@@ -119,7 +119,7 @@ const project = await sanityClient.fetch<Project | null>(
         image { asset, alt, ... }
       }
     },
-    showRelatedProjects,
+    hideRelatedProjects,
     "relatedProjects": select(
       count(relatedProjects) > 0 => relatedProjects[]->${relatedProjectFields},
       *[_type == "project" && count(services[_ref in ^.^.services[]._ref]) > 0 && _id != ^._id][0...3]${relatedProjectFields}
@@ -274,7 +274,7 @@ const getCardVars = (styling: Styling = {}) => {
     }
 
     {
-      project.showRelatedProjects !== false &&
+      project.hideRelatedProjects !== true &&
         project.relatedProjects &&
         project.relatedProjects.length > 0 && (
           <section class="text-center px-0">

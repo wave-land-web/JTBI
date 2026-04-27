@@ -1,6 +1,7 @@
 import { ComposeIcon } from '@sanity/icons'
 import { defineField, defineType } from 'sanity'
 import { COLOR_FIELD_DESCRIPTION, cssColorValidation } from '../shared/cssColor'
+import { hiddenField } from '../shared/hidden'
 import { richTextBlock } from '../shared/richText'
 import { sectionIdField } from '../shared/sectionId'
 
@@ -16,6 +17,7 @@ export default defineType({
     { name: 'styling', title: 'Styling' },
   ],
   fields: [
+    { ...hiddenField, group: 'content' },
     { ...sectionIdField, group: 'content' },
     defineField({
       name: 'heading',

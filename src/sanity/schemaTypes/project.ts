@@ -1,6 +1,7 @@
 import { ProjectsIcon } from '@sanity/icons'
 import { defineArrayMember, defineField, defineType } from 'sanity'
 import { COLOR_FIELD_DESCRIPTION, cssColorValidation } from './shared/cssColor'
+import { hiddenField } from './shared/hidden'
 import { richTextBlock } from './shared/richText'
 
 export default defineType({
@@ -209,14 +210,14 @@ export default defineType({
         defineArrayMember({ type: 'imageGalleryBlock' }),
       ],
     }),
-    defineField({
-      name: 'showRelatedProjects',
-      title: 'Show Related Projects',
-      description: 'Toggle to show or hide the Related Projects section on the project page.',
-      type: 'boolean',
+    {
+      ...hiddenField,
+      name: 'hideRelatedProjects',
+      title: 'Hide Related Projects Section',
+      description:
+        'If checked, the Related Projects section will be hidden on the project page but its content will be saved.',
       group: 'page',
-      initialValue: true,
-    }),
+    },
     defineField({
       name: 'relatedProjects',
       title: 'Related Projects',
