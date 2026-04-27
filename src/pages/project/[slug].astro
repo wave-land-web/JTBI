@@ -300,10 +300,9 @@ const getCardVars = (styling: Styling = {}) => {
                         imageSrc={relImg?.src}
                         imageWidth={relImg?.width}
                         imageHeight={relImg?.height}
-                        imageAspect="video"
                         imageAlt={related.cardImage?.alt || related.title}
                         imageClass="relative z-10 h-full w-full object-cover"
-                        mediaClass="bg-(--card-media-bg)"
+                        mediaClass="bg-(--card-media-bg) aspect-video"
                         contentClass="flex h-full flex-col gap-2.5 p-4 text-left sm:p-5 bg-(--card-bg)"
                         class="h-full border-(--card-divider) text-(--card-text)"
                         accentBorderColor={related.styling?.accentColor || 'var(--color-primary)'}
