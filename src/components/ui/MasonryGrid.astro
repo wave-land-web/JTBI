@@ -1,5 +1,6 @@
 ---
 import { Picture } from 'astro:assets'
+import LightboxButton from './LightboxButton.astro'
 
 export interface MasonryImage {
   src: string
@@ -18,46 +19,126 @@ const { images, class: className } = Astro.props
 
 {
   images.length > 0 && (
-    <div class:list={['masonry-grid-wrapper full-bleed', className]}>
-      <div class="masonry-grid">
+    <div
+      class:list={['masonry-grid-wrapper full-bleed relative pt-(--masonry-gap,4px)', className]}
+    >
+      <div class="columns-(--masonry-cols,3) gap-(--masonry-gap,4px)">
         {images.map((img, i) => (
           <div
-            class="masonry-grid__item lsa lsa-slide-up no-repeat"
+            class="break-inside-avoid mb-(--masonry-gap,4px) lsa lsa-slide-up no-repeat"
             style={`transition-delay: ${i * 100}ms`}
           >
-            <Picture
-              src={img.src}
-              alt={img.alt}
-              width={img.width}
-              height={img.height}
-              formats={['avif', 'webp']}
-              quality={85}
-              class="w-full h-auto block"
-            />
+            <button
+              type="button"
+              class="block w-full p-0 m-0 bg-transparent border-0 cursor-zoom-in appearance-none [&_picture]:block [&_img]:transition-opacity [&_img]:duration-200 hover:[&_img]:opacity-85"
+              data-lightbox-trigger
+              data-index={i}
+              aria-label={`Open image: ${img.alt}`}
+            >
+              <Picture
+                src={img.src}
+                alt={img.alt}
+                width={img.width}
+                height={img.height}
+                formats={['avif', 'webp']}
+                quality={85}
+                class="w-full h-auto block"
+              />
+            </button>
           </div>
         ))}
       </div>
+
+      <dialog
+        class="m-0 p-0 w-screen h-screen max-w-none max-h-none bg-transparent overflow-hidden backdrop:bg-neutral/90 open:flex open:items-center open:justify-center"
+        data-lightbox
+        aria-label="Image viewer"
+      >
+        <LightboxButton type="close" class="absolute top-4 right-4" />
+
+        <div class="swiper relative w-full h-full" data-lightbox-swiper>
+          {/* `flex!` overrides Swiper's default `display: block` on slides so the image can flex-center */}
+          <div class="swiper-wrapper">
+            {images.map((img) => (
+              <div class="swiper-slide flex! items-center justify-center px-4">
+                <img
+                  src={img.src}
+                  alt={img.alt}
+                  width={img.width}
+                  height={img.height}
+                  loading="lazy"
+                  class="max-w-[95vw] max-h-[90vh] w-auto h-auto object-contain"
+                />
+              </div>
+            ))}
+          </div>
+
+          <LightboxButton type="prev" class="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2" />
+          <LightboxButton
+            type="next"
+            class="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2"
+          />
+        </div>
+      </dialog>
     </div>
   )
 }
 
-<style>
-  .masonry-grid-wrapper {
-    position: relative;
-    padding-top: var(--masonry-gap, 4px);
+<script>
+  import Swiper from 'swiper'
+  import { Keyboard, Navigation } from 'swiper/modules'
+  import 'swiper/css'
+
+  function initMasonryLightbox(wrapper: HTMLElement) {
+    const dialog = wrapper.querySelector<HTMLDialogElement>('[data-lightbox]')
+    const swiperEl = wrapper.querySelector<HTMLElement>('[data-lightbox-swiper]')
+    const triggers = Array.from(
+      wrapper.querySelectorAll<HTMLButtonElement>('[data-lightbox-trigger]'),
+    )
+    const closeBtn = wrapper.querySelector<HTMLButtonElement>('[data-lightbox-close]')
+    const prevEl = wrapper.querySelector<HTMLButtonElement>('[data-lightbox-prev]')
+    const nextEl = wrapper.querySelector<HTMLButtonElement>('[data-lightbox-next]')
+
+    if (!dialog || !swiperEl || triggers.length === 0) return
+
+    const dialogEl = dialog
+    const swiperContainer = swiperEl
+    let swiper: Swiper | null = null
+
+    function ensureSwiper() {
+      if (swiper) return swiper
+      swiper = new Swiper(swiperContainer, {
+        modules: [Navigation, Keyboard],
+        loop: triggers.length > 1,
+        keyboard: { enabled: true, onlyInViewport: true },
+        navigation: { prevEl, nextEl },
+        slidesPerView: 1,
+        spaceBetween: 0,
+      })
+      return swiper
+    }
+
+    triggers.forEach((trigger, i) => {
+      trigger.addEventListener('click', () => {
+        if (!dialogEl.open) dialogEl.showModal()
+        const sw = ensureSwiper()
+        sw.update()
+        if (triggers.length > 1) sw.slideToLoop(i, 0)
+        else sw.slideTo(i, 0)
+      })
+    })
+
+    closeBtn?.addEventListener('click', () => dialogEl.close())
+
+    dialogEl.addEventListener('click', (event) => {
+      if (event.target === dialogEl) dialogEl.close()
+    })
   }
 
-  .masonry-grid {
-    columns: var(--masonry-cols, 3);
-    gap: var(--masonry-gap, 4px);
+  function initAll() {
+    document.querySelectorAll<HTMLElement>('.masonry-grid-wrapper').forEach(initMasonryLightbox)
   }
 
-  .masonry-grid__item {
-    break-inside: avoid;
-    margin-bottom: var(--masonry-gap, 4px);
-  }
-
-  .masonry-grid__item :global(picture) {
-    display: block;
-  }
-</style>
+  initAll()
+  document.addEventListener('astro:after-swap', initAll)
+</script>
