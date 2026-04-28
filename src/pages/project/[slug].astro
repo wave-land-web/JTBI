@@ -9,9 +9,11 @@ import MasonryGrid from '../../components/ui/MasonryGrid.astro'
 import MediaCardRow from '../../components/ui/MediaCardRow.astro'
 import OverviewCard from '../../components/ui/OverviewCard.astro'
 import PageHeader from '../../components/ui/PageHeader.astro'
+import SixUpMasonryGrid from '../../components/ui/SixUpMasonryGrid.astro'
 import Layout from '../../layouts/Layout.astro'
 import { sanityClient } from '../../sanity/lib/client'
 import { imageProps } from '../../sanity/lib/urlForImage'
+import { SIX_UP_CELLS } from '../../sanity/schemaTypes/shared/gridFilled'
 
 // --- Types ---------------------------------------------------------------
 
@@ -57,6 +59,21 @@ interface RelatedProject {
   styling?: Styling
 }
 
+interface MasonryGridData {
+  hidden?: boolean
+  images?: SanityImage[]
+}
+
+interface SixUpGridData {
+  hidden?: boolean
+  topWide?: SanityImage
+  centerTall?: SanityImage
+  topRight?: SanityImage
+  bottomLeft?: SanityImage
+  bottomMidLeft?: SanityImage
+  bottomRight?: SanityImage
+}
+
 interface Project {
   title: string
   services?: string[]
@@ -65,8 +82,8 @@ interface Project {
   heroImage?: SanityImage
   styling?: Styling
   projectOverview?: PortableTextBlock[]
-  hideMasonryGrid?: boolean
-  masonryGrid?: SanityImage[]
+  masonryGrid?: MasonryGridData
+  sixUpGrid?: SixUpGridData
   body?: BodyBlock[]
   relatedProjects?: RelatedProject[]
   hideRelatedProjects?: boolean
@@ -108,8 +125,19 @@ const project = await sanityClient.fetch<Project | null>(
     heroImage { asset, alt },
     styling,
     projectOverview,
-    hideMasonryGrid,
-    masonryGrid[asset != null] { asset, alt },
+    masonryGrid {
+      hidden,
+      "images": images[asset != null] { asset, alt }
+    },
+    sixUpGrid {
+      hidden,
+      topWide { asset, alt },
+      centerTall { asset, alt },
+      topRight { asset, alt },
+      bottomLeft { asset, alt },
+      bottomMidLeft { asset, alt },
+      bottomRight { asset, alt }
+    },
     body[]{
       ...,
       _type == "imageGalleryBlock" => {
@@ -149,7 +177,22 @@ const heroImg = heroSource?.asset
   ? { ...imageProps(heroSource as unknown as SanityAsset, 2400), alt: heroSource.alt ?? '' }
   : undefined
 
-const masonryImages = toImages(project.masonryGrid, 800)
+const masonryImages = toImages(project.masonryGrid?.images, 800)
+
+const sixUpFilled = SIX_UP_CELLS.map((key) => project.sixUpGrid?.[key]).filter(
+  (img): img is SanityImage & { asset: NonNullable<SanityImage['asset']> } => Boolean(img?.asset),
+)
+const sixUpImages =
+  sixUpFilled.length === 6
+    ? sixUpFilled.map((img) => ({
+        ...imageProps(img as unknown as SanityAsset, 800),
+        alt: img.alt ?? '',
+      }))
+    : []
+
+const showSixUp = sixUpImages.length === 6 && project.sixUpGrid?.hidden !== true
+const showMasonry =
+  !showSixUp && masonryImages.length > 0 && project.masonryGrid?.hidden !== true
 
 // Separate projectOverview text blocks for the OverviewCard
 const overviewTextBlocks = (project.projectOverview ?? []).filter(
@@ -231,11 +274,8 @@ const getCardVars = (styling: Styling = {}) => {
     )
   }
 
-  {
-    masonryImages.length > 0 && project.hideMasonryGrid !== true && (
-      <MasonryGrid images={masonryImages} />
-    )
-  }
+  {showSixUp && <SixUpMasonryGrid images={sixUpImages} />}
+  {showMasonry && <MasonryGrid images={masonryImages} />}
 
   <main id="main-content" class="section space-y-6">
     {

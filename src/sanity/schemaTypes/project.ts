@@ -175,36 +175,19 @@ export default defineType({
       group: 'page',
       of: [richTextBlock],
     }),
-    {
-      ...hiddenField,
-      name: 'hideMasonryGrid',
-      title: 'Hide Masonry Grid Section',
-      description:
-        'If checked, the Masonry Grid section will be hidden on the project page but its content will be saved.',
-      group: 'page',
-    },
     defineField({
       name: 'masonryGrid',
       title: 'Masonry Grid',
-      description:
-        'Gallery of images displayed in a full-width masonry grid below the hero. Mix of portrait and landscape works best. Recommended: min 1200px on the long edge.',
-      type: 'array',
+      type: 'masonryGrid',
       group: 'page',
-      of: [
-        defineArrayMember({
-          type: 'image',
-          options: { hotspot: true },
-          fields: [
-            defineField({
-              name: 'alt',
-              title: 'Alt Text',
-              type: 'string',
-              validation: (Rule) => Rule.required().error('Alt text is required for accessibility'),
-            }),
-          ],
-        }),
-      ],
-      validation: (Rule) => Rule.max(20),
+    }),
+    defineField({
+      name: 'sixUpGrid',
+      title: 'Six-Up Grid',
+      description:
+        'Editorial 6-image grid displayed below the hero. Renders only when all 6 cells are filled.',
+      type: 'sixUpGrid',
+      group: 'page',
     }),
     defineField({
       name: 'body',

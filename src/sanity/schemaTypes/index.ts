@@ -2,9 +2,11 @@ import type { SchemaTypeDefinition } from 'sanity'
 import contactBlock from './blocks/contactBlock'
 import heroBlock from './blocks/heroBlock'
 import imageGalleryBlock from './blocks/imageGalleryBlock'
+import masonryGrid from './blocks/masonryGrid'
 import mediaCardRowBlock from './blocks/mediaCardRowBlock'
 import projectsBlock from './blocks/projectsBlock'
 import servicesBlock from './blocks/servicesBlock'
+import sixUpGrid from './blocks/sixUpGrid'
 import contactSubmission from './contactSubmission'
 import homepage from './homepage'
 import legalPage from './legalPage'
@@ -28,5 +30,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     servicesBlock,
     contactBlock,
     imageGalleryBlock,
+    masonryGrid,
+    sixUpGrid,
   ],
 }
