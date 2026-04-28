@@ -7,6 +7,7 @@ import {
   EnvelopeIcon,
   FolderIcon,
   HomeIcon,
+  ImagesIcon,
   ProjectsIcon,
   StarIcon,
 } from '@sanity/icons'
@@ -101,7 +102,15 @@ export const structure: StructureResolver = (S) => {
         ),
       S.divider(),
 
-      // ── Inbox ─────────────────────────────────────────
+      // ── All ───────────────────────────────────────────
+      S.listItem()
+        .title('All Images')
+        .icon(ImagesIcon)
+        .child(
+          S.documentTypeList('sanity.imageAsset')
+            .title('All Images')
+            .defaultOrdering([{ field: '_createdAt', direction: 'desc' }]),
+        ),
       S.listItem()
         .title('All Contact Submissions')
         .icon(EnvelopeIcon)

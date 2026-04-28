@@ -2,7 +2,6 @@
 import { Picture } from 'astro:assets'
 import { toHTML } from '@portabletext/to-html'
 import type { PortableTextBlock, TypedObject } from '@portabletext/types'
-import type { SanityAsset } from '@sanity/image-url/lib/types/types'
 import Card from '../../components/ui/Card.astro'
 import ImageGallery from '../../components/ui/ImageGallery.astro'
 import MasonryGrid from '../../components/ui/MasonryGrid.astro'
@@ -12,7 +11,8 @@ import PageHeader from '../../components/ui/PageHeader.astro'
 import SixUpMasonryGrid from '../../components/ui/SixUpMasonryGrid.astro'
 import Layout from '../../layouts/Layout.astro'
 import { sanityClient } from '../../sanity/lib/client'
-import { imageProps } from '../../sanity/lib/urlForImage'
+import { imageWithAlt } from '../../sanity/lib/queries'
+import { hasAsset, toPicture, toPictures } from '../../sanity/lib/urlForImage'
 import { SIX_UP_CELLS } from '../../sanity/schemaTypes/shared/gridFilled'
 
 // --- Types ---------------------------------------------------------------
@@ -110,7 +110,7 @@ const relatedProjectFields = `{
   _id,
   title,
   description,
-  cardImage { asset, alt },
+  cardImage ${imageWithAlt},
   href,
   slug,
   styling
@@ -121,32 +121,32 @@ const project = await sanityClient.fetch<Project | null>(
     title,
     "services": services[]->title,
     "serviceRefs": services[]._ref,
-    cardImage { asset, alt },
-    heroImage { asset, alt },
+    cardImage ${imageWithAlt},
+    heroImage ${imageWithAlt},
     styling,
     projectOverview,
     masonryGrid {
       hidden,
-      "images": images[asset != null] { asset, alt }
+      "images": images[asset != null] ${imageWithAlt}
     },
     sixUpGrid {
       hidden,
-      topWide { asset, alt },
-      centerTall { asset, alt },
-      topRight { asset, alt },
-      bottomLeft { asset, alt },
-      bottomMidLeft { asset, alt },
-      bottomRight { asset, alt }
+      topWide ${imageWithAlt},
+      centerTall ${imageWithAlt},
+      topRight ${imageWithAlt},
+      bottomLeft ${imageWithAlt},
+      bottomMidLeft ${imageWithAlt},
+      bottomRight ${imageWithAlt}
     },
     body[]{
       ...,
       _type == "imageGalleryBlock" => {
         ...,
-        images[asset != null] { asset, alt }
+        images[asset != null] ${imageWithAlt}
       },
       _type == "mediaCardRowBlock" => {
         ...,
-        image { asset, alt, ... }
+        image ${imageWithAlt}
       }
     },
     hideRelatedProjects,
@@ -164,49 +164,29 @@ if (!project) {
 
 // --- Helpers -------------------------------------------------------------
 
-// Map a list of Sanity image objects into Picture-ready props
-const toImages = (arr: SanityImage[] | undefined, width: number) =>
-  (arr ?? [])
-    .filter((img): img is SanityImage & { asset: NonNullable<SanityImage['asset']> } =>
-      Boolean(img?.asset),
-    )
-    .map((img) => ({ ...imageProps(img as unknown as SanityAsset, width), alt: img.alt ?? '' }))
-
 const heroSource = project.heroImage || project.cardImage
-const heroImg = heroSource?.asset
-  ? { ...imageProps(heroSource as unknown as SanityAsset, 2400), alt: heroSource.alt ?? '' }
-  : undefined
+const heroImg = hasAsset(heroSource) ? toPicture(heroSource, 2400) : undefined
 
-const masonryImages = toImages(project.masonryGrid?.images, 800)
+const masonryImages = toPictures(project.masonryGrid?.images, 800)
 
-const sixUpFilled = SIX_UP_CELLS.map((key) => project.sixUpGrid?.[key]).filter(
-  (img): img is SanityImage & { asset: NonNullable<SanityImage['asset']> } => Boolean(img?.asset),
-)
-const sixUpImages =
-  sixUpFilled.length === 6
-    ? sixUpFilled.map((img) => ({
-        ...imageProps(img as unknown as SanityAsset, 800),
-        alt: img.alt ?? '',
-      }))
-    : []
+const sixUpCells = SIX_UP_CELLS.map((key) => project.sixUpGrid?.[key])
+const sixUpImages = sixUpCells.every(hasAsset) ? sixUpCells.map((img) => toPicture(img, 800)) : []
 
 const showSixUp = sixUpImages.length === 6 && project.sixUpGrid?.hidden !== true
-const showMasonry =
-  !showSixUp && masonryImages.length > 0 && project.masonryGrid?.hidden !== true
+const showMasonry = !showSixUp && masonryImages.length > 0 && project.masonryGrid?.hidden !== true
 
-// Separate projectOverview text blocks for the OverviewCard
 const overviewTextBlocks = (project.projectOverview ?? []).filter(
   (b): b is PortableTextBlock => b._type === 'block',
 )
 
-// Shared OverviewCard style props derived from project-level styling
 const overviewStyleProps = {
   accentColor: project.styling?.accentColor,
   backgroundColor: project.styling?.cardBackgroundColor,
   textColor: project.styling?.cardTextColor,
 }
 
-// Group body blocks into consecutive runs of text vs non-text blocks
+// Group body blocks into consecutive runs of text vs non-text blocks so
+// adjacent portable-text segments render under one prose container.
 const bodyGroups: BodyGroup[] = []
 for (const block of project.body ?? []) {
   if (block._type === 'mediaCardRowBlock') {
@@ -220,7 +200,6 @@ for (const block of project.body ?? []) {
   }
 }
 
-// Build CSS custom property string for a related project's styling
 const getCardVars = (styling: Styling = {}) => {
   const accent = styling.accentColor || 'var(--color-primary)'
   const text = styling.cardTextColor || styling.accentColor || 'var(--color-primary)'
@@ -282,7 +261,7 @@ const getCardVars = (styling: Styling = {}) => {
       bodyGroups.map((group) => {
         if (group.type === 'mediaCardRow') {
           const block = group.blocks[0]
-          const blockImg = block.image ? imageProps(block.image, 1600) : undefined
+          const blockImg = hasAsset(block.image) ? toPicture(block.image, 1600) : undefined
           return (
             <MediaCardRow
               reversed={block.reversed}
@@ -290,7 +269,7 @@ const getCardVars = (styling: Styling = {}) => {
               imageSrc={blockImg?.src}
               imageWidth={blockImg?.width}
               imageHeight={blockImg?.height}
-              imageAlt={block.image?.alt || ''}
+              imageAlt={blockImg?.alt || ''}
               accentColor={block.styling?.accentColor}
               cardBackgroundColor={block.styling?.cardBackgroundColor}
               cardTextColor={block.styling?.cardTextColor}
@@ -305,7 +284,7 @@ const getCardVars = (styling: Styling = {}) => {
           const block = group.blocks[0]
           return (
             <ImageGallery
-              images={toImages(block.images, 1200)}
+              images={toPictures(block.images, 1200)}
               columns={block.columns ?? 5}
               fullWidth={block.fullWidth ?? true}
             />
@@ -330,8 +309,8 @@ const getCardVars = (styling: Styling = {}) => {
               </h2>
               <div class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-[clamp(40px,4vw,64px)]">
                 {project.relatedProjects.map((related) => {
-                  const relImg = related.cardImage
-                    ? imageProps(related.cardImage as unknown as SanityAsset, 1200)
+                  const relImg = hasAsset(related.cardImage)
+                    ? toPicture(related.cardImage, 1200)
                     : undefined
                   const relHref = related.slug?.current
                     ? `/project/${related.slug.current}`
@@ -346,7 +325,7 @@ const getCardVars = (styling: Styling = {}) => {
                         imageSrc={relImg?.src}
                         imageWidth={relImg?.width}
                         imageHeight={relImg?.height}
-                        imageAlt={related.cardImage?.alt || related.title}
+                        imageAlt={relImg?.alt || related.title}
                         imageClass="relative z-10 h-full w-full object-cover"
                         mediaClass="bg-(--card-media-bg) aspect-video"
                         contentClass="flex h-full flex-col gap-2.5 p-4 text-left sm:p-5 bg-(--card-bg)"

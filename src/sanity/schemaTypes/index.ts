@@ -13,10 +13,12 @@ import legalPage from './legalPage'
 import notFoundPage from './notFoundPage'
 import project from './project'
 import service from './service'
+import imageAsset from './shared/imageAsset'
 import siteSettings from './siteSettings'
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
+    imageAsset,
     siteSettings,
     homepage,
     notFoundPage,

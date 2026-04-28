@@ -8,8 +8,9 @@ import PageHeader from '../components/ui/PageHeader.astro'
 import { SITE_TITLE } from '../consts'
 import Layout from '../layouts/Layout.astro'
 import { sanityClient } from '../sanity/lib/client'
+import { imageDerefWithAlt, imageWithAlt } from '../sanity/lib/queries'
 import type { PageBlock } from '../sanity/lib/types'
-import { imageProps } from '../sanity/lib/urlForImage'
+import { hasAsset, toPicture, toPictures } from '../sanity/lib/urlForImage'
 
 const homepage = await sanityClient.fetch(
   `*[_id == "homepage"][0]{
@@ -20,14 +21,8 @@ const homepage = await sanityClient.fetch(
       _type == "heroBlock" => {
         sectionId,
         hidden,
-        backgroundImage {
-          asset->{ _id, url },
-          alt
-        },
-        carouselImages[] {
-          asset->{ _id, url },
-          alt
-        },
+        backgroundImage ${imageDerefWithAlt},
+        carouselImages[] ${imageDerefWithAlt},
         headline1,
         headline1Color,
         headline2,
@@ -43,7 +38,7 @@ const homepage = await sanityClient.fetch(
           slug,
           description,
           featureText,
-          cardImage,
+          cardImage ${imageWithAlt},
           ctaLabel,
           reversed,
           styling
@@ -56,7 +51,7 @@ const homepage = await sanityClient.fetch(
         featureText,
         title,
         description,
-        image,
+        image ${imageWithAlt},
         href,
         ctaLabel,
         reversed,
@@ -66,7 +61,10 @@ const homepage = await sanityClient.fetch(
         sectionId,
         hidden,
         heading,
-        items[]->
+        items[]->{
+          ...,
+          image ${imageWithAlt}
+        }
       },
       _type == "contactBlock" => {
         sectionId,
@@ -91,16 +89,11 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
 
       // Available blocks: heroBlock, projectsBlock, mediaCardRowBlock, servicesBlock, contactBlock
       if (block._type === 'heroBlock') {
-        const carouselImages = (block.carouselImages ?? [])
-          .filter((img) => img.asset)
-          .map((img) => {
-            const props = imageProps(img, 2400)
-            return { src: props.src, width: props.width, height: props.height, alt: img.alt || '' }
-          })
+        const carouselImages = toPictures(block.carouselImages, 2400)
 
         const bgImage =
-          carouselImages.length === 0 && block.backgroundImage?.asset
-            ? imageProps(block.backgroundImage, 2400)
+          carouselImages.length === 0 && hasAsset(block.backgroundImage)
+            ? toPicture(block.backgroundImage, 2400)
             : undefined
 
         return (
@@ -110,7 +103,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
             backgroundImageSrc={bgImage?.src}
             backgroundImageWidth={bgImage?.width}
             backgroundImageHeight={bgImage?.height}
-            backgroundImageAlt={block.backgroundImage?.alt}
+            backgroundImageAlt={bgImage?.alt}
             headline1={block.headline1 || "You're not industry-standard,"}
             headline1Color={block.headline1Color}
             headline2={block.headline2 || 'and your branding should prove it.'}
@@ -137,7 +130,9 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                   'Developing visual and marketing strategies for business acceleration.'}
               </h2>
               {projects.map((project) => {
-                const projImg = project.cardImage ? imageProps(project.cardImage, 1600) : undefined
+                const projImg = hasAsset(project.cardImage)
+                  ? toPicture(project.cardImage, 1600)
+                  : undefined
                 return (
                   <MediaCardRow
                     featureText={toHTML(project.featureText)}
@@ -145,7 +140,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                     imageSrc={projImg?.src}
                     imageWidth={projImg?.width}
                     imageHeight={projImg?.height}
-                    imageAlt={project.cardImage?.alt || 'Portfolio preview image'}
+                    imageAlt={projImg?.alt || 'Portfolio preview image'}
                     accentColor={project.styling?.accentColor}
                     cardBackgroundColor={project.styling?.cardBackgroundColor}
                     cardTextColor={project.styling?.cardTextColor}
@@ -161,7 +156,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
         }
 
         if (block._type === 'mediaCardRowBlock') {
-          const blockImg = block.image ? imageProps(block.image, 1600) : undefined
+          const blockImg = hasAsset(block.image) ? toPicture(block.image, 1600) : undefined
           return (
             <section id={block.sectionId || undefined} class="text-center flex flex-col gap-8">
               {block.heading && (
@@ -173,7 +168,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                 imageSrc={blockImg?.src}
                 imageWidth={blockImg?.width}
                 imageHeight={blockImg?.height}
-                imageAlt={block.image?.alt || ''}
+                imageAlt={blockImg?.alt || ''}
                 accentColor={block.styling?.accentColor}
                 cardBackgroundColor={block.styling?.cardBackgroundColor}
                 cardTextColor={block.styling?.cardTextColor}
@@ -204,7 +199,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                       --card-media-bg: ${item.styling?.mediaBackgroundColor || 'var(--color-base-200)'};
                       --card-divider: color-mix(in srgb, ${item.styling?.cardTextColor || item.styling?.accentColor || 'var(--color-primary)'} 14%, transparent);
                     `
-                    const itemImg = item.image ? imageProps(item.image, 1200) : undefined
+                    const itemImg = hasAsset(item.image) ? toPicture(item.image, 1200) : undefined
                     return (
                       <div class="service-card lsa no-repeat w-full" style={cardStyles}>
                         <Card
@@ -216,7 +211,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                           imageWidth={itemImg?.width}
                           imageHeight={itemImg?.height}
                           imageAlt={
-                            item.image?.alt ||
+                            itemImg?.alt ||
                             `JTB Imaginative logo mark for ${item.title.toLowerCase()}`
                           }
                           imageClass="relative z-10"

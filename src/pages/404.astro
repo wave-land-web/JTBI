@@ -3,6 +3,7 @@ import PageHeader from '../components/ui/PageHeader.astro'
 import { SITE_TITLE } from '../consts'
 import Layout from '../layouts/Layout.astro'
 import { sanityClient } from '../sanity/lib/client'
+import { imageDerefWithAlt } from '../sanity/lib/queries'
 import { urlForImage } from '../sanity/lib/urlForImage'
 
 const page = await sanityClient.fetch(
@@ -11,10 +12,7 @@ const page = await sanityClient.fetch(
     message,
     ctaLabel,
     ctaHref,
-    backgroundImage {
-      asset->{ _id, url },
-      alt
-    }
+    backgroundImage ${imageDerefWithAlt}
   }`,
 )
 
