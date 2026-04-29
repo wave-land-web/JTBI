@@ -23,6 +23,11 @@ export default defineConfig({
         access: 'public',
         default: 'production',
       }),
+      PUBLIC_SANITY_STUDIO_URL: envField.string({
+        context: 'client',
+        access: 'public',
+        default: 'http://localhost:4321/admin',
+      }),
       SANITY_STUDIO_SECRET_TOKEN: envField.string({
         context: 'server',
         access: 'secret',
@@ -60,6 +65,19 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindPlugin],
+    optimizeDeps: {
+      include: [
+        'react/compiler-runtime',
+        'lodash/isObject.js',
+        'lodash/groupBy.js',
+        'lodash/keyBy.js',
+        'lodash/partition.js',
+        'lodash/sortedIndex.js',
+      ],
+    },
+    ssr: {
+      noExternal: ['@sanity/client', '@sanity/visual-editing'],
+    },
   },
 
   image: {

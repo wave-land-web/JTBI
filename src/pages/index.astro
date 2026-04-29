@@ -7,13 +7,16 @@ import MediaCardRow from '../components/ui/MediaCardRow.astro'
 import PageHeader from '../components/ui/PageHeader.astro'
 import { SITE_TITLE } from '../consts'
 import Layout from '../layouts/Layout.astro'
-import { sanityClient } from '../sanity/lib/client'
+import { getDraftModeProps } from '../sanity/lib/draftMode'
+import { loadQuery } from '../sanity/lib/loadQuery'
 import { imageDerefWithAlt, imageWithAlt } from '../sanity/lib/queries'
 import type { PageBlock } from '../sanity/lib/types'
 import { hasAsset, toPicture, toPictures } from '../sanity/lib/urlForImage'
 
-const homepage = await sanityClient.fetch(
-  `*[_id == "homepage"][0]{
+export const prerender = false
+
+const { data: homepage } = await loadQuery<{ pageBuilder: PageBlock[] } | null>({
+  query: `*[_id == "homepage"][0]{
     pageBuilder[]{
       _type,
       _key,
@@ -76,7 +79,8 @@ const homepage = await sanityClient.fetch(
       }
     }
   }`,
-)
+  ...getDraftModeProps(Astro.cookies),
+})
 
 const blocks: PageBlock[] = homepage?.pageBuilder ?? []
 ---

@@ -1,22 +1,31 @@
 ---
 import { toHTML } from '@portabletext/to-html'
+import type { TypedObject } from '@portabletext/types'
 import Button from '../../components/ui/Button.astro'
 import PageHeader from '../../components/ui/PageHeader.astro'
 import Layout from '../../layouts/Layout.astro'
-import { sanityClient } from '../../sanity/lib/client'
+import { getDraftModeProps } from '../../sanity/lib/draftMode'
+import { loadQuery } from '../../sanity/lib/loadQuery'
 
 export const prerender = false
 
 const { slug } = Astro.params
 
-const page = await sanityClient.fetch(
-  `*[_type == "legalPage" && slug.current == $slug][0]{
+interface LegalPage {
+  title: string
+  body?: TypedObject | TypedObject[]
+  seoDescription?: string
+}
+
+const { data: page } = await loadQuery<LegalPage | null>({
+  query: `*[_type == "legalPage" && slug.current == $slug][0]{
     title,
     body,
     seoDescription
   }`,
-  { slug },
-)
+  params: { slug },
+  ...getDraftModeProps(Astro.cookies),
+})
 
 if (!page) {
   return Astro.redirect('/404')
