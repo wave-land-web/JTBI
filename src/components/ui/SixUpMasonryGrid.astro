@@ -1,0 +1,152 @@
+---
+import { Picture } from 'astro:assets'
+import LightboxButton from './LightboxButton.astro'
+
+export interface SixUpImage {
+  src: string
+  width: number
+  height: number
+  alt: string
+}
+
+interface Props {
+  images: SixUpImage[]
+  class?: string
+}
+
+const { images, class: className } = Astro.props
+---
+
+{
+  images.length === 6 && (
+    <div class:list={['six-up-grid-wrapper full-bleed relative pt-(--six-up-gap,4px)', className]}>
+      <div class="six-up-grid">
+        {images.map((img, i) => (
+          <button
+            type="button"
+            class:list={[
+              `six-up-cell six-up-cell--${i + 1}`,
+              'lsa lsa-slide-up no-repeat relative overflow-hidden block w-full h-full p-0 m-0 bg-transparent border-0 cursor-zoom-in appearance-none',
+              '[&_picture]:absolute [&_picture]:inset-0 [&_picture]:block [&_picture]:w-full [&_picture]:h-full',
+              '[&_img]:absolute [&_img]:inset-0 [&_img]:w-full [&_img]:h-full [&_img]:object-cover [&_img]:transition-opacity [&_img]:duration-200',
+              'hover:[&_img]:opacity-85',
+            ]}
+            style={`transition-delay: ${i * 100}ms`}
+            data-lightbox-trigger
+            data-index={i}
+            aria-label={`Open image: ${img.alt}`}
+          >
+            <Picture
+              src={img.src}
+              alt={img.alt}
+              width={img.width}
+              height={img.height}
+              formats={['avif', 'webp']}
+              quality={85}
+            />
+          </button>
+        ))}
+      </div>
+
+      <dialog
+        class="m-0 p-0 w-screen h-screen max-w-none max-h-none bg-transparent overflow-hidden backdrop:bg-neutral/90 open:flex open:items-center open:justify-center"
+        data-lightbox
+        aria-label="Image viewer"
+      >
+        <LightboxButton type="close" class="absolute top-4 right-4" />
+
+        <div class="swiper relative w-full h-full" data-lightbox-swiper>
+          {/* `flex!` overrides Swiper's default `display: block` on slides so the image can flex-center */}
+          <div class="swiper-wrapper">
+            {images.map((img) => (
+              <div class="swiper-slide flex! items-center justify-center px-4">
+                <img
+                  src={img.src}
+                  alt={img.alt}
+                  width={img.width}
+                  height={img.height}
+                  loading="lazy"
+                  class="max-w-[95vw] max-h-[90vh] w-auto h-auto object-contain"
+                />
+              </div>
+            ))}
+          </div>
+
+          <LightboxButton type="prev" class="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2" />
+          <LightboxButton
+            type="next"
+            class="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2"
+          />
+        </div>
+      </dialog>
+    </div>
+  )
+}
+
+<style>
+  .six-up-grid {
+    display: grid;
+    grid-template-columns: 2fr 2fr 4fr 2fr;
+    grid-template-rows: 1fr 1fr;
+    grid-template-areas:
+      'wide wide tall right1'
+      'bl bm tall right2';
+    gap: var(--six-up-gap, 4px);
+    aspect-ratio: var(--six-up-aspect, 19 / 7);
+  }
+
+  .six-up-cell--1 {
+    grid-area: wide;
+  }
+  .six-up-cell--2 {
+    grid-area: tall;
+  }
+  .six-up-cell--3 {
+    grid-area: right1;
+  }
+  .six-up-cell--4 {
+    grid-area: bl;
+  }
+  .six-up-cell--5 {
+    grid-area: bm;
+  }
+  .six-up-cell--6 {
+    grid-area: right2;
+  }
+
+  @media (max-width: 768px) {
+    .six-up-grid {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto;
+      grid-template-areas: none;
+      aspect-ratio: auto;
+    }
+
+    .six-up-cell {
+      grid-area: auto;
+    }
+
+    .six-up-cell--1 {
+      grid-column: span 2;
+      aspect-ratio: 2 / 1;
+    }
+
+    .six-up-cell--2 {
+      grid-column: span 2;
+      aspect-ratio: 1 / 1;
+    }
+
+    .six-up-cell--3,
+    .six-up-cell--4,
+    .six-up-cell--5,
+    .six-up-cell--6 {
+      aspect-ratio: 1 / 1;
+    }
+  }
+</style>
+
+<script>
+  import { initLightbox } from '../../lib/lightbox'
+
+  initLightbox('.six-up-grid-wrapper')
+</script>

@@ -47,13 +47,16 @@ export default defineConfig({
     cacheOnDemandPages: true,
   }),
 
-  fonts: [
-    {
-      provider: fontProviders.google(),
-      name: 'Radio Canada',
-      cssVariable: '--font-radio-canada',
-    },
-  ],
+  experimental: {
+    // SEE: https://docs.astro.build/en/reference/experimental-flags/fonts/#local-font-variants
+    fonts: [
+      {
+        provider: fontProviders.google(),
+        name: 'Radio Canada',
+        cssVariable: '--font-radio-canada',
+      },
+    ],
+  },
 
   vite: {
     plugins: [tailwindPlugin],
@@ -74,6 +77,7 @@ export default defineConfig({
   },
 
   integrations: [
+    react(),
     sanity({
       projectId: 'vs47sslu',
       dataset: 'production',
@@ -81,7 +85,6 @@ export default defineConfig({
       apiVersion: '2025-01-28',
       studioBasePath: '/admin',
     }),
-    react(),
     sitemap({
       lastmod: new Date(),
       filter: (page) =>

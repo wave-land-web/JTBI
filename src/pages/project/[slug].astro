@@ -1,0 +1,400 @@
+---
+import { Picture } from 'astro:assets'
+import { toHTML } from '@portabletext/to-html'
+import type { PortableTextBlock, TypedObject } from '@portabletext/types'
+import type { SanityImageCrop, SanityImageHotspot } from '@sanity/image-url/lib/types/types'
+import Card from '../../components/ui/Card.astro'
+import ImageGallery from '../../components/ui/ImageGallery.astro'
+import MasonryGrid from '../../components/ui/MasonryGrid.astro'
+import MediaCardRow from '../../components/ui/MediaCardRow.astro'
+import OverviewCard from '../../components/ui/OverviewCard.astro'
+import PageHeader from '../../components/ui/PageHeader.astro'
+import SixUpMasonryGrid from '../../components/ui/SixUpMasonryGrid.astro'
+import Layout from '../../layouts/Layout.astro'
+import { clamp } from '../../lib/clamp'
+import { sanityClient } from '../../sanity/lib/client'
+import { imageWithAlt } from '../../sanity/lib/queries'
+import { hasAsset, toPicture, toPictureCropped, toPictures } from '../../sanity/lib/urlForImage'
+import { SIX_UP_CELLS } from '../../sanity/schemaTypes/shared/gridFilled'
+
+// --- Types ---------------------------------------------------------------
+
+interface SanityImage {
+  asset?: { _ref: string; _type: string } | null
+  alt?: string
+}
+
+interface Styling {
+  accentColor?: string
+  cardBackgroundColor?: string
+  cardTextColor?: string
+}
+
+interface MediaCardRowBlock extends TypedObject {
+  _type: 'mediaCardRowBlock'
+  title?: string
+  description?: string
+  featureText?: PortableTextBlock[]
+  image?: SanityImage
+  href?: string
+  ctaLabel?: string
+  reversed?: boolean
+  styling?: Styling
+}
+
+interface SanityGalleryImage extends SanityImage {
+  hotspot?: SanityImageHotspot
+  crop?: SanityImageCrop
+  colSpan?: number
+  rowSpan?: number
+}
+
+interface ImageGalleryBlock extends TypedObject {
+  _type: 'imageGalleryBlock'
+  images?: SanityGalleryImage[]
+  columns?: number
+  fullWidth?: boolean
+}
+
+type BodyBlock = PortableTextBlock | MediaCardRowBlock | ImageGalleryBlock
+
+interface RelatedProject {
+  _id: string
+  title: string
+  description?: string
+  cardImage?: SanityImage
+  href?: string
+  slug?: { current: string }
+  styling?: Styling
+}
+
+interface MasonryGridData {
+  hidden?: boolean
+  images?: SanityImage[]
+}
+
+interface SixUpGridData {
+  hidden?: boolean
+  topWide?: SanityImage
+  centerTall?: SanityImage
+  topRight?: SanityImage
+  bottomLeft?: SanityImage
+  bottomMidLeft?: SanityImage
+  bottomRight?: SanityImage
+}
+
+interface Project {
+  title: string
+  cardImage?: SanityImage
+  heroImage?: SanityImage
+  styling?: Styling
+  projectOverview?: PortableTextBlock[]
+  masonryGrid?: MasonryGridData
+  sixUpGrid?: SixUpGridData
+  body?: BodyBlock[]
+  relatedProjects?: RelatedProject[]
+  hideRelatedProjects?: boolean
+}
+
+type BodyGroup =
+  | { type: 'text'; blocks: PortableTextBlock[] }
+  | { type: 'mediaCardRow'; blocks: [MediaCardRowBlock] }
+  | { type: 'imageGallery'; blocks: [ImageGalleryBlock] }
+
+// --- Data ----------------------------------------------------------------
+
+export async function getStaticPaths() {
+  const projects = await sanityClient.fetch<{ slug: string }[]>(
+    `*[_type == "project"]{ "slug": slug.current }`,
+  )
+  return projects.map((p) => ({ params: { slug: p.slug } }))
+}
+
+const { slug } = Astro.params
+
+// Shared projection for related project cards
+const relatedProjectFields = `{
+  _id,
+  title,
+  description,
+  cardImage ${imageWithAlt},
+  href,
+  slug,
+  styling
+}`
+
+const project = await sanityClient.fetch<Project | null>(
+  `*[_type == "project" && slug.current == $slug][0]{
+    title,
+    cardImage ${imageWithAlt},
+    heroImage ${imageWithAlt},
+    styling,
+    projectOverview,
+    masonryGrid {
+      hidden,
+      "images": images[asset != null] ${imageWithAlt}
+    },
+    sixUpGrid {
+      hidden,
+      topWide ${imageWithAlt},
+      centerTall ${imageWithAlt},
+      topRight ${imageWithAlt},
+      bottomLeft ${imageWithAlt},
+      bottomMidLeft ${imageWithAlt},
+      bottomRight ${imageWithAlt}
+    },
+    body[]{
+      ...,
+      _type == "imageGalleryBlock" => {
+        ...,
+        images[asset != null]{
+          asset,
+          hotspot,
+          crop,
+          "alt": coalesce(alt, asset->altText),
+          colSpan,
+          rowSpan
+        }
+      },
+      _type == "mediaCardRowBlock" => {
+        ...,
+        image ${imageWithAlt}
+      }
+    },
+    hideRelatedProjects,
+    "relatedProjects": relatedProjects[]->${relatedProjectFields}
+  }`,
+  { slug },
+)
+
+if (!project) {
+  return Astro.redirect('/404')
+}
+
+// --- Helpers -------------------------------------------------------------
+
+const heroSource = project.heroImage || project.cardImage
+const heroImg = hasAsset(heroSource) ? toPicture(heroSource, 2400) : undefined
+
+const masonryImages = toPictures(project.masonryGrid?.images, 800)
+
+const sixUpCells = SIX_UP_CELLS.map((key) => project.sixUpGrid?.[key])
+const sixUpImages = sixUpCells.every(hasAsset) ? sixUpCells.map((img) => toPicture(img, 800)) : []
+
+const showSixUp = sixUpImages.length === 6 && project.sixUpGrid?.hidden !== true
+const showMasonry = !showSixUp && masonryImages.length > 0 && project.masonryGrid?.hidden !== true
+
+const overviewTextBlocks = (project.projectOverview ?? []).filter(
+  (b): b is PortableTextBlock => b._type === 'block',
+)
+
+const overviewStyleProps = {
+  accentColor: project.styling?.accentColor,
+  backgroundColor: project.styling?.cardBackgroundColor,
+  textColor: project.styling?.cardTextColor,
+}
+
+// Group body blocks into consecutive runs of text vs non-text blocks so
+// adjacent portable-text segments render under one prose container.
+const bodyGroups: BodyGroup[] = []
+for (const block of project.body ?? []) {
+  if (block._type === 'mediaCardRowBlock') {
+    bodyGroups.push({ type: 'mediaCardRow', blocks: [block as MediaCardRowBlock] })
+  } else if (block._type === 'imageGalleryBlock') {
+    bodyGroups.push({ type: 'imageGallery', blocks: [block as ImageGalleryBlock] })
+  } else {
+    const last = bodyGroups[bodyGroups.length - 1]
+    if (last?.type === 'text') last.blocks.push(block as PortableTextBlock)
+    else bodyGroups.push({ type: 'text', blocks: [block as PortableTextBlock] })
+  }
+}
+
+const getCardVars = (styling: Styling = {}) => {
+  const accent = styling.accentColor || 'var(--color-primary)'
+  const text = styling.cardTextColor || styling.accentColor || 'var(--color-primary)'
+  const bg = styling.cardBackgroundColor || styling.accentColor
+  const mediaBg = styling.cardBackgroundColor || styling.accentColor || 'var(--color-base-200)'
+  return `
+    --card-accent: ${accent};
+    --card-bg: ${bg};
+    --card-text: ${text};
+    --card-cta: ${text};
+    --card-media-bg: ${mediaBg};
+    --card-divider: color-mix(in srgb, ${text} 14%, transparent);
+  `
+}
+---
+
+<Layout title={`${project.title} | JTB Imaginative LLC`}>
+  <PageHeader title={project.title} fullHeight={false} contentClass="items-start gap-0!">
+    {
+      !heroImg && overviewTextBlocks.length > 0 && (
+        <OverviewCard
+          overview={overviewTextBlocks}
+          {...overviewStyleProps}
+          class="mt-(--site-padding-base)"
+        />
+      )
+    }
+  </PageHeader>
+
+  {
+    heroImg && (
+      <div class="project-hero relative mt-(--site-padding-base) md:mt-(--site-padding-sm)">
+        <Picture
+          src={heroImg.src}
+          alt={heroImg.alt}
+          class="w-full h-auto lsa no-repeat object-cover"
+          formats={['avif', 'webp']}
+          quality={85}
+          width={heroImg.width}
+          height={heroImg.height}
+          priority
+        />
+        {overviewTextBlocks.length > 0 && (
+          <OverviewCard
+            overview={overviewTextBlocks}
+            {...overviewStyleProps}
+            class="project-hero__overview"
+          />
+        )}
+      </div>
+    )
+  }
+
+  {showSixUp && <SixUpMasonryGrid images={sixUpImages} />}
+  {showMasonry && <MasonryGrid images={masonryImages} />}
+
+  <main id="main-content" class="section space-y-6">
+    {
+      bodyGroups.map((group) => {
+        if (group.type === 'mediaCardRow') {
+          const block = group.blocks[0]
+          const blockImg = hasAsset(block.image) ? toPicture(block.image, 1600) : undefined
+          return (
+            <div class="py-(--site-padding-md)">
+              <MediaCardRow
+                reversed={block.reversed}
+                featureText={block.featureText ? toHTML(block.featureText) : ''}
+                imageSrc={blockImg?.src}
+                imageWidth={blockImg?.width}
+                imageHeight={blockImg?.height}
+                imageAlt={blockImg?.alt || ''}
+                accentColor={block.styling?.accentColor}
+                cardBackgroundColor={block.styling?.cardBackgroundColor}
+                cardTextColor={block.styling?.cardTextColor}
+                title={block.title || ''}
+                description={block.description || ''}
+                href={block.href}
+                ctaLabel={block.ctaLabel}
+              />
+            </div>
+          )
+        }
+        if (group.type === 'imageGallery') {
+          const block = group.blocks[0]
+          const galleryColumns = block.columns ?? 5
+          // Each col/row unit is 800px of source image — generous for retina
+          // on any realistic viewport without producing oversized files for
+          // multi-cell features.
+          const GALLERY_UNIT = 800
+          const galleryImages = (block.images ?? []).filter(hasAsset).map((img) => {
+            const cols = clamp(1, img.colSpan ?? 1, galleryColumns)
+            const rows = clamp(1, img.rowSpan ?? 1, 4)
+            return {
+              ...toPictureCropped(img, cols * GALLERY_UNIT, rows * GALLERY_UNIT),
+              colSpan: img.colSpan,
+              rowSpan: img.rowSpan,
+            }
+          })
+          return (
+            <div class="py-(--site-padding-md)">
+              <ImageGallery
+                images={galleryImages}
+                columns={galleryColumns}
+                fullWidth={block.fullWidth ?? true}
+              />
+            </div>
+          )
+        }
+        return (
+          <div class="max-w-4xl ml-auto space-y-6 lsa no-repeat">
+            <Fragment set:html={toHTML(group.blocks)} />
+          </div>
+        )
+      })
+    }
+
+    {
+      project.hideRelatedProjects !== true &&
+        project.relatedProjects &&
+        project.relatedProjects.length > 0 && (
+          <section class="text-center px-0">
+            <div class="flex flex-col gap-8 md:gap-10">
+              <h2 class="h3 uppercase text-left text-primary lsa lsa-slide-up no-repeat">
+                Related Projects
+              </h2>
+              <div class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-[clamp(40px,4vw,64px)]">
+                {project.relatedProjects.map((related) => {
+                  const relImg = hasAsset(related.cardImage)
+                    ? toPicture(related.cardImage, 1200)
+                    : undefined
+                  const relHref = related.slug?.current
+                    ? `/project/${related.slug.current}`
+                    : related.href || '#'
+                  return (
+                    <div class="lsa no-repeat w-full" style={getCardVars(related.styling)}>
+                      <Card
+                        title={related.title}
+                        description={related.description || ''}
+                        href={relHref}
+                        ctaLabel="View Project"
+                        imageSrc={relImg?.src}
+                        imageWidth={relImg?.width}
+                        imageHeight={relImg?.height}
+                        imageAlt={relImg?.alt || related.title}
+                        imageClass="relative z-10 h-full w-full object-cover"
+                        mediaClass="bg-(--card-media-bg) aspect-video"
+                        contentClass="flex h-full flex-col gap-2.5 p-4 text-left sm:p-5 bg-(--card-bg)"
+                        class="h-full border-(--card-divider) text-(--card-text)"
+                        accentBorderColor={related.styling?.accentColor || 'var(--color-primary)'}
+                      />
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </section>
+        )
+    }
+  </main>
+</Layout>
+
+<style>
+  .project-hero :global(.project-hero__overview) {
+    display: block;
+    max-width: var(--nav-width);
+    margin: auto;
+  }
+
+  @media (min-width: 768px) {
+    .project-hero {
+      padding-top: var(--site-padding-lg);
+    }
+
+    .project-hero :global(.project-hero__overview) {
+      position: absolute;
+      inset: 0 0 auto 0;
+      z-index: 10;
+      padding: 0 var(--site-padding-base);
+    }
+
+    main :global(.portfolio-item) {
+      grid-template-columns: 1fr minmax(0, 56rem);
+    }
+
+    main :global(.portfolio-item--reversed) {
+      grid-template-columns: minmax(0, 56rem) 1fr;
+    }
+  }
+</style>

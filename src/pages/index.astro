@@ -1,101 +1,268 @@
 ---
-import { Image } from 'astro:assets'
-import LogoPrimary from '../assets/images/logos/jtbi-logo-primary.svg'
-import CloudImage from '../assets/images/textures/jtbi-cloud1-80-opacity.png'
-import CloudImageTwo from '../assets/images/textures/jtbi-cloud2-80-opacity.png'
+import { toHTML } from '@portabletext/to-html'
+import ContactBg from '../assets/images/textures/jtbi-cloud-background-sample.svg'
+import Card from '../components/ui/Card.astro'
 import ContactForm from '../components/ui/forms/Contact.astro'
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts'
+import MediaCardRow from '../components/ui/MediaCardRow.astro'
+import PageHeader from '../components/ui/PageHeader.astro'
+import { SITE_TITLE } from '../consts'
 import Layout from '../layouts/Layout.astro'
+import { sanityClient } from '../sanity/lib/client'
+import { imageDerefWithAlt, imageWithAlt } from '../sanity/lib/queries'
+import type { PageBlock } from '../sanity/lib/types'
+import { hasAsset, toPicture, toPictures } from '../sanity/lib/urlForImage'
+
+const homepage = await sanityClient.fetch(
+  `*[_id == "homepage"][0]{
+    pageBuilder[]{
+      _type,
+      _key,
+      hidden,
+      _type == "heroBlock" => {
+        sectionId,
+        hidden,
+        backgroundImage ${imageDerefWithAlt},
+        carouselImages[] ${imageDerefWithAlt},
+        headline1,
+        headline1Color,
+        headline2,
+        headline2Color
+      },
+      _type == "projectsBlock" => {
+        sectionId,
+        hidden,
+        heading,
+        projects[]-> {
+          _id,
+          title,
+          slug,
+          description,
+          featureText,
+          cardImage ${imageWithAlt},
+          ctaLabel,
+          reversed,
+          styling
+        }
+      },
+      _type == "mediaCardRowBlock" => {
+        sectionId,
+        hidden,
+        heading,
+        featureText,
+        title,
+        description,
+        image ${imageWithAlt},
+        href,
+        ctaLabel,
+        reversed,
+        styling
+      },
+      _type == "snapshotsBlock" => {
+        sectionId,
+        hidden,
+        heading,
+        items[]->{
+          ...,
+          image ${imageWithAlt}
+        }
+      },
+      _type == "contactBlock" => {
+        sectionId,
+        hidden,
+        heading,
+        subheading,
+        subheadingAccent,
+        body
+      }
+    }
+  }`,
+)
+
+const blocks: PageBlock[] = homepage?.pageBuilder ?? []
 ---
 
 <Layout>
-  <header class="h-[80dvh] px-(--site-padding-base) relative flex justify-center items-center">
-    <div class="overflow-hidden absolute inset-0">
-      <Image
-        src={CloudImage}
-        alt="Cloud texture background"
-        class="absolute top-1/2 left-1/2 w-auto h-auto max-w-md opacity-80 pointer-events-none cloud-drift-one lsa no-repeat"
-        role="presentation"
-        loading="eager"
-      />
-      <Image
-        src={CloudImageTwo}
-        alt="Secondary cloud texture background"
-        class="absolute top-1/2 left-1/2 w-auto h-auto max-w-md opacity-80 pointer-events-none cloud-drift-two lsa no-repeat"
-        role="presentation"
-        loading="eager"
-      />
-    </div>
-    <h1 class="sr-only">{SITE_TITLE}</h1>
+  {
+    blocks.map((block) => {
+      // Filter hidden blocks
+      if (block.hidden) return null
 
-    <div class="relative w-full max-w-xl z-10 lsa no-repeat delay-100">
-      <LogoPrimary />
-    </div>
-  </header>
+      // Available blocks: heroBlock, projectsBlock, mediaCardRowBlock, snapshotsBlock, contactBlock
+      if (block._type === 'heroBlock') {
+        const carouselImages = toPictures(block.carouselImages, 2400)
 
-  <main
-    class="max-w-screen-lg mx-auto pt-0 pb-(--site-padding-3xl) px-(--site-padding-base) text-center"
-  >
-    <section id="hero" class="pt-0 pb-(--site-padding-sm)">
-      <div class="text-left">
-        <h2 class="h1 text-pretty text-base-100 font-extrabold lsa no-repeat">
-          Time for a rebrand, so this site is under construction.
-        </h2>
-        <p class="h1 lsa no-repeat">Your brand could be next.</p>
-      </div>
-    </section>
+        const bgImage =
+          carouselImages.length === 0 && hasAsset(block.backgroundImage)
+            ? toPicture(block.backgroundImage, 2400)
+            : undefined
 
-    <section id="description">
-      <div class="w-full grid grid-cols-1 md:grid-cols-2 md:justify-items-end">
-        <div>
-          <!-- Empty Column -->
-        </div>
-        <aside class="relative max-w-md text-left lsa no-repeat">
-          <p
-            class="before:content-[''] before:h-10 before:w-10 before:bg-secondary before:absolute before:-top-14 md:before:top-0 md:before:-left-14"
-          >
-            {SITE_DESCRIPTION}
-          </p>
-        </aside>
-      </div>
-    </section>
+        return (
+          <PageHeader
+            id={block.sectionId}
+            carouselImages={carouselImages.length > 0 ? carouselImages : undefined}
+            backgroundImageSrc={bgImage?.src}
+            backgroundImageWidth={bgImage?.width}
+            backgroundImageHeight={bgImage?.height}
+            backgroundImageAlt={bgImage?.alt}
+            headline1={block.headline1 || "You're not industry-standard,"}
+            headline1Color={block.headline1Color}
+            headline2={block.headline2 || 'and your branding should prove it.'}
+            headline2Color={block.headline2Color}
+            srTitle={SITE_TITLE}
+          />
+        )
+      }
+      return null
+    })
+  }
 
-    <section id="contact">
-      <header class="mb-8 text-left">
-        <h2 class="h4 font-bold mb-2 lsa no-repeat">
-          WANT TO DISCUSS YOUR BRAND? <span class="font-normal">Let's chat.</span>
-        </h2>
-        <p class="lsa no-repeat">
-          Whether you're considering refreshing your current branding, or are seeking support with
-          the launch of an entirely new business, we're here to help. Contact us for a free
-          45-minute consultation.
-        </p>
-      </header>
+  <main id="main-content">
+    {
+      blocks.map((block) => {
+        if (block.hidden) return null
 
-      <ContactForm />
-    </section>
+        if (block._type === 'projectsBlock') {
+          const projects = block.projects ?? []
+          return (
+            <section id={block.sectionId || undefined} class="text-center flex flex-col gap-8">
+              <h2 class="text-left lsa lsa-slide-up no-repeat">
+                {block.heading ||
+                  'Developing visual and marketing strategies for business acceleration.'}
+              </h2>
+              {projects.map((project) => {
+                const projImg = hasAsset(project.cardImage)
+                  ? toPicture(project.cardImage, 1600)
+                  : undefined
+                return (
+                  <MediaCardRow
+                    featureText={toHTML(project.featureText)}
+                    reversed={project.reversed}
+                    imageSrc={projImg?.src}
+                    imageWidth={projImg?.width}
+                    imageHeight={projImg?.height}
+                    imageAlt={projImg?.alt || 'Portfolio preview image'}
+                    accentColor={project.styling?.accentColor}
+                    cardBackgroundColor={project.styling?.cardBackgroundColor}
+                    cardTextColor={project.styling?.cardTextColor}
+                    title={project.title}
+                    description={project.description}
+                    href={project.slug?.current ? `/project/${project.slug.current}` : undefined}
+                    ctaLabel={project.ctaLabel}
+                  />
+                )
+              })}
+            </section>
+          )
+        }
+
+        if (block._type === 'mediaCardRowBlock') {
+          const blockImg = hasAsset(block.image) ? toPicture(block.image, 1600) : undefined
+          return (
+            <section id={block.sectionId || undefined} class="text-center flex flex-col gap-8">
+              {block.heading && (
+                <h2 class="text-left lsa lsa-slide-up no-repeat">{block.heading}</h2>
+              )}
+              <MediaCardRow
+                reversed={block.reversed}
+                featureText={block.featureText ? toHTML(block.featureText) : ''}
+                imageSrc={blockImg?.src}
+                imageWidth={blockImg?.width}
+                imageHeight={blockImg?.height}
+                imageAlt={blockImg?.alt || ''}
+                accentColor={block.styling?.accentColor}
+                cardBackgroundColor={block.styling?.cardBackgroundColor}
+                cardTextColor={block.styling?.cardTextColor}
+                title={block.title || ''}
+                description={block.description || ''}
+                href={block.href}
+                ctaLabel={block.ctaLabel}
+              />
+            </section>
+          )
+        }
+
+        if (block._type === 'snapshotsBlock') {
+          return (
+            <section id={block.sectionId || undefined} class="text-center">
+              <div class="flex flex-col gap-8 md:gap-10">
+                <h2 class="h3 uppercase text-left text-primary lsa lsa-slide-up no-repeat">
+                  {block.heading || 'Project Snapshots'}
+                </h2>
+                <div class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-[clamp(40px,4vw,64px)]">
+                  {block.items?.filter(Boolean).map((item) => {
+                    // Generate inline styles for card based on its styling properties, w/ fallbacks to CSS variables or defaults
+                    const cardStyles = `
+                      --card-accent: ${item.styling?.accentColor || 'var(--color-primary)'};
+                      --card-bg: ${item.styling?.cardBackgroundColor || item.styling?.accentColor};
+                      --card-text: ${item.styling?.cardTextColor || item.styling?.accentColor || 'var(--color-primary)'};
+                      --card-cta: ${item.styling?.cardTextColor || item.styling?.accentColor || 'var(--color-primary)'};
+                      --card-media-bg: ${item.styling?.mediaBackgroundColor || 'var(--color-base-200)'};
+                      --card-divider: color-mix(in srgb, ${item.styling?.cardTextColor || item.styling?.accentColor || 'var(--color-primary)'} 14%, transparent);
+                    `
+                    const itemImg = hasAsset(item.image) ? toPicture(item.image, 1200) : undefined
+                    return (
+                      <div class="lsa no-repeat w-full" style={cardStyles}>
+                        <Card
+                          title={item.title}
+                          description={item.description}
+                          href={item.href}
+                          ctaLabel={item.ctaLabel}
+                          imageSrc={itemImg?.src}
+                          imageWidth={itemImg?.width}
+                          imageHeight={itemImg?.height}
+                          imageAlt={
+                            itemImg?.alt ||
+                            `JTB Imaginative project snapshot for ${item.title.toLowerCase()}`
+                          }
+                          imageClass="relative z-10"
+                          mediaClass="bg-(--card-media-bg) aspect-square"
+                          contentClass="flex h-full flex-col gap-2.5 p-4 text-left sm:p-5 bg-(--card-bg)"
+                          class="h-full border-(--card-divider) text-(--card-text)"
+                          accentBorderColor={item.styling?.accentColor || 'var(--color-primary)'}
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </section>
+          )
+        }
+
+        if (block._type === 'contactBlock') {
+          return (
+            <section id={block.sectionId || undefined} class="relative max-w-none bg-primary">
+              <div
+                style={`background-image: url(${ContactBg.src}); background-size: cover; background-position: center;`}
+                class="absolute inset-0 opacity-10 pointer-events-none"
+                role="presentation"
+              />
+              <div class="wrapper text-left">
+                <header class="space-y-4 mb-8 py-0 text-left relative z-10">
+                  <h2 class="lsa lsa-slide-up no-repeat">
+                    {block.heading || 'Brand building that means business.'}
+                    <span class="-ml-1 align-top text-[0.5em]" aria-hidden="true">
+                      &#8482;
+                    </span>
+                    <span class="sr-only">trademark</span>
+                  </h2>
+                  <h3 class="text-primary-content lsa lsa-slide-up no-repeat delay-100">
+                    {block.subheading || 'WANT TO DISCUSS YOUR BRAND?'}
+                    <span>{block.subheadingAccent || "Let's chat."}</span>
+                  </h3>
+                  <p class="text-base-200 font-bold lsa lsa-slide-up no-repeat delay-200">
+                    {block.body ||
+                      "Whether you're considering refreshing your current branding, or are seeking support with the launch of an entirely new business, we're here to help. Contact us for a free 45-minute consultation."}
+                  </p>
+                </header>
+                <ContactForm />
+              </div>
+            </section>
+          )
+        }
+
+        return null
+      })
+    }
   </main>
 </Layout>
-
-<style>
-  /* Cloud drift animations */
-  @keyframes cloudDriftOne {
-    0% {
-      transform: translate(-50%, -50%) translateX(-25px);
-    }
-    50% {
-      transform: translate(-50%, -50%) translateX(25px);
-    }
-    100% {
-      transform: translate(-50%, -50%) translateX(-25px);
-    }
-  }
-
-  .cloud-drift-one {
-    animation: cloudDriftOne 12s ease-in-out infinite;
-  }
-
-  .cloud-drift-two {
-    animation: cloudDriftOne 15s ease-in-out infinite;
-  }
-</style>

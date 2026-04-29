@@ -1,0 +1,176 @@
+---
+import { Picture } from 'astro:assets'
+import Button from './Button.astro'
+
+interface CarouselImage {
+  src: string
+  width: number
+  height: number
+  alt: string
+}
+
+interface Props {
+  id?: string
+  backgroundImageSrc?: string
+  backgroundImageWidth?: number
+  backgroundImageHeight?: number
+  backgroundImageAlt?: string
+  carouselImages?: CarouselImage[]
+  eyebrow?: string
+  headline1?: string
+  headline1Color?: 'dark' | 'light'
+  headline2?: string
+  headline2Color?: 'dark' | 'light'
+  message?: string
+  ctaLabel?: string
+  ctaHref?: string
+  title?: string
+  srTitle?: string
+  fullHeight?: boolean
+  headerClass?: string
+  contentClass?: string
+}
+
+const {
+  id,
+  backgroundImageSrc = '',
+  backgroundImageWidth,
+  backgroundImageHeight,
+  backgroundImageAlt = '',
+  carouselImages = [],
+  eyebrow,
+  headline1,
+  headline1Color = 'light',
+  headline2,
+  headline2Color = 'light',
+  message,
+  ctaLabel,
+  ctaHref,
+  title,
+  srTitle,
+  fullHeight = true,
+  headerClass = '',
+  contentClass = '',
+} = Astro.props
+
+const hasCarousel = carouselImages.length > 0
+---
+
+<header
+  id={id || undefined}
+  class={`relative flex justify-center items-center overflow-hidden ${fullHeight || backgroundImageSrc || hasCarousel ? 'h-screen' : 'pt-[calc(var(--nav-height)+var(--site-padding-2xl))]'} ${headerClass || ''}`}
+>
+  {
+    hasCarousel && (
+      <div class="hero-carousel swiper absolute w-full h-full inset-0 pointer-events-none select-none">
+        <div class="swiper-wrapper">
+          {carouselImages.map((img) => (
+            <div class="swiper-slide">
+              <Picture
+                src={img.src}
+                alt={img.alt}
+                class="h-full w-full object-contain"
+                pictureAttributes={{ class: 'block h-full w-full' }}
+                formats={['avif', 'webp']}
+                quality={85}
+                width={img.width}
+                height={img.height}
+                priority
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  {
+    backgroundImageSrc && backgroundImageWidth && backgroundImageHeight && !hasCarousel && (
+      <Picture
+        src={backgroundImageSrc}
+        alt={backgroundImageAlt}
+        class="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+        formats={['avif', 'webp']}
+        quality={85}
+        width={backgroundImageWidth}
+        height={backgroundImageHeight}
+        priority
+      />
+    )
+  }
+
+  <div
+    class={`flex flex-col items-center gap-3 wrapper z-40 ${hasCarousel || backgroundImageSrc ? 'absolute' : 'relative'} ${contentClass || ''}`}
+  >
+    {eyebrow && <p class="eyebrow lsa no-repeat">{eyebrow}</p>}
+    {srTitle && <h1 class="sr-only">{srTitle}</h1>}
+    {title && <h1 class="h3 lsa no-repeat">{title}</h1>}
+    {
+      (headline1 || headline2) && (
+        <h2
+          class={`flex flex-col gap-3 headline lsa no-repeat lsa-slide-up ${headline1Color === 'dark' ? 'text-primary' : 'text-base-100'}`}
+        >
+          {headline1}
+          {headline2 && (
+            <>
+              <br />
+              <span
+                class={`h1 block lsa no-repeat lsa-slide-up delay-100 ${headline2Color === 'dark' ? 'text-primary' : 'text-base-300'}`}
+              >
+                {headline2}
+              </span>
+            </>
+          )}
+        </h2>
+      )
+    }
+    {message && <p class="lsa lsa-slide-up delay-100 no-repeat">{message}</p>}
+    {
+      ctaLabel && ctaHref && (
+        <Button
+          label={ctaLabel}
+          href={ctaHref}
+          wrapperClass="justify-center lsa lsa-slide-up delay-200 no-repeat"
+        />
+      )
+    }
+    <slot />
+  </div>
+</header>
+
+<style>
+  .hero-carousel .swiper-slide {
+    opacity: 0;
+    transition: opacity 1.5s ease;
+  }
+  .hero-carousel .swiper-slide-active {
+    opacity: 1;
+  }
+</style>
+
+<script>
+  import Swiper from 'swiper'
+  import { Autoplay, EffectFade } from 'swiper/modules'
+  import 'swiper/css'
+  import 'swiper/css/effect-fade'
+
+  function initHeroCarousel() {
+    const heroCarousel = document.querySelector<HTMLElement>('.hero-carousel')
+    if (!heroCarousel) return
+
+    new Swiper(heroCarousel, {
+      modules: [Autoplay, EffectFade],
+      effect: 'fade',
+      fadeEffect: { crossFade: true },
+      autoplay: { delay: 4000, disableOnInteraction: false },
+      speed: 1500,
+      loop: true,
+      allowTouchMove: false,
+    })
+  }
+
+  initHeroCarousel()
+  document.addEventListener('astro:after-swap', () => {
+    initHeroCarousel()
+  })
+</script>

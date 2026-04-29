@@ -1,0 +1,151 @@
+---
+import type { ImageMetadata } from 'astro'
+import Card from './Card.astro'
+
+export interface Props {
+  featureText: string
+  reversed?: boolean
+  imageSrc?: ImageMetadata | string
+  imageWidth?: number
+  imageHeight?: number
+  imageAlt?: string
+  accentColor?: string
+  cardBackgroundColor?: string
+  cardTextColor?: string
+  title: string
+  description: string
+  href?: string
+  ctaLabel?: string
+}
+
+const {
+  featureText,
+  reversed = false,
+  imageSrc,
+  imageWidth,
+  imageHeight,
+  imageAlt = 'Portfolio preview image',
+  accentColor = 'var(--color-primary)',
+  cardBackgroundColor = 'var(--color-base-100)',
+  cardTextColor = 'var(--color-base-content)',
+  title,
+  description,
+  href,
+  ctaLabel,
+} = Astro.props
+
+const componentStyles = `
+    --card-accent: ${accentColor};
+    --card-bg: ${cardBackgroundColor};
+    --card-text: ${cardTextColor};
+    --card-cta: ${cardTextColor};
+    --card-divider: color-mix(in srgb, ${cardTextColor} 12%, transparent);
+  `
+---
+
+<div
+  class:list={[
+    'portfolio-item relative lsa no-repeat grid gap-8 transform-none md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.15fr)] md:gap-10',
+    reversed && 'portfolio-item--reversed',
+  ]}
+  style={componentStyles}
+>
+  <span
+    class:list={[
+      'portfolio-item__border absolute top-0 left-0 hidden h-0.75 w-full bg-(--card-accent) transform-[scaleX(0)] will-change-transform motion-reduce:transform-[scaleX(1)] md:block',
+      reversed ? 'origin-right' : 'origin-left',
+    ]}
+    aria-hidden="true"></span>
+
+  <div
+    class:list={[
+      'space-y-4 md:pt-8 [&>p]:text-lg [&>p]:md:text-xl text-left lsa lsa-slide-up no-repeat delay-100',
+      reversed && 'md:order-2',
+    ]}
+    set:html={featureText}
+  />
+
+  <div
+    class:list={[
+      'portfolio-item__card min-h-88 sm:min-h-100 md:min-h-124',
+      reversed && 'md:order-1',
+    ]}
+  >
+    <Card
+      title={title}
+      description={description}
+      imageSrc={imageSrc ? (typeof imageSrc === 'string' ? imageSrc : imageSrc.src) : undefined}
+      imageWidth={imageWidth}
+      imageHeight={imageHeight}
+      imageAlt={imageAlt}
+      imageClass="h-full w-full object-cover"
+      contentClass="border-t border-(--card-divider) bg-(--card-bg) p-5 text-left text-(--card-text) sm:p-7"
+      showFallback={true}
+      href={href}
+      ctaLabel={ctaLabel}
+      accentBorderColor={accentColor}
+      animationDirection="top-to-bottom"
+      reversed={reversed}
+    />
+  </div>
+</div>
+
+<style>
+  /* Viewport-edge bleed */
+  @media (min-width: 768px) {
+    .portfolio-item {
+      --card-overflow: calc(var(--site-padding-base) + max(0px, (100vw - var(--nav-width)) / 2));
+    }
+  }
+
+  /* Border animation */
+  @media (min-width: 768px) {
+    .portfolio-item__border {
+      width: calc(100% + var(--card-overflow));
+    }
+
+    .portfolio-item--reversed .portfolio-item__border {
+      left: calc(-1 * var(--card-overflow));
+      width: calc(100% + var(--card-overflow));
+    }
+
+    .portfolio-item.active .portfolio-item__border {
+      animation: portfolio-border-draw 600ms cubic-bezier(0.22, 1, 0.36, 1) 300ms forwards;
+    }
+  }
+
+  @keyframes portfolio-border-draw {
+    from {
+      transform: scaleX(0);
+    }
+
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .portfolio-item__border {
+      animation: none;
+      transform: scaleX(1);
+      will-change: auto;
+    }
+  }
+
+  /* Card overflow */
+  @media (min-width: 768px) {
+    .portfolio-item__card {
+      width: calc(100% + var(--card-overflow));
+    }
+
+    .portfolio-item--reversed .portfolio-item__card {
+      width: calc(100% + var(--card-overflow));
+      margin-left: calc(-1 * var(--card-overflow));
+    }
+
+    /* Desktop: hide Card's vertical border (horizontal top border is used instead) */
+    .portfolio-item :global(.card__accent-border) {
+      display: none;
+    }
+  }
+</style>

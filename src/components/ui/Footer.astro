@@ -1,13 +1,55 @@
 ---
+import { Image } from 'astro:assets'
 import JTBIPhaseOneTagline from '../../assets/images/logos/jtbi-phase1-tagline.svg'
+import CloudTexture from '../../assets/images/textures/jtbi-cloud1-80-opacity.png'
+
+const legalLinks = [
+  { label: 'Privacy Policy', href: '/legal/privacy-policy' },
+  { label: 'Cookie Policy', href: '/legal/cookie-policy' },
+  { label: 'AI Policy', href: '/legal/ai-policy' },
+]
 ---
 
-<footer class="relative z-20 bg-primary text-base-100 py-(--site-padding-lg)">
-  <div class="px-(--site-padding-base) flex flex-col items-center md:items-start gap-8">
-    <JTBIPhaseOneTagline class="mx-auto md:px-(--site-padding-base) max-w-screen-md" />
+<footer
+  class="relative z-20 overflow-hidden py-(--site-padding-lg) bg-primary text-base-100 border-t border-base-300"
+>
+  <div class="wrapper flex flex-col gap-10 md:gap-12">
+    <div class="relative mx-auto w-full max-w-6xl px-4 md:px-10">
+      <Image
+        src={CloudTexture}
+        alt="Cloud texture background"
+        aria-hidden="true"
+        class="pointer-events-none absolute left-[57%] top-1/2 w-[clamp(10rem,18vw,16rem)] -translate-x-1/2 -translate-y-1/2 opacity-40 object-contain md:opacity-55"
+      />
+      <JTBIPhaseOneTagline class="relative z-10 mx-auto w-full max-w-3xl" />
+    </div>
 
-    <small class="text-base-100/60"
-      >© {new Date().getFullYear()} JTB Imaginative LLC. All rights reserved.</small
-    >
+    <div class="flex w-full flex-col gap-4 md:flex-row items-center md:justify-between">
+      <small class="text-sm text-base-200">
+        © {new Date().getFullYear()} JTB Imaginative LLC. All rights reserved.
+      </small>
+
+      <nav aria-label="Footer legal links">
+        <ul
+          class="flex flex-wrap items-center text-sm! uppercase text-base-200 md:justify-end"
+          role="list"
+        >
+          {
+            legalLinks.map((link, index) => (
+              <li class="flex items-center">
+                {index > 0 && (
+                  <span class="px-3 text-sm text-base-200" aria-hidden="true">
+                    |
+                  </span>
+                )}
+                <a href={link.href} class="link-underline">
+                  {link.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </div>
   </div>
 </footer>

@@ -35,7 +35,8 @@ import Layout from '../layouts/Layout.astro'
     </div>
   </header>
   <main
-    class="max-w-screen-lg mx-auto pt-0 pb-(--site-padding-3xl) px-(--site-padding-base) text-center"
+    id="main-content"
+    class="max-w-5xl mx-auto pt-0 pb-(--site-padding-3xl) px-(--site-padding-base) text-center"
   >
     <section id="hero" class="pt-0">
       <h1 class="mb-4 text-pretty text-base-100 font-extrabold lsa no-repeat">Unsubscribed</h1>
@@ -57,6 +58,7 @@ import Layout from '../layouts/Layout.astro'
             <svg
               class="-rotate-45 group-hover:rotate-0 group-focus:rotate-0 transition-transform duration-200"
               viewBox="0 0 20 20"
+              aria-hidden="true"
             >
               <path
                 fill-rule="evenodd"

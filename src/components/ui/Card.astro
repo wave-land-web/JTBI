@@ -1,0 +1,207 @@
+---
+import { Picture } from 'astro:assets'
+
+export interface Props {
+  title: string
+  description: string
+  imageSrc?: string
+  imageWidth?: number
+  imageHeight?: number
+  imageAlt?: string
+  imageClass?: string
+  mediaClass?: string
+  contentClass?: string
+  showFallback?: boolean
+  class?: string
+  href?: string
+  ctaLabel?: string
+  isExternal?: boolean
+  accentBorderColor?: string
+  animationDirection?: 'left-to-right' | 'top-to-bottom'
+  reversed?: boolean
+}
+
+const {
+  title,
+  description,
+  imageSrc,
+  imageWidth,
+  imageHeight,
+  imageAlt = '',
+  imageClass,
+  mediaClass = '',
+  contentClass = '',
+  showFallback = false,
+  class: className = '',
+  href,
+  ctaLabel,
+  isExternal = false,
+  accentBorderColor,
+  animationDirection,
+  reversed = false,
+} = Astro.props
+
+const Tag = href ? 'a' : 'article'
+const linkProps = href
+  ? { href, ...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {}) }
+  : {}
+
+const fallbackImageClasses = `h-full w-full bg-gradient-to-tr from-secondary/10 to-(--card-accent)/10`
+---
+
+<Tag class:list={[className, accentBorderColor && 'relative block @container']} {...linkProps}>
+  {
+    accentBorderColor && (
+      <span
+        class="card__accent-border absolute inset-y-0 left-0 w-0.75"
+        style={`background-color: ${accentBorderColor}`}
+        aria-hidden="true"
+      />
+    )
+  }
+  <div
+    class:list={[
+      accentBorderColor && 'card__body',
+      animationDirection === 'top-to-bottom' && 'card__body--tb',
+    ]}
+  >
+    <div class:list={['relative overflow-hidden', mediaClass]}>
+      {
+        imageSrc && imageWidth && imageHeight ? (
+          <Picture
+            src={imageSrc}
+            alt={imageAlt}
+            class={imageClass}
+            formats={['avif', 'webp']}
+            quality={85}
+            width={imageWidth}
+            height={imageHeight}
+            loading="lazy"
+          />
+        ) : showFallback ? (
+          <div class={fallbackImageClasses} />
+        ) : null
+      }
+    </div>
+
+    <div
+      class={`${
+        reversed && animationDirection === 'top-to-bottom'
+          ? 'grid md:grid-cols-[1fr_2fr]'
+          : !reversed && animationDirection === 'top-to-bottom'
+            ? 'grid md:grid-cols-[2fr_1fr]'
+            : ''
+      } ${contentClass}`}
+    >
+      <div class={`flex flex-col items-start gap-2 ${reversed ? 'order-2' : 'order-1'}`}>
+        <h4 class="text-lg md:text-xl">{title}</h4>
+        <p class="p3 text-balance">{description}</p>
+
+        {
+          ctaLabel && (
+            <p class="mt-auto link-underline text-sm font-semibold uppercase tracking-widest text-(--card-cta)">
+              <span>{ctaLabel}</span>
+              <span class="text-xl">»</span>
+            </p>
+          )
+        }
+        <slot />
+      </div>
+      {
+        animationDirection === 'top-to-bottom' ? (
+          <div class={`${reversed ? 'order-1' : 'order-2'}`} />
+        ) : null
+      }
+    </div>
+  </div>
+</Tag>
+
+<style>
+  /* Accent border */
+  .card__accent-border {
+    transform-origin: top;
+    transform: scaleY(0);
+    will-change: transform;
+  }
+
+  :global(.active) .card__accent-border {
+    animation: card-border-draw 600ms cubic-bezier(0.22, 1, 0.36, 1) 300ms forwards;
+  }
+
+  @keyframes card-border-draw {
+    from {
+      transform: scaleY(0);
+    }
+
+    to {
+      transform: scaleY(1);
+    }
+  }
+
+  /* Card body reveal — narrow cards: left-to-right */
+  .card__body {
+    height: 100%;
+    margin-left: 3px;
+    clip-path: inset(0 100% 0 0);
+    opacity: 0;
+    will-change: clip-path, opacity;
+  }
+
+  :global(.active) .card__body {
+    height: 100%;
+    animation: card-reveal-lr 1200ms cubic-bezier(0.22, 1, 0.36, 1) 600ms forwards;
+  }
+
+  @keyframes card-reveal-lr {
+    from {
+      opacity: 0;
+      clip-path: inset(0 100% 0 0);
+    }
+
+    to {
+      opacity: 1;
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  /* Wide cards: reveal top-to-bottom (prop-driven, desktop only) */
+  @media (min-width: 768px) {
+    .card__body--tb.card__body {
+      clip-path: inset(0 0 100% 0);
+      margin-left: 0;
+      margin-top: 3px;
+    }
+
+    :global(.active) .card__body--tb.card__body {
+      animation-name: card-reveal-tb;
+    }
+  }
+
+  @keyframes card-reveal-tb {
+    from {
+      opacity: 0;
+      clip-path: inset(0 0 100% 0);
+    }
+
+    to {
+      opacity: 1;
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card__accent-border {
+      animation: none;
+      transform: scaleY(1);
+      will-change: auto;
+    }
+
+    .card__body,
+    .card__body--tb {
+      animation: none;
+      clip-path: none;
+      opacity: 1;
+      will-change: auto;
+    }
+  }
+</style>

@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@plugin "@tailwindcss/typography";
 @plugin "daisyui" {
   themes: corporate;
 }
@@ -53,9 +54,13 @@
   --font-radio-canada: var(--font-radio-canada);
   --font-factoria: 'factoria', serif;
 
-  /* Form and content spacing */
+  /* Content spacing + sizing */
+
   --form-gap: clamp(1rem, 2vw, 1.5rem);
   --content-max-width: 85ch;
+  --nav-width: 1300px;
+  --nav-height: clamp(88px, 12vw, 128px);
+  --nav-logo-width: clamp(10rem, 8rem + 5vw, 13rem);
 }
 
 /* Animations */
@@ -106,38 +111,35 @@
 }
 
 @layer base {
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: var(--color-primary) var(--color-base-300) !important;
-  }
-
   ::selection {
     @apply bg-primary text-primary-content;
   }
 
+  html,
+  body {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary) var(--color-base-300);
+  }
+
   html {
-    @apply scroll-smooth break-words scroll-pt-[calc(var(--site-padding-3xl)+var(--nav-height))];
+    @apply scroll-smooth wrap-break-word;
   }
 
   body {
     @apply min-h-screen bg-base-300 font-radio-canada text-base-content antialiased;
   }
 
-  main,
-  footer {
-    @apply py-(--site-padding-lg);
+  header {
+    @apply w-full max-w-screen-2xl mx-auto pt-(--nav-height);
   }
 
-  main {
-    @apply pb-0;
+  section,
+  .section {
+    @apply w-full mx-auto max-w-(--nav-width) px-(--site-padding-base) py-(--site-padding-2xl);
   }
 
   .wrapper {
-    @apply w-full max-w-screen-2xl mx-auto px-(--site-padding-base);
-  }
-
-  section {
-    @apply py-(--site-padding-2xl);
+    @apply w-full max-w-(--nav-width) mx-auto px-(--site-padding-base);
   }
 
   h1,
@@ -152,27 +154,27 @@
   .h4,
   .h5,
   .h6 {
-    @apply font-factoria text-balance leading-tight;
+    @apply font-factoria text-balance;
   }
 
   h1,
   .h1 {
-    @apply text-5xl sm:text-6xl;
+    @apply text-5xl sm:text-6xl md:text-7xl font-light leading-tight;
   }
 
   h2,
   .h2 {
-    @apply text-4xl sm:text-5xl;
+    @apply text-4xl sm:text-5xl md:text-6xl text-base-100 font-extrabold;
   }
 
   h3,
   .h3 {
-    @apply text-3xl sm:text-4xl;
+    @apply text-3xl font-bold;
   }
 
   h4,
   .h4 {
-    @apply text-2xl sm:text-3xl;
+    @apply text-xl sm:text-2xl font-radio-canada font-semibold uppercase;
   }
 
   h5,
@@ -187,30 +189,46 @@
 
   p,
   li:not(nav li),
-  .p {
-    @apply max-w-(--content-max-width) text-base sm:text-lg text-pretty leading-relaxed;
+  .p,
+  blockquote {
+    @apply max-w-(--content-max-width) text-base sm:text-lg text-pretty;
   }
 
-  button,
-  a,
-  .a {
-    @apply text-balance transition-colors duration-200;
+  blockquote {
+    @apply border-l-2 border-primary/40 pl-6 italic;
+  }
+
+  .p2 {
+    @apply text-sm sm:text-base text-pretty font-bold;
+  }
+
+  .p3 {
+    @apply text-sm sm:text-base font-factoria font-semibold;
+  }
+
+  .headline {
+    @apply text-7xl sm:text-8xl xl:text-9xl text-base-100 font-extrabold;
+  }
+
+  .eyebrow {
+    @apply text-sm font-extrabold uppercase tracking-widest;
   }
 
   img,
   svg {
-    @apply w-full h-auto;
+    @apply block w-full h-auto;
   }
 
   img {
-    @apply w-full h-auto object-cover;
+    @apply object-cover;
   }
 
   em {
     @apply italic;
   }
 
-  /* Form styling improvements */
+  /* Form styling */
+
   .form-control .input {
     @apply transition-colors duration-200;
   }
@@ -223,7 +241,6 @@
     @apply bg-primary border-primary;
   }
 
-  /* Ensure proper contrast for form elements */
   .input-bordered {
     @apply border-base-content/20;
   }
@@ -232,8 +249,37 @@
     @apply border-primary border-2;
   }
 
-  /* Strong text styling - uncomment when you have the font */
   strong {
     @apply font-semibold;
+  }
+
+  /* Animated underline link */
+
+  .link-underline {
+    @apply relative inline-block;
+
+    &::after {
+      @apply absolute bottom-0 left-0 h-px w-full origin-right scale-x-0 bg-current transition-transform duration-300 ease-out content-[''];
+    }
+
+    &:hover::after,
+    &:focus-visible::after {
+      @apply origin-left scale-x-100;
+    }
+  }
+
+  /* Skip to main content link */
+
+  .skip-link {
+    @apply fixed top-0 left-1/2 -translate-x-1/2 -translate-y-full z-50 bg-secondary text-secondary-content px-6 py-3 font-semibold text-sm uppercase tracking-wide transition-transform duration-200 focus:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary;
+  }
+
+  /* Breaks a child out of any constrained parent to span the full viewport width.
+     Relies on `body { overflow-x: hidden }` to neutralize scrollbar-width overflow,
+     and uses logical `margin-inline` for RTL safety. */
+  .full-bleed {
+    width: 100vw;
+    max-width: 100vw;
+    margin-inline: calc(50% - 50vw);
   }
 }

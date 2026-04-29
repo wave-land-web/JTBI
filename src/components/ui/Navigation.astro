@@ -1,0 +1,327 @@
+---
+import { Image } from 'astro:assets'
+import JTBILogoPrimary from '../../assets/images/logos/jtbi-logo-primary.svg'
+import CloudTexture from '../../assets/images/textures/jtbi-cloud1-80-opacity.png'
+import AnnouncementBar from './AnnouncementBar.astro'
+
+interface AnnouncementBarData {
+  active?: boolean
+  dismissible?: boolean
+  label?: string
+  message?: string
+  linkText?: string
+  href?: string
+}
+
+export interface Props {
+  announcementBar?: AnnouncementBarData
+}
+
+const links = [
+  { label: 'Home', href: '/' },
+  { label: 'Portfolio', href: '/#portfolio' },
+  { label: 'About', href: '/#about' },
+  { label: 'Contact', href: '/#contact' },
+]
+
+const { announcementBar } = Astro.props
+const logoLinkClasses = 'relative block overflow-visible group'
+const logoTextureClasses =
+  'pointer-events-none absolute top-1/2 h-[160%] w-full -translate-y-1/2 opacity-60 object-contain transition-opacity duration-300 group-hover:opacity-80 pointer-events-none'
+const linkClasses =
+  'link-underline w-fit p-0 text-sm md:text-base text-base-300 font-semibold uppercase tracking-wide transition-colors duration-300 hover:text-base-100 focus-visible:text-base-100'
+const mobileLinkClasses =
+  'link-underline w-fit p-0 text-lg text-base-300 font-semibold uppercase tracking-wide transition-colors duration-300 hover:text-base-100 focus-visible:text-base-100'
+---
+
+<nav
+  id="main-navigation"
+  class="fixed w-full top-0 z-30 text-base-100 transition-all duration-500 ease-in-out -translate-y-full active [&.active]:translate-y-0"
+  aria-label="Primary"
+>
+  <div class="relative z-10 bg-primary/95 backdrop-blur-sm">
+    <div class="wrapper">
+      <!-- Mobile Navigation -->
+      <div class="navbar h-(--nav-height) px-0 md:hidden">
+        <div class="navbar-start">
+          <a
+            href="/"
+            class:list={[logoLinkClasses, 'w-(--nav-logo-width) text-base-100']}
+            aria-label="JTB Imaginative home"
+          >
+            <Image
+              src={CloudTexture}
+              alt="Cloud texture background"
+              aria-hidden="true"
+              class={logoTextureClasses}
+              priority
+            />
+            <JTBILogoPrimary class="relative z-10 block w-full" />
+          </a>
+        </div>
+
+        <div class="navbar-end">
+          <button
+            type="button"
+            id="mobile-drawer-toggle"
+            class="btn btn-ghost btn-xs transition-colors duration-300 text-base-100 hover:bg-base-100/10 focus-visible:bg-base-100/10 cursor-pointer"
+            aria-label="Open navigation menu"
+            aria-expanded="false"
+            aria-controls="mobile-drawer-panel"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="1.75"
+              class="size-7"
+              aria-hidden="true"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h10"
+              ></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <div
+        class="max-w-(--nav-width) h-(--nav-height) mx-auto hidden items-center justify-between gap-6 md:flex"
+      >
+        <a
+          href="/"
+          class:list={[logoLinkClasses, 'w-(--nav-logo-width) text-base-100']}
+          aria-label="JTB Imaginative home"
+        >
+          <Image
+            src={CloudTexture}
+            alt="Cloud texture background"
+            aria-hidden="true"
+            class={logoTextureClasses}
+            priority
+          />
+          <JTBILogoPrimary class="relative z-10 block w-full" />
+        </a>
+
+        <ul class="flex flex-wrap items-center justify-center md:gap-6 lg:gap-8" role="list">
+          {
+            links.map((link) => (
+              <li>
+                <a href={link.href} class:list={linkClasses} data-nav-link>
+                  {link.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <AnnouncementBar
+    active={announcementBar?.active}
+    dismissible={announcementBar?.dismissible}
+    label={announcementBar?.label}
+    message={announcementBar?.message}
+    linkText={announcementBar?.linkText}
+    href={announcementBar?.href}
+  />
+</nav>
+
+<!-- Mobile Drawer (full-height flyout from left) -->
+<div class="drawer md:hidden z-40">
+  <input id="mobile-drawer" type="checkbox" class="drawer-toggle" />
+  <div class="drawer-side top-(--nav-height)">
+    <label for="mobile-drawer" aria-label="close sidebar" class="drawer-overlay"
+      ><span class="sr-only">Close sidebar</span></label
+    >
+    <nav id="mobile-drawer-panel" aria-label="Mobile" class="h-full">
+      <ul
+        class="menu h-full w-72 p-(--site-padding-base) pt-(--site-padding-md) gap-6 bg-primary/95 backdrop-blur-sm"
+      >
+        {
+          links.map((link, i) => (
+            <li class="drawer-link" style={`--i: ${i}`}>
+              <a href={link.href} class:list={mobileLinkClasses} data-nav-link data-mobile-nav-link>
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+</div>
+
+<style>
+  [data-nav-link]::after {
+    background: var(--underline-color, currentColor);
+  }
+
+  .drawer-link {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+
+  .drawer-toggle:checked ~ .drawer-side .drawer-link {
+    animation: drawer-link-in 500ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: calc(150ms + var(--i) * 80ms);
+  }
+
+  @keyframes drawer-link-in {
+    from {
+      opacity: 0;
+      transform: translateX(-12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .drawer-link {
+      opacity: 1;
+      transform: none;
+    }
+
+    .drawer-toggle:checked ~ .drawer-side .drawer-link {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  /** Light colors that cycle on nav link hover underlines */
+  const UNDERLINE_COLORS = [
+    '#f59e0b', // amber
+    '#60a5fa', // blue
+    '#f472b6', // pink
+    '#4ade80', // green
+    '#c084fc', // purple
+    '#fb923c', // orange
+    '#2dd4bf', // teal
+    '#fde047', // yellow
+    '#fb7185', // rose
+    '#38bdf8', // sky
+    '#bef264', // lime
+    '#e879f9', // fuchsia
+  ]
+
+  /** Minimum scroll delta (px) before toggling nav visibility */
+  const SCROLL_THRESHOLD = 8
+
+  /**
+   * Initializes show/hide behavior for the navigation bar based on scroll direction.
+   * @param {HTMLElement} nav - The navigation element to toggle
+   */
+  function initScrollBehavior(nav: HTMLElement) {
+    let lastScrollY = window.scrollY
+
+    window.addEventListener(
+      'scroll',
+      () => {
+        const currentScrollY = window.scrollY
+        const delta = currentScrollY - lastScrollY
+
+        if (currentScrollY <= 0) {
+          nav.classList.add('active')
+          lastScrollY = 0
+          return
+        }
+
+        if (Math.abs(delta) < SCROLL_THRESHOLD) return
+
+        nav.classList.toggle('active', delta < 0)
+        lastScrollY = currentScrollY
+      },
+      { passive: true },
+    )
+  }
+
+  /**
+   * Opens or closes the mobile drawer and syncs ARIA state.
+   */
+  function setDrawerOpen(open: boolean) {
+    if (!drawerToggle || !drawerButton) return
+    drawerToggle.checked = open
+    drawerButton.setAttribute('aria-expanded', String(open))
+
+    if (open) {
+      // Focus the first link in the drawer
+      const firstLink = document.querySelector<HTMLAnchorElement>('[data-mobile-nav-link]')
+      firstLink?.focus()
+    } else {
+      // Return focus to the toggle button
+      drawerButton.focus()
+    }
+  }
+
+  /**
+   * Initializes mobile drawer: toggle, close on link click, ESC key, and aria-expanded sync.
+   */
+  function initMobileDrawer(
+    toggle: HTMLInputElement,
+    button: HTMLElement,
+    links: NodeListOf<Element>,
+  ) {
+    // Toggle button opens/closes
+    button.addEventListener('click', () => {
+      setDrawerOpen(!toggle.checked)
+    })
+
+    // Close on link click
+    links.forEach((link) => {
+      link.addEventListener('click', () => {
+        setDrawerOpen(false)
+      })
+    })
+
+    // Close on ESC key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && toggle.checked) {
+        setDrawerOpen(false)
+      }
+    })
+
+    // Sync aria-expanded when overlay label closes the drawer
+    toggle.addEventListener('change', () => {
+      button.setAttribute('aria-expanded', String(toggle.checked))
+    })
+  }
+
+  /**
+   * Cycles through underline colors on nav link hover.
+   * Each hover advances to the next color in the palette.
+   * @param {NodeListOf<HTMLAnchorElement>} links - The nav link elements
+   */
+  function initUnderlineColors(links: NodeListOf<HTMLAnchorElement>) {
+    let index = Math.floor(Math.random() * UNDERLINE_COLORS.length)
+
+    links.forEach((link) => {
+      // Cycle color on mouse enter
+      link.addEventListener('mouseenter', () => {
+        link.style.setProperty('--underline-color', UNDERLINE_COLORS[index])
+        index = (index + 1) % UNDERLINE_COLORS.length
+      })
+
+      // Cycle color on keyboard focus for accessibility
+      link.addEventListener('focus', () => {
+        link.style.setProperty('--underline-color', UNDERLINE_COLORS[index])
+        index = (index + 1) % UNDERLINE_COLORS.length
+      })
+    })
+  }
+
+  // Initialize
+  const nav = document.getElementById('main-navigation')
+  const drawerToggle = document.getElementById('mobile-drawer') as HTMLInputElement | null
+  const drawerButton = document.getElementById('mobile-drawer-toggle')
+  const mobileLinks = document.querySelectorAll('[data-mobile-nav-link]')
+  const navLinks = document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]')
+
+  if (nav) initScrollBehavior(nav)
+  if (drawerToggle && drawerButton) initMobileDrawer(drawerToggle, drawerButton, mobileLinks)
+  initUnderlineColors(navLinks)
+</script>

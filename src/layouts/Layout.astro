@@ -1,8 +1,11 @@
 ---
-import { Font, getImage } from 'astro:assets'
-import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from '../consts'
-import CloudBackground from '../assets/images/textures/jtbi-cloud-background-tan-variant.jpg'
+import { Font } from 'astro:assets'
+import backgroundImage from '../assets/images/textures/jtbi-cloud-background-tan-variant.jpg'
 import Footer from '../components/ui/Footer.astro'
+import Navigation from '../components/ui/Navigation.astro'
+import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from '../consts'
+import { ANNOUNCEMENT_BAR_STORAGE_KEY, getAnnouncementBarId } from '../lib/announcementBar'
+import sanityClient from '../sanity/lib/client'
 import '../styles/global.css'
 
 export interface Props {
@@ -11,11 +14,41 @@ export interface Props {
   socialImage?: string
 }
 
+interface SiteSettings {
+  announcementBar?: {
+    active?: boolean
+    dismissible?: boolean
+    label?: string
+    message?: string
+    linkText?: string
+    href?: string
+  }
+}
+
 const { title = SITE_TITLE, description = SITE_DESCRIPTION, socialImage } = Astro.props
 const canonicalURL = new URL(Astro.url.pathname, Astro.site)
 // TODO: Replace with better social image
 const socialImageURL = new URL(socialImage || '/jtbi-logo-primary-90-opacity.png', canonicalURL)
-const backgroundImage = await getImage({ src: CloudBackground, inferSize: true })
+const siteSettings = await sanityClient.fetch<SiteSettings | null>(`
+  *[_type == "siteSettings" && _id == "siteSettings"][0]{
+    announcementBar{
+      active,
+      dismissible,
+      label,
+      message,
+      linkText,
+      href
+    }
+  }
+`)
+
+// Generate announcement bar ID if announcement bar is active, dismissible, and has a message
+const announcementBarId =
+  siteSettings?.announcementBar?.active &&
+  siteSettings?.announcementBar?.dismissible &&
+  siteSettings?.announcementBar?.message
+    ? getAnnouncementBarId(siteSettings.announcementBar)
+    : undefined
 ---
 
 <html lang="en" data-theme="corporate">
@@ -61,17 +94,39 @@ const backgroundImage = await getImage({ src: CloudBackground, inferSize: true }
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="JTBI" />
     <link rel="manifest" href="/site.webmanifest" />
+    {
+      announcementBarId && (
+        <>
+          <style is:inline>{`html[data-dismissed-announcement-bar="true"] [data-announcement-bar][data-announcement-id="${announcementBarId}"] {
+              display: none;
+            }
+          `}</style>
+          <script
+            is:inline
+            define:vars={{ announcementBarId, announcementBarStorageKey: ANNOUNCEMENT_BAR_STORAGE_KEY }}
+          >
+              if (sessionStorage.getItem(announcementBarStorageKey) === announcementBarId) {
+                document.documentElement.setAttribute('data-dismissed-announcement-bar', 'true')
+              } else {
+                document.documentElement.removeAttribute('data-dismissed-announcement-bar')
+              }
+          </script>
+        </>
+      )
+    }
   </head>
 
   <body class="relative min-h-screen overflow-x-hidden">
-    <!-- Full screen cloud background -->
     <div
-      class="fixed inset-0 w-full h-auto bg-center bg-cover pointer-events-none z-0"
+      class="fixed inset-0 w-full h-auto bg-center bg-cover pointer-events-none z-0 opacity-80"
       style={`background-image: url('${backgroundImage.src}');`}
       role="presentation"
       aria-hidden="true"
     >
     </div>
+
+    <Navigation announcementBar={siteSettings?.announcementBar} />
+    <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <!-- Page content with proper z-index -->
     <div class="relative z-10 min-h-screen">

@@ -32,6 +32,8 @@ export default function lsa() {
     }, options)
 
     // Observe each section with the class `lsa`
-    sections.forEach((section) => observer.observe(section))
+    sections.forEach((section) => {
+      observer.observe(section)
+    })
   }
 }
