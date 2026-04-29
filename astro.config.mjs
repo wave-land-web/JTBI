@@ -35,6 +35,10 @@ export default defineConfig({
         context: 'server',
         access: 'secret',
       }),
+      RESEND_API_KEY: envField.string({
+        context: 'server',
+        access: 'secret',
+      }),
     },
     validateSecrets: true,
   },
@@ -78,8 +82,8 @@ export default defineConfig({
       projectId: 'vs47sslu',
       dataset: 'production',
       useCdn: false,
+      apiVersion: '2025-01-28',
       studioBasePath: '/admin',
-      apiVersion: '2025-08-01',
     }),
     sitemap({
       lastmod: new Date(),
