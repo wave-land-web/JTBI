@@ -222,7 +222,7 @@ export const POST: APIRoute = async ({ request }) => {
       }
     }
 
-    // Prepare notification email to jtbimaginative@gmail.com
+    // Prepare notification email to hello@jtbimaginative.com
     try {
       const notificationParams = {
         firstName: contactData.firstName,
@@ -242,7 +242,7 @@ export const POST: APIRoute = async ({ request }) => {
       // Add notification email to batch
       emailsToSend.push({
         from: 'JTBI Website <noreply@jtbimaginative.com>',
-        to: ['jtbimaginative@gmail.com'],
+        to: ['hello@jtbimaginative.com'],
         subject: `New contact form submission from ${contactData.firstName} ${contactData.lastName}`,
         react: Notification(notificationParams),
         text: notificationText,
