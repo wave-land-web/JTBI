@@ -31,6 +31,7 @@ export async function loadQuery<T>({
   const data = await sanityClient.fetch<T>(query, params ?? {}, {
     perspective,
     stega: draftMode,
+    useCdn: !draftMode,
   })
 
   return { data, perspective }
