@@ -189,8 +189,13 @@
 
   p,
   li:not(nav li),
-  .p {
+  .p,
+  blockquote {
     @apply max-w-(--content-max-width) text-base sm:text-lg text-pretty;
+  }
+
+  blockquote {
+    @apply border-l-2 border-primary/40 pl-6 italic;
   }
 
   .p2 {

@@ -1,11 +1,15 @@
 ---
 import { Picture } from 'astro:assets'
+import { clamp } from '../../lib/clamp'
+import LightboxButton from './LightboxButton.astro'
 
 export interface GalleryImage {
   src: string
   width: number
   height: number
   alt: string
+  colSpan?: number
+  rowSpan?: number
 }
 
 interface Props {
@@ -15,33 +19,81 @@ interface Props {
   class?: string
 }
 
+const MOBILE_COLUMNS = 2
+const MAX_ROW_SPAN = 4
 const { images, columns = 5, fullWidth = true, class: className } = Astro.props
 ---
 
 {
   images.length > 0 && (
-    <div class:list={[fullWidth && 'full-bleed', className]}>
+    <div class:list={['image-gallery-wrapper relative', fullWidth && 'full-bleed', className]}>
       <div
-        class="grid grid-cols-2 gap-1 md:grid-cols-(--gallery-cols)"
+        class="grid grid-flow-dense grid-cols-2 gap-1 md:grid-cols-(--gallery-cols)"
         style={`--gallery-cols: repeat(${columns}, minmax(0, 1fr));`}
       >
-        {images.map((img, i) => (
-          <div
-            class="aspect-square overflow-hidden bg-base-200 lsa lsa-slide-up no-repeat"
-            style={`transition-delay: ${Math.min(i, 8) * 60}ms`}
-          >
-            <Picture
-              src={img.src}
-              alt={img.alt}
-              width={img.width}
-              height={img.height}
-              formats={['avif', 'webp']}
-              quality={85}
-              class="w-full h-full block object-cover"
-            />
-          </div>
-        ))}
+        {images.map((img, i) => {
+          const desktopCols = clamp(1, img.colSpan ?? 1, columns)
+          const rowSpan = clamp(1, img.rowSpan ?? 1, MAX_ROW_SPAN)
+          const mobileCols = Math.min(desktopCols, MOBILE_COLUMNS)
+          return (
+            <button
+              type="button"
+              data-lightbox-trigger
+              data-index={i}
+              aria-label={`Open image: ${img.alt}`}
+              class="group relative overflow-hidden bg-base-200 lsa lsa-slide-up no-repeat appearance-none border-0 p-0 m-0 cursor-zoom-in col-span-(--col-mobile) row-span-(--row-span) md:col-span-(--col-desktop) aspect-(--aspect-mobile) md:aspect-(--aspect-desktop)"
+              style={`--col-mobile: ${mobileCols}; --col-desktop: ${desktopCols}; --row-span: ${rowSpan}; --aspect-mobile: ${mobileCols} / ${rowSpan}; --aspect-desktop: ${desktopCols} / ${rowSpan}; transition-delay: ${Math.min(i, 8) * 60}ms`}
+            >
+              <Picture
+                src={img.src}
+                alt={img.alt}
+                width={img.width}
+                height={img.height}
+                formats={['avif', 'webp']}
+                quality={85}
+                class="w-full h-full block object-cover transition-opacity duration-200 group-hover:opacity-85 group-focus-visible:opacity-85"
+              />
+            </button>
+          )
+        })}
       </div>
+
+      <dialog
+        class="m-0 p-0 w-screen h-screen max-w-none max-h-none bg-transparent overflow-hidden backdrop:bg-neutral/90 open:flex open:items-center open:justify-center"
+        data-lightbox
+        aria-label="Image viewer"
+      >
+        <LightboxButton type="close" class="absolute top-4 right-4" />
+
+        <div class="swiper relative w-full h-full" data-lightbox-swiper>
+          <div class="swiper-wrapper">
+            {images.map((img) => (
+              <div class="swiper-slide flex! items-center justify-center px-4">
+                <img
+                  src={img.src}
+                  alt={img.alt}
+                  width={img.width}
+                  height={img.height}
+                  loading="lazy"
+                  class="max-w-[95vw] max-h-[90vh] w-auto h-auto object-contain"
+                />
+              </div>
+            ))}
+          </div>
+
+          <LightboxButton type="prev" class="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2" />
+          <LightboxButton
+            type="next"
+            class="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2"
+          />
+        </div>
+      </dialog>
     </div>
   )
 }
+
+<script>
+  import { initLightbox } from '../../lib/lightbox'
+
+  initLightbox('.image-gallery-wrapper')
+</script>

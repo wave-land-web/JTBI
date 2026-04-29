@@ -117,3 +117,48 @@ export function toPictures<T extends ImageLike>(
 ): PictureProps[] {
   return (arr ?? []).filter(hasAsset).map((img) => toPicture(img, width, quality))
 }
+
+/**
+ * Build a Sanity image URL cropped to an exact `width × height`, using the
+ * editor-defined hotspot/crop on the image field. Use this when the rendered
+ * cell has a fixed aspect ratio (gallery thumbnails, square avatars, etc.) so
+ * the focal point stays in frame instead of being cropped to the image center
+ * by CSS `object-fit`.
+ *
+ * Pass the full image field (not just the asset reference) so `hotspot` and
+ * `crop` are available to the builder — make sure your GROQ projection
+ * includes them.
+ */
+export function imagePropsCropped(
+  source: SanityAsset,
+  width: number,
+  height: number,
+  quality = 85,
+): { src: string; width: number; height: number } {
+  const src = imageBuilder
+    .image(source)
+    .width(width)
+    .height(height)
+    .fit('crop')
+    .quality(quality)
+    .auto('format')
+    .url()
+  return { src, width, height }
+}
+
+/**
+ * Convert a Sanity image field into render-ready `PictureProps` cropped to
+ * `width × height` with hotspot awareness. Companion to `toPicture` for
+ * fixed-aspect cells.
+ */
+export function toPictureCropped<T extends ImageLike>(
+  img: T,
+  width: number,
+  height: number,
+  quality?: number,
+): PictureProps {
+  return {
+    ...imagePropsCropped(img as unknown as SanityAsset, width, height, quality),
+    alt: img.alt ?? '',
+  }
+}

@@ -2,6 +2,7 @@
 import { Picture } from 'astro:assets'
 import { toHTML } from '@portabletext/to-html'
 import type { PortableTextBlock, TypedObject } from '@portabletext/types'
+import type { SanityImageCrop, SanityImageHotspot } from '@sanity/image-url/lib/types/types'
 import Card from '../../components/ui/Card.astro'
 import ImageGallery from '../../components/ui/ImageGallery.astro'
 import MasonryGrid from '../../components/ui/MasonryGrid.astro'
@@ -10,9 +11,10 @@ import OverviewCard from '../../components/ui/OverviewCard.astro'
 import PageHeader from '../../components/ui/PageHeader.astro'
 import SixUpMasonryGrid from '../../components/ui/SixUpMasonryGrid.astro'
 import Layout from '../../layouts/Layout.astro'
+import { clamp } from '../../lib/clamp'
 import { sanityClient } from '../../sanity/lib/client'
 import { imageWithAlt } from '../../sanity/lib/queries'
-import { hasAsset, toPicture, toPictures } from '../../sanity/lib/urlForImage'
+import { hasAsset, toPicture, toPictureCropped, toPictures } from '../../sanity/lib/urlForImage'
 import { SIX_UP_CELLS } from '../../sanity/schemaTypes/shared/gridFilled'
 
 // --- Types ---------------------------------------------------------------
@@ -40,9 +42,16 @@ interface MediaCardRowBlock extends TypedObject {
   styling?: Styling
 }
 
+interface SanityGalleryImage extends SanityImage {
+  hotspot?: SanityImageHotspot
+  crop?: SanityImageCrop
+  colSpan?: number
+  rowSpan?: number
+}
+
 interface ImageGalleryBlock extends TypedObject {
   _type: 'imageGalleryBlock'
-  images?: SanityImage[]
+  images?: SanityGalleryImage[]
   columns?: number
   fullWidth?: boolean
 }
@@ -138,7 +147,14 @@ const project = await sanityClient.fetch<Project | null>(
       ...,
       _type == "imageGalleryBlock" => {
         ...,
-        images[asset != null] ${imageWithAlt}
+        images[asset != null]{
+          asset,
+          hotspot,
+          crop,
+          "alt": coalesce(alt, asset->altText),
+          colSpan,
+          rowSpan
+        }
       },
       _type == "mediaCardRowBlock" => {
         ...,
@@ -256,31 +272,49 @@ const getCardVars = (styling: Styling = {}) => {
           const block = group.blocks[0]
           const blockImg = hasAsset(block.image) ? toPicture(block.image, 1600) : undefined
           return (
-            <MediaCardRow
-              reversed={block.reversed}
-              featureText={block.featureText ? toHTML(block.featureText) : ''}
-              imageSrc={blockImg?.src}
-              imageWidth={blockImg?.width}
-              imageHeight={blockImg?.height}
-              imageAlt={blockImg?.alt || ''}
-              accentColor={block.styling?.accentColor}
-              cardBackgroundColor={block.styling?.cardBackgroundColor}
-              cardTextColor={block.styling?.cardTextColor}
-              title={block.title || ''}
-              description={block.description || ''}
-              href={block.href}
-              ctaLabel={block.ctaLabel}
-            />
+            <div class="py-(--site-padding-md)">
+              <MediaCardRow
+                reversed={block.reversed}
+                featureText={block.featureText ? toHTML(block.featureText) : ''}
+                imageSrc={blockImg?.src}
+                imageWidth={blockImg?.width}
+                imageHeight={blockImg?.height}
+                imageAlt={blockImg?.alt || ''}
+                accentColor={block.styling?.accentColor}
+                cardBackgroundColor={block.styling?.cardBackgroundColor}
+                cardTextColor={block.styling?.cardTextColor}
+                title={block.title || ''}
+                description={block.description || ''}
+                href={block.href}
+                ctaLabel={block.ctaLabel}
+              />
+            </div>
           )
         }
         if (group.type === 'imageGallery') {
           const block = group.blocks[0]
+          const galleryColumns = block.columns ?? 5
+          // Each col/row unit is 800px of source image — generous for retina
+          // on any realistic viewport without producing oversized files for
+          // multi-cell features.
+          const GALLERY_UNIT = 800
+          const galleryImages = (block.images ?? []).filter(hasAsset).map((img) => {
+            const cols = clamp(1, img.colSpan ?? 1, galleryColumns)
+            const rows = clamp(1, img.rowSpan ?? 1, 4)
+            return {
+              ...toPictureCropped(img, cols * GALLERY_UNIT, rows * GALLERY_UNIT),
+              colSpan: img.colSpan,
+              rowSpan: img.rowSpan,
+            }
+          })
           return (
-            <ImageGallery
-              images={toPictures(block.images, 1200)}
-              columns={block.columns ?? 5}
-              fullWidth={block.fullWidth ?? true}
-            />
+            <div class="py-(--site-padding-md)">
+              <ImageGallery
+                images={galleryImages}
+                columns={galleryColumns}
+                fullWidth={block.fullWidth ?? true}
+              />
+            </div>
           )
         }
         return (
