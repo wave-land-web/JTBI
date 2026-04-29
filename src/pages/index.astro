@@ -57,7 +57,7 @@ const homepage = await sanityClient.fetch(
         reversed,
         styling
       },
-      _type == "servicesBlock" => {
+      _type == "snapshotsBlock" => {
         sectionId,
         hidden,
         heading,
@@ -87,7 +87,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
       // Filter hidden blocks
       if (block.hidden) return null
 
-      // Available blocks: heroBlock, projectsBlock, mediaCardRowBlock, servicesBlock, contactBlock
+      // Available blocks: heroBlock, projectsBlock, mediaCardRowBlock, snapshotsBlock, contactBlock
       if (block._type === 'heroBlock') {
         const carouselImages = toPictures(block.carouselImages, 2400)
 
@@ -181,12 +181,12 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
           )
         }
 
-        if (block._type === 'servicesBlock') {
+        if (block._type === 'snapshotsBlock') {
           return (
             <section id={block.sectionId || undefined} class="text-center">
               <div class="flex flex-col gap-8 md:gap-10">
                 <h2 class="h3 uppercase text-left text-primary lsa lsa-slide-up no-repeat">
-                  {block.heading || 'Services We Offer'}
+                  {block.heading || 'Project Snapshots'}
                 </h2>
                 <div class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-[clamp(40px,4vw,64px)]">
                   {block.items?.filter(Boolean).map((item) => {
@@ -201,18 +201,18 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                     `
                     const itemImg = hasAsset(item.image) ? toPicture(item.image, 1200) : undefined
                     return (
-                      <div class="service-card lsa no-repeat w-full" style={cardStyles}>
+                      <div class="lsa no-repeat w-full" style={cardStyles}>
                         <Card
                           title={item.title}
                           description={item.description}
-                          href={item.href || '#contact'}
-                          ctaLabel={item.ctaLabel || 'Read More'}
+                          href={item.href}
+                          ctaLabel={item.ctaLabel}
                           imageSrc={itemImg?.src}
                           imageWidth={itemImg?.width}
                           imageHeight={itemImg?.height}
                           imageAlt={
                             itemImg?.alt ||
-                            `JTB Imaginative logo mark for ${item.title.toLowerCase()}`
+                            `JTB Imaginative project snapshot for ${item.title.toLowerCase()}`
                           }
                           imageClass="relative z-10"
                           mediaClass="bg-(--card-media-bg) aspect-square"

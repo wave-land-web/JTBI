@@ -56,8 +56,8 @@ export interface MediaCardRowBlock extends BlockBase {
   styling?: { accentColor?: string; cardBackgroundColor?: string; cardTextColor?: string }
 }
 
-export interface ServicesBlock extends BlockBase {
-  _type: 'servicesBlock'
+export interface SnapshotsBlock extends BlockBase {
+  _type: 'snapshotsBlock'
   hidden?: boolean
   heading?: string
   items?: {
@@ -86,4 +86,9 @@ export interface ContactBlock extends BlockBase {
   body?: string
 }
 
-export type PageBlock = HeroBlock | ProjectsBlock | MediaCardRowBlock | ServicesBlock | ContactBlock
+export type PageBlock =
+  | HeroBlock
+  | ProjectsBlock
+  | MediaCardRowBlock
+  | SnapshotsBlock
+  | ContactBlock

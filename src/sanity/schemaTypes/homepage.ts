@@ -17,7 +17,7 @@ export default defineType({
         defineArrayMember({ type: 'heroBlock' }),
         defineArrayMember({ type: 'projectsBlock' }),
         defineArrayMember({ type: 'mediaCardRowBlock' }),
-        defineArrayMember({ type: 'servicesBlock' }),
+        defineArrayMember({ type: 'snapshotsBlock' }),
         defineArrayMember({ type: 'contactBlock' }),
       ],
     }),

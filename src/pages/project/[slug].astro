@@ -76,8 +76,6 @@ interface SixUpGridData {
 
 interface Project {
   title: string
-  services?: string[]
-  serviceRefs?: string[]
   cardImage?: SanityImage
   heroImage?: SanityImage
   styling?: Styling
@@ -119,8 +117,6 @@ const relatedProjectFields = `{
 const project = await sanityClient.fetch<Project | null>(
   `*[_type == "project" && slug.current == $slug][0]{
     title,
-    "services": services[]->title,
-    "serviceRefs": services[]._ref,
     cardImage ${imageWithAlt},
     heroImage ${imageWithAlt},
     styling,
@@ -150,10 +146,7 @@ const project = await sanityClient.fetch<Project | null>(
       }
     },
     hideRelatedProjects,
-    "relatedProjects": select(
-      count(relatedProjects) > 0 => relatedProjects[]->${relatedProjectFields},
-      *[_type == "project" && count(services[_ref in ^.^.services[]._ref]) > 0 && _id != ^._id][0...3]${relatedProjectFields}
-    )
+    "relatedProjects": relatedProjects[]->${relatedProjectFields}
   }`,
   { slug },
 )

@@ -35,6 +35,8 @@ export default defineType({
     defineField({
       name: 'services',
       title: 'Services',
+      description:
+        'Tag this project with the services it represents. Used to filter related projects.',
       type: 'array',
       group: 'details',
       of: [
@@ -43,7 +45,6 @@ export default defineType({
           to: [{ type: 'service' }],
         }),
       ],
-      validation: (Rule) => Rule.required().min(1).error('Select at least one service.'),
     }),
     defineField({
       name: 'description',
@@ -213,7 +214,7 @@ export default defineType({
       name: 'relatedProjects',
       title: 'Related Projects',
       description:
-        'Manually pick related projects. If empty, projects with overlapping services are shown automatically.',
+        'Pick related projects to feature at the bottom of this project page. The section is hidden if empty.',
       type: 'array',
       group: 'page',
       of: [

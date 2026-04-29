@@ -10,6 +10,7 @@ import {
   ImagesIcon,
   ProjectsIcon,
   StarIcon,
+  TagIcon,
 } from '@sanity/icons'
 import type { StructureResolver } from 'sanity/structure'
 
@@ -72,8 +73,12 @@ export const structure: StructureResolver = (S) => {
             .defaultOrdering([{ field: 'sortOrder', direction: 'asc' }]),
         ),
       S.listItem()
-        .title('Services')
+        .title('Snapshots')
         .icon(DashboardIcon)
+        .child(S.documentTypeList('snapshot').title('Snapshots')),
+      S.listItem()
+        .title('Services')
+        .icon(TagIcon)
         .child(S.documentTypeList('service').title('Services')),
       S.divider(),
 

@@ -4,8 +4,8 @@ import { hiddenField } from '../shared/hidden'
 import { sectionIdField } from '../shared/sectionId'
 
 export default defineType({
-  name: 'servicesBlock',
-  title: 'Services',
+  name: 'snapshotsBlock',
+  title: 'Snapshots',
   type: 'object',
   icon: DashboardIcon,
   fields: [
@@ -14,19 +14,19 @@ export default defineType({
     defineField({
       name: 'heading',
       title: 'Section Heading',
-      description: 'Heading displayed above the services grid.',
+      description: 'Heading displayed above the snapshots grid.',
       type: 'string',
       validation: (Rule) => Rule.required().error('A section heading is required.'),
     }),
     defineField({
       name: 'items',
-      title: 'Services',
-      description: 'Drag to reorder. Select up to six service documents to feature.',
+      title: 'Snapshots',
+      description: 'Drag to reorder. Select up to six snapshot documents to feature.',
       type: 'array',
       of: [
         defineArrayMember({
           type: 'reference',
-          to: [{ type: 'service' }],
+          to: [{ type: 'snapshot' }],
         }),
       ],
       validation: (Rule) => Rule.max(6),
@@ -37,7 +37,7 @@ export default defineType({
     prepare({ heading }) {
       return {
         title: heading || 'Untitled',
-        subtitle: 'Services',
+        subtitle: 'Snapshots',
         media: DashboardIcon,
       }
     },
