@@ -241,6 +241,10 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                 <header class="space-y-4 mb-8 py-0 text-left relative z-10">
                   <h2 class="lsa lsa-slide-up no-repeat">
                     {block.heading || 'Brand building that means business.'}
+                    <span class="-ml-1 align-top text-[0.5em]" aria-hidden="true">
+                      &#8482;
+                    </span>
+                    <span class="sr-only">trademark</span>
                   </h2>
                   <h3 class="text-primary-content lsa lsa-slide-up no-repeat delay-100">
                     {block.subheading || 'WANT TO DISCUSS YOUR BRAND?'}
