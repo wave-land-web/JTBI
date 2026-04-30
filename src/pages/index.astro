@@ -89,11 +89,11 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
 
       // Available blocks: heroBlock, projectsBlock, mediaCardRowBlock, snapshotsBlock, contactBlock
       if (block._type === 'heroBlock') {
-        const carouselImages = toPictures(block.carouselImages, 2400)
+        const carouselImages = toPictures(block.carouselImages, 1600)
 
         const bgImage =
           carouselImages.length === 0 && hasAsset(block.backgroundImage)
-            ? toPicture(block.backgroundImage, 2400)
+            ? toPicture(block.backgroundImage, 1600)
             : undefined
 
         return (
@@ -131,7 +131,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
               </h2>
               {projects.map((project) => {
                 const projImg = hasAsset(project.cardImage)
-                  ? toPicture(project.cardImage, 1600)
+                  ? toPicture(project.cardImage, 1400)
                   : undefined
                 return (
                   <MediaCardRow
@@ -156,7 +156,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
         }
 
         if (block._type === 'mediaCardRowBlock') {
-          const blockImg = hasAsset(block.image) ? toPicture(block.image, 1600) : undefined
+          const blockImg = hasAsset(block.image) ? toPicture(block.image, 1400) : undefined
           return (
             <section id={block.sectionId || undefined} class="text-center flex flex-col gap-8">
               {block.heading && (
@@ -199,7 +199,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                       --card-media-bg: ${item.styling?.mediaBackgroundColor || 'var(--color-base-200)'};
                       --card-divider: color-mix(in srgb, ${item.styling?.cardTextColor || item.styling?.accentColor || 'var(--color-primary)'} 14%, transparent);
                     `
-                    const itemImg = hasAsset(item.image) ? toPicture(item.image, 1200) : undefined
+                    const itemImg = hasAsset(item.image) ? toPicture(item.image, 800) : undefined
                     return (
                       <div class="lsa no-repeat w-full" style={cardStyles}>
                         <Card

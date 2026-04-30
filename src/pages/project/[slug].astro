@@ -337,7 +337,7 @@ const getCardVars = (styling: Styling = {}) => {
               <div class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-[clamp(40px,4vw,64px)]">
                 {project.relatedProjects.map((related) => {
                   const relImg = hasAsset(related.cardImage)
-                    ? toPicture(related.cardImage, 1200)
+                    ? toPicture(related.cardImage, 1000)
                     : undefined
                   const relHref = related.slug?.current
                     ? `/project/${related.slug.current}`
