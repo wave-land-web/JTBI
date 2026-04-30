@@ -65,19 +65,6 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindPlugin],
-    optimizeDeps: {
-      include: [
-        'react/compiler-runtime',
-        'lodash/isObject.js',
-        'lodash/groupBy.js',
-        'lodash/keyBy.js',
-        'lodash/partition.js',
-        'lodash/sortedIndex.js',
-      ],
-    },
-    ssr: {
-      noExternal: ['@sanity/client', '@sanity/visual-editing'],
-    },
   },
 
   image: {
