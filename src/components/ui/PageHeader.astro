@@ -26,7 +26,6 @@ interface Props {
   ctaHref?: string
   title?: string
   srTitle?: string
-  fullHeight?: boolean
   headerClass?: string
   contentClass?: string
 }
@@ -48,7 +47,6 @@ const {
   ctaHref,
   title,
   srTitle,
-  fullHeight = true,
   headerClass = '',
   contentClass = '',
 } = Astro.props
@@ -58,32 +56,8 @@ const hasCarousel = carouselImages.length > 0
 
 <header
   id={id || undefined}
-  class={`relative flex justify-center items-center overflow-hidden ${fullHeight || backgroundImageSrc || hasCarousel ? 'h-screen' : 'pt-[calc(var(--nav-height)+var(--site-padding-2xl))]'} ${headerClass || ''}`}
+  class={`relative flex justify-center overflow-hidden pt-[calc(var(--nav-height)+var(--site-padding-3xl))] pb-(--site-padding-3xl) ${headerClass || ''}`}
 >
-  {
-    hasCarousel && (
-      <div class="hero-carousel swiper absolute w-full h-full inset-0 pointer-events-none select-none">
-        <div class="swiper-wrapper">
-          {carouselImages.map((img) => (
-            <div class="swiper-slide">
-              <Picture
-                src={img.src}
-                alt={img.alt}
-                class="h-full w-full object-contain"
-                pictureAttributes={{ class: 'block h-full w-full' }}
-                formats={['avif', 'webp']}
-                quality={85}
-                width={img.width}
-                height={img.height}
-                priority
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
   {
     backgroundImageSrc && backgroundImageWidth && backgroundImageHeight && !hasCarousel && (
       <Picture
@@ -99,9 +73,31 @@ const hasCarousel = carouselImages.length > 0
     )
   }
 
-  <div
-    class={`flex flex-col items-center gap-3 wrapper z-40 ${hasCarousel || backgroundImageSrc ? 'absolute' : 'relative'} ${contentClass || ''}`}
-  >
+  <div class={`relative z-40 flex flex-col items-center gap-3 wrapper ${contentClass || ''}`}>
+    {
+      hasCarousel && (
+        <div class="hero-carousel swiper absolute inset-0 pointer-events-none select-none">
+          <div class="swiper-wrapper">
+            {carouselImages.map((img) => (
+              <div class="swiper-slide">
+                <Picture
+                  src={img.src}
+                  alt={img.alt}
+                  class="h-full w-full object-contain"
+                  pictureAttributes={{ class: 'block h-full w-full' }}
+                  formats={['avif', 'webp']}
+                  quality={85}
+                  width={img.width}
+                  height={img.height}
+                  priority
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
     {eyebrow && <p class="eyebrow lsa no-repeat">{eyebrow}</p>}
     {srTitle && <h1 class="sr-only">{srTitle}</h1>}
     {title && <h1 class="h3 lsa no-repeat">{title}</h1>}
@@ -139,7 +135,17 @@ const hasCarousel = carouselImages.length > 0
 </header>
 
 <style>
+  .hero-carousel.swiper {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: clamp(100%, 70vh, 720px);
+    z-index: -1;
+  }
   .hero-carousel .swiper-slide {
+    height: 100%;
     opacity: 0;
     transition: opacity 1.5s ease;
   }
