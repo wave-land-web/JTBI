@@ -1,5 +1,5 @@
 ---
-import { Picture } from 'astro:assets'
+import SanityImage from './SanityImage.astro'
 
 export interface Props {
   title: string
@@ -68,15 +68,12 @@ const fallbackImageClasses = `h-full w-full bg-gradient-to-tr from-secondary/10 
     <div class:list={['relative overflow-hidden', mediaClass]}>
       {
         imageSrc && imageWidth && imageHeight ? (
-          <Picture
+          <SanityImage
             src={imageSrc}
             alt={imageAlt}
             class={imageClass}
-            formats={['avif', 'webp']}
-            quality={85}
             width={imageWidth}
             height={imageHeight}
-            loading="lazy"
           />
         ) : showFallback ? (
           <div class={fallbackImageClasses} />

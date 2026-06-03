@@ -1,6 +1,6 @@
 ---
-import { Picture } from 'astro:assets'
 import LightboxButton from './LightboxButton.astro'
+import SanityImage from './SanityImage.astro'
 
 export interface MasonryImage {
   src: string
@@ -35,13 +35,11 @@ const { images, class: className } = Astro.props
               data-index={i}
               aria-label={`Open image: ${img.alt}`}
             >
-              <Picture
+              <SanityImage
                 src={img.src}
                 alt={img.alt}
                 width={img.width}
                 height={img.height}
-                formats={['avif', 'webp']}
-                quality={85}
                 class="w-full h-auto block"
               />
             </button>

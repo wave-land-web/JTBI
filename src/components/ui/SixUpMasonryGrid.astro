@@ -1,6 +1,6 @@
 ---
-import { Picture } from 'astro:assets'
 import LightboxButton from './LightboxButton.astro'
+import SanityImage from './SanityImage.astro'
 
 export interface SixUpImage {
   src: string
@@ -36,14 +36,7 @@ const { images, class: className } = Astro.props
             data-index={i}
             aria-label={`Open image: ${img.alt}`}
           >
-            <Picture
-              src={img.src}
-              alt={img.alt}
-              width={img.width}
-              height={img.height}
-              formats={['avif', 'webp']}
-              quality={85}
-            />
+            <SanityImage src={img.src} alt={img.alt} width={img.width} height={img.height} />
           </button>
         ))}
       </div>

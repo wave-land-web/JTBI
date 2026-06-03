@@ -1,6 +1,6 @@
 ---
-import { Picture } from 'astro:assets'
 import Button from './Button.astro'
+import SanityImage from './SanityImage.astro'
 
 interface CarouselImage {
   src: string
@@ -60,12 +60,10 @@ const hasCarousel = carouselImages.length > 0
 >
   {
     backgroundImageSrc && backgroundImageWidth && backgroundImageHeight && !hasCarousel && (
-      <Picture
+      <SanityImage
         src={backgroundImageSrc}
         alt={backgroundImageAlt}
         class="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
-        formats={['avif', 'webp']}
-        quality={85}
         width={backgroundImageWidth}
         height={backgroundImageHeight}
         priority
@@ -80,13 +78,10 @@ const hasCarousel = carouselImages.length > 0
           <div class="swiper-wrapper">
             {carouselImages.map((img) => (
               <div class="swiper-slide">
-                <Picture
+                <SanityImage
                   src={img.src}
                   alt={img.alt}
-                  class="h-full w-full object-contain"
-                  pictureAttributes={{ class: 'block h-full w-full' }}
-                  formats={['avif', 'webp']}
-                  quality={85}
+                  class="block h-full w-full object-contain"
                   width={img.width}
                   height={img.height}
                   priority

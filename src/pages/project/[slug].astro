@@ -1,5 +1,4 @@
 ---
-import { Picture } from 'astro:assets'
 import { toHTML } from '@portabletext/to-html'
 import type { PortableTextBlock, TypedObject } from '@portabletext/types'
 import type { SanityImageCrop, SanityImageHotspot } from '@sanity/image-url/lib/types/types'
@@ -9,6 +8,7 @@ import MasonryGrid from '../../components/ui/MasonryGrid.astro'
 import MediaCardRow from '../../components/ui/MediaCardRow.astro'
 import OverviewCard from '../../components/ui/OverviewCard.astro'
 import PageHeader from '../../components/ui/PageHeader.astro'
+import SanityImg from '../../components/ui/SanityImage.astro'
 import SixUpMasonryGrid from '../../components/ui/SixUpMasonryGrid.astro'
 import Layout from '../../layouts/Layout.astro'
 import { clamp } from '../../lib/clamp'
@@ -241,12 +241,10 @@ const getCardVars = (styling: Styling = {}) => {
   {
     heroImg && (
       <div class="project-hero relative mt-(--site-padding-base) md:mt-(--site-padding-sm)">
-        <Picture
+        <SanityImg
           src={heroImg.src}
           alt={heroImg.alt}
           class="w-full h-auto lsa no-repeat object-cover"
-          formats={['avif', 'webp']}
-          quality={85}
           width={heroImg.width}
           height={heroImg.height}
           priority

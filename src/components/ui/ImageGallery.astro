@@ -1,7 +1,7 @@
 ---
-import { Picture } from 'astro:assets'
 import { clamp } from '../../lib/clamp'
 import LightboxButton from './LightboxButton.astro'
+import SanityImage from './SanityImage.astro'
 
 export interface GalleryImage {
   src: string
@@ -44,13 +44,11 @@ const { images, columns = 5, fullWidth = true, class: className } = Astro.props
               class="group relative overflow-hidden bg-base-200 lsa lsa-slide-up no-repeat appearance-none border-0 p-0 m-0 cursor-zoom-in col-span-(--col-mobile) row-span-(--row-span) md:col-span-(--col-desktop) aspect-(--aspect-mobile) md:aspect-(--aspect-desktop)"
               style={`--col-mobile: ${mobileCols}; --col-desktop: ${desktopCols}; --row-span: ${rowSpan}; --aspect-mobile: ${mobileCols} / ${rowSpan}; --aspect-desktop: ${desktopCols} / ${rowSpan}; transition-delay: ${Math.min(i, 8) * 60}ms`}
             >
-              <Picture
+              <SanityImage
                 src={img.src}
                 alt={img.alt}
                 width={img.width}
                 height={img.height}
-                formats={['avif', 'webp']}
-                quality={85}
                 class="w-full h-full block object-cover transition-opacity duration-200 group-hover:opacity-85 group-focus-visible:opacity-85"
               />
             </button>

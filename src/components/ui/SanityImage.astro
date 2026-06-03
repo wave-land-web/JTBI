@@ -1,0 +1,37 @@
+---
+/**
+ * Renders a Sanity-hosted image as a plain <img>.
+ *
+ * Why not astro:assets <Image>/<Picture>? Those route remote URLs through an
+ * optimizer: at build time astro downloads + re-encodes them (which broke
+ * Netlify builds on a dropped socket — UND_ERR_SOCKET), and at runtime the
+ * Netlify adapter proxies them through /.netlify/images, which 403s unless the
+ * host is in image.remotePatterns. Either way it's wasted work: the `src` from
+ * urlForImage's helpers already carries `?w=…&q=…&auto=format`, so Sanity's CDN
+ * has already resized the image and serves avif/webp based on the browser's
+ * Accept header. So we just emit the URL directly.
+ *
+ * `width`/`height` are the intrinsic dimensions (from the helpers) and are
+ * required to reserve layout space and avoid CLS.
+ *
+ * Set `priority` for above-the-fold images (e.g. a hero) to load them eagerly
+ * with high fetch priority; everything else lazy-loads by default.
+ */
+import type { HTMLAttributes } from 'astro/types'
+
+interface Props extends Omit<HTMLAttributes<'img'>, 'src' | 'width' | 'height'> {
+  src: string
+  width: number
+  height: number
+  alt: string
+  priority?: boolean
+}
+
+const { src, width, height, alt, priority = false, ...rest } = Astro.props
+
+const loadingProps = priority
+  ? { loading: 'eager' as const, fetchpriority: 'high' as const, decoding: 'sync' as const }
+  : { loading: 'lazy' as const, decoding: 'async' as const }
+---
+
+<img src={src} alt={alt} width={width} height={height} {...loadingProps} {...rest} />
