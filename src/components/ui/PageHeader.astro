@@ -56,7 +56,7 @@ const hasCarousel = carouselImages.length > 0
 
 <header
   id={id || undefined}
-  class={`relative flex flex-col justify-center overflow-hidden pt-[calc(var(--nav-height)+var(--site-padding-3xl))] pb-(--site-padding-3xl) min-h-[clamp(0px,80vh,820px)] md:min-h-screen ${headerClass || ''}`}
+  class={`relative flex flex-col justify-center overflow-hidden pt-[calc(var(--nav-height)+var(--site-padding-3xl))] pb-(--site-padding-3xl) ${headerClass || ''}`}
 >
   {
     backgroundImageSrc && backgroundImageWidth && backgroundImageHeight && !hasCarousel && (
