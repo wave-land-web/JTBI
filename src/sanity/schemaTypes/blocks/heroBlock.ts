@@ -1,6 +1,7 @@
 import { StarIcon } from '@sanity/icons'
 import { defineField, defineType } from 'sanity'
 import { hiddenField } from '../shared/hidden'
+import { videoField } from '../shared/media'
 import { sectionIdField } from '../shared/sectionId'
 
 export default defineType({
@@ -54,11 +55,19 @@ export default defineType({
         }),
       ],
     }),
+    {
+      ...videoField('backgroundVideo', 'Background Video'),
+      description:
+        'Optional ambient video for the hero background (plays muted on a loop). When set and finished processing, it replaces the Background Image. Used when no Carousel Images are set.',
+      group: 'media',
+      hidden: ({ parent }) =>
+        Array.isArray(parent?.carouselImages) && parent.carouselImages.length > 0,
+    },
     defineField({
       name: 'carouselImages',
       title: 'Carousel Images',
       description:
-        'Optional set of images that cycle in the hero with a crossfade effect. When provided, these replace the single background image. Recommended: 2400x1200 each, matching aspect ratio.',
+        'Optional set of images and videos that cycle in the hero with a crossfade effect. When provided, these replace the single background image. Recommended: 2400x1200 each, matching aspect ratio.',
       type: 'array',
       group: 'media',
       of: [
@@ -75,6 +84,7 @@ export default defineType({
             }),
           ],
         },
+        { type: 'videoItem' },
       ],
     }),
     defineField({

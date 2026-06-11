@@ -1,19 +1,13 @@
 ---
 import { clamp } from '../../lib/clamp'
+import type { MediaItem } from '../../sanity/lib/video'
 import LightboxButton from './LightboxButton.astro'
+import MuxVideo from './MuxVideo.astro'
+import PlayBadge from './PlayBadge.astro'
 import SanityImage from './SanityImage.astro'
 
-export interface GalleryImage {
-  src: string
-  width: number
-  height: number
-  alt: string
-  colSpan?: number
-  rowSpan?: number
-}
-
 interface Props {
-  images: GalleryImage[]
+  images: MediaItem[]
   columns?: number
   fullWidth?: boolean
   class?: string
@@ -31,26 +25,27 @@ const { images, columns = 5, fullWidth = true, class: className } = Astro.props
         class="grid grid-flow-dense grid-cols-2 gap-1 md:grid-cols-(--gallery-cols)"
         style={`--gallery-cols: repeat(${columns}, minmax(0, 1fr));`}
       >
-        {images.map((img, i) => {
-          const desktopCols = clamp(1, img.colSpan ?? 1, columns)
-          const rowSpan = clamp(1, img.rowSpan ?? 1, MAX_ROW_SPAN)
+        {images.map((item, i) => {
+          const desktopCols = clamp(1, item.colSpan ?? 1, columns)
+          const rowSpan = clamp(1, item.rowSpan ?? 1, MAX_ROW_SPAN)
           const mobileCols = Math.min(desktopCols, MOBILE_COLUMNS)
           return (
             <button
               type="button"
               data-lightbox-trigger
               data-index={i}
-              aria-label={`Open image: ${img.alt}`}
+              aria-label={`Open ${item.kind === 'video' ? 'video' : 'image'}: ${item.alt}`}
               class="group relative overflow-hidden bg-base-200 lsa lsa-slide-up no-repeat appearance-none border-0 p-0 m-0 cursor-zoom-in col-span-(--col-mobile) row-span-(--row-span) md:col-span-(--col-desktop) aspect-(--aspect-mobile) md:aspect-(--aspect-desktop)"
               style={`--col-mobile: ${mobileCols}; --col-desktop: ${desktopCols}; --row-span: ${rowSpan}; --aspect-mobile: ${mobileCols} / ${rowSpan}; --aspect-desktop: ${desktopCols} / ${rowSpan}; transition-delay: ${Math.min(i, 8) * 60}ms`}
             >
               <SanityImage
-                src={img.src}
-                alt={img.alt}
-                width={img.width}
-                height={img.height}
+                src={item.kind === 'video' ? item.poster : item.src}
+                alt={item.alt}
+                width={item.width}
+                height={item.height}
                 class="w-full h-full block object-cover transition-opacity duration-200 group-hover:opacity-85 group-focus-visible:opacity-85"
               />
+              {item.kind === 'video' && <PlayBadge />}
             </button>
           )
         })}
@@ -59,22 +54,32 @@ const { images, columns = 5, fullWidth = true, class: className } = Astro.props
       <dialog
         class="m-0 p-0 w-screen h-screen max-w-none max-h-none bg-transparent overflow-hidden backdrop:bg-neutral/90 open:flex open:items-center open:justify-center"
         data-lightbox
-        aria-label="Image viewer"
+        aria-label="Media viewer"
       >
         <LightboxButton type="close" class="absolute top-4 right-4" />
 
         <div class="swiper relative w-full h-full" data-lightbox-swiper>
           <div class="swiper-wrapper">
-            {images.map((img) => (
+            {images.map((item) => (
               <div class="swiper-slide flex! items-center justify-center px-4">
-                <img
-                  src={img.src}
-                  alt={img.alt}
-                  width={img.width}
-                  height={img.height}
-                  loading="lazy"
-                  class="max-w-[95vw] max-h-[90vh] w-auto h-auto object-contain"
-                />
+                {item.kind === 'video' ? (
+                  <MuxVideo
+                    playbackId={item.playbackId}
+                    aspectRatio={item.aspectRatio}
+                    poster={item.poster}
+                    title={item.alt}
+                    class="w-full max-w-[95vw] max-h-[90vh]"
+                  />
+                ) : (
+                  <img
+                    src={item.src}
+                    alt={item.alt}
+                    width={item.width}
+                    height={item.height}
+                    loading="lazy"
+                    class="max-w-[95vw] max-h-[90vh] w-auto h-auto object-contain"
+                  />
+                )}
               </div>
             ))}
           </div>

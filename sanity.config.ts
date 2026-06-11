@@ -1,5 +1,6 @@
 import { defineConfig } from 'sanity'
 import { structureTool } from 'sanity/structure'
+import { muxInput } from 'sanity-plugin-mux-input'
 import { filterSingletonActions, SINGLETON_TYPES } from './src/sanity/lib/singletonActions'
 import { schema } from './src/sanity/schemaTypes'
 import { structure } from './src/sanity/structure'
@@ -18,7 +19,7 @@ export default defineConfig({
   projectId: 'vs47sslu',
   dataset: 'production',
   title: 'JTBI Content',
-  plugins: [structureTool({ structure })],
+  plugins: [structureTool({ structure }), muxInput({ mp4_support: 'standard' })],
   schema,
   name: 'JTBI',
   document: {

@@ -1,13 +1,8 @@
 ---
+import type { MediaItem, VideoProps } from '../../sanity/lib/video'
 import Button from './Button.astro'
+import MuxVideo from './MuxVideo.astro'
 import SanityImage from './SanityImage.astro'
-
-interface CarouselImage {
-  src: string
-  width: number
-  height: number
-  alt: string
-}
 
 interface Props {
   id?: string
@@ -15,7 +10,9 @@ interface Props {
   backgroundImageWidth?: number
   backgroundImageHeight?: number
   backgroundImageAlt?: string
-  carouselImages?: CarouselImage[]
+  /** Ambient background video — takes precedence over the background image. */
+  backgroundVideo?: VideoProps
+  carouselImages?: MediaItem[]
   eyebrow?: string
   headline1?: string
   headline1Color?: 'dark' | 'light'
@@ -36,6 +33,7 @@ const {
   backgroundImageWidth,
   backgroundImageHeight,
   backgroundImageAlt = '',
+  backgroundVideo,
   carouselImages = [],
   eyebrow,
   headline1,
@@ -59,15 +57,27 @@ const hasCarousel = carouselImages.length > 0
   class={`relative flex flex-col justify-center overflow-hidden pt-[calc(var(--nav-height)+var(--site-padding-3xl))] pb-(--site-padding-3xl) ${headerClass || ''}`}
 >
   {
-    backgroundImageSrc && backgroundImageWidth && backgroundImageHeight && !hasCarousel && (
-      <SanityImage
-        src={backgroundImageSrc}
-        alt={backgroundImageAlt}
-        class="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
-        width={backgroundImageWidth}
-        height={backgroundImageHeight}
-        priority
+    backgroundVideo && !hasCarousel ? (
+      <MuxVideo
+        playbackId={backgroundVideo.playbackId}
+        mode="ambient"
+        poster={backgroundImageSrc || backgroundVideo.poster}
+        class="select-none"
       />
+    ) : (
+      backgroundImageSrc &&
+      backgroundImageWidth &&
+      backgroundImageHeight &&
+      !hasCarousel && (
+        <SanityImage
+          src={backgroundImageSrc}
+          alt={backgroundImageAlt}
+          class="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+          width={backgroundImageWidth}
+          height={backgroundImageHeight}
+          priority
+        />
+      )
     )
   }
 
@@ -76,16 +86,26 @@ const hasCarousel = carouselImages.length > 0
       hasCarousel && (
         <div class="hero-carousel swiper absolute inset-0 pointer-events-none select-none">
           <div class="swiper-wrapper">
-            {carouselImages.map((img) => (
-              <div class="swiper-slide">
-                <SanityImage
-                  src={img.src}
-                  alt={img.alt}
-                  class="block h-full w-full object-contain"
-                  width={img.width}
-                  height={img.height}
-                  priority
-                />
+            {carouselImages.map((item) => (
+              <div class="swiper-slide relative">
+                {item.kind === 'video' ? (
+                  <MuxVideo
+                    playbackId={item.playbackId}
+                    mode="ambient"
+                    objectFit="contain"
+                    poster={item.poster}
+                    class="select-none"
+                  />
+                ) : (
+                  <SanityImage
+                    src={item.src}
+                    alt={item.alt}
+                    class="block h-full w-full object-contain"
+                    width={item.width}
+                    height={item.height}
+                    priority
+                  />
+                )}
               </div>
             ))}
           </div>

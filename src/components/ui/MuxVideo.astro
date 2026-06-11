@@ -1,0 +1,98 @@
+---
+/**
+ * Renders a Mux-hosted video via the <mux-player> web component.
+ *
+ * Two modes:
+ *  - `ambient` — autoplays muted on a loop with all chrome hidden: a "moving
+ *    image" for hero backgrounds and linked cards. Marked aria-hidden and
+ *    pointer-events:none so it's semantically a background. Respects
+ *    prefers-reduced-motion (stays paused on the poster).
+ *  - `player`  — poster + controls, click to play. `preload="none"` so nothing
+ *    streams until the user asks (important inside lightboxes).
+ *
+ * `aspectRatio` ("16 / 9") reserves layout space to avoid CLS — the video
+ * counterpart of width/height on <SanityImage>. Omit it when a fixed-aspect
+ * parent (e.g. a Card's `aspect-square` media box) controls sizing; the player
+ * then fills the parent and covers it.
+ *
+ * The module script is bundled and deduped by Astro — it loads once per page
+ * no matter how many instances render (same pattern as the lightbox scripts).
+ */
+import type { HTMLAttributes } from 'astro/types'
+
+interface Props extends Omit<HTMLAttributes<'div'>, 'title'> {
+  playbackId: string
+  mode?: 'ambient' | 'player'
+  /** CSS aspect-ratio value, e.g. "16 / 9". Omit to fill a fixed-aspect parent. */
+  aspectRatio?: string
+  poster?: string
+  /** How the video fills its box. Ambient defaults to `cover`. */
+  objectFit?: 'cover' | 'contain'
+  /** Accessible name announced for the player (player mode only). */
+  title?: string
+  class?: string
+}
+
+const {
+  playbackId,
+  mode = 'player',
+  aspectRatio,
+  poster,
+  objectFit,
+  title,
+  class: className,
+  ...rest
+} = Astro.props
+
+const ambient = mode === 'ambient'
+const fit = objectFit ?? (ambient ? 'cover' : undefined)
+
+const sizingStyle = aspectRatio
+  ? `aspect-ratio: ${aspectRatio};`
+  : 'position: absolute; inset: 0; height: 100%;'
+
+const ambientStyle =
+  (ambient ? ' --controls: none; pointer-events: none;' : '') +
+  (fit ? ` --media-object-fit: ${fit};` : '')
+
+const ambientProps = ambient
+  ? {
+      autoplay: 'muted',
+      muted: true,
+      loop: true,
+      playsinline: true,
+      nohotkeys: true,
+      'aria-hidden': 'true',
+      tabindex: '-1',
+      'data-ambient': '',
+    }
+  : {}
+---
+
+<mux-player
+  playback-id={playbackId}
+  stream-type="on-demand"
+  poster={poster}
+  title={ambient ? undefined : title}
+  preload={ambient ? 'auto' : 'none'}
+  class:list={[className]}
+  style={`display: block; width: 100%; ${sizingStyle}${ambientStyle}`}
+  {...ambientProps}
+  {...rest}></mux-player>
+
+<script>
+  import '@mux/mux-player'
+
+  // Respect prefers-reduced-motion: keep ambient videos paused on the poster.
+  function settleAmbient() {
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    document
+      .querySelectorAll<HTMLElement & { pause?: () => void }>('mux-player[data-ambient]')
+      .forEach((el) => {
+        customElements.whenDefined('mux-player').then(() => el.pause?.())
+      })
+  }
+
+  settleAmbient()
+  document.addEventListener('astro:after-swap', settleAmbient)
+</script>

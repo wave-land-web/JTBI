@@ -14,12 +14,15 @@ import notFoundPage from './notFoundPage'
 import project from './project'
 import service from './service'
 import imageAsset from './shared/imageAsset'
+import { galleryVideoItem, videoItem } from './shared/videoItem'
 import siteSettings from './siteSettings'
 import snapshot from './snapshots'
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
     imageAsset,
+    videoItem,
+    galleryVideoItem,
     siteSettings,
     homepage,
     notFoundPage,

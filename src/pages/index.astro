@@ -8,9 +8,10 @@ import PageHeader from '../components/ui/PageHeader.astro'
 import { SITE_TITLE } from '../consts'
 import Layout from '../layouts/Layout.astro'
 import { sanityClient } from '../sanity/lib/client'
-import { imageDerefWithAlt, imageWithAlt } from '../sanity/lib/queries'
+import { imageDerefWithAlt, imageWithAlt, mediaArrayMember, muxVideoWithMeta } from '../sanity/lib/queries'
 import type { PageBlock } from '../sanity/lib/types'
-import { hasAsset, toPicture, toPictures } from '../sanity/lib/urlForImage'
+import { hasAsset, toPicture } from '../sanity/lib/urlForImage'
+import { toMediaItems, toVideo } from '../sanity/lib/video'
 
 const homepage = await sanityClient.fetch(
   `*[_id == "homepage"][0]{
@@ -22,7 +23,8 @@ const homepage = await sanityClient.fetch(
         sectionId,
         hidden,
         backgroundImage ${imageDerefWithAlt},
-        carouselImages[] ${imageDerefWithAlt},
+        backgroundVideo ${muxVideoWithMeta},
+        carouselImages[] ${mediaArrayMember},
         headline1,
         headline1Color,
         headline2,
@@ -39,6 +41,7 @@ const homepage = await sanityClient.fetch(
           description,
           featureText,
           cardImage ${imageWithAlt},
+          cardVideo ${muxVideoWithMeta},
           ctaLabel,
           reversed,
           styling
@@ -52,6 +55,7 @@ const homepage = await sanityClient.fetch(
         title,
         description,
         image ${imageWithAlt},
+        "video": video ${muxVideoWithMeta},
         href,
         ctaLabel,
         reversed,
@@ -63,7 +67,8 @@ const homepage = await sanityClient.fetch(
         heading,
         items[]->{
           ...,
-          image ${imageWithAlt}
+          image ${imageWithAlt},
+          "video": video ${muxVideoWithMeta}
         }
       },
       _type == "contactBlock" => {
@@ -89,17 +94,21 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
 
       // Available blocks: heroBlock, projectsBlock, mediaCardRowBlock, snapshotsBlock, contactBlock
       if (block._type === 'heroBlock') {
-        const carouselImages = toPictures(block.carouselImages, 1600)
+        const carouselItems = toMediaItems(block.carouselImages, 1600)
 
         const bgImage =
-          carouselImages.length === 0 && hasAsset(block.backgroundImage)
+          carouselItems.length === 0 && hasAsset(block.backgroundImage)
             ? toPicture(block.backgroundImage, 1600)
             : undefined
+
+        const bgVideo =
+          carouselItems.length === 0 ? toVideo(block.backgroundVideo, 1600) : undefined
 
         return (
           <PageHeader
             id={block.sectionId}
-            carouselImages={carouselImages.length > 0 ? carouselImages : undefined}
+            carouselImages={carouselItems.length > 0 ? carouselItems : undefined}
+            backgroundVideo={bgVideo}
             backgroundImageSrc={bgImage?.src}
             backgroundImageWidth={bgImage?.width}
             backgroundImageHeight={bgImage?.height}
@@ -134,6 +143,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                 const projImg = hasAsset(project.cardImage)
                   ? toPicture(project.cardImage, 1400)
                   : undefined
+                const projVideo = toVideo(project.cardVideo, 1400)
                 return (
                   <MediaCardRow
                     featureText={toHTML(project.featureText)}
@@ -142,6 +152,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                     imageWidth={projImg?.width}
                     imageHeight={projImg?.height}
                     imageAlt={projImg?.alt || 'Portfolio preview image'}
+                    video={projVideo}
                     accentColor={project.styling?.accentColor}
                     cardBackgroundColor={project.styling?.cardBackgroundColor}
                     cardTextColor={project.styling?.cardTextColor}
@@ -158,6 +169,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
 
         if (block._type === 'mediaCardRowBlock') {
           const blockImg = hasAsset(block.image) ? toPicture(block.image, 1400) : undefined
+          const blockVideo = toVideo(block.video, 1400)
           return (
             <section id={block.sectionId || undefined} class="text-center flex flex-col gap-8">
               {block.heading && (
@@ -170,6 +182,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                 imageWidth={blockImg?.width}
                 imageHeight={blockImg?.height}
                 imageAlt={blockImg?.alt || ''}
+                video={blockVideo}
                 accentColor={block.styling?.accentColor}
                 cardBackgroundColor={block.styling?.cardBackgroundColor}
                 cardTextColor={block.styling?.cardTextColor}
@@ -201,6 +214,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                       --card-divider: color-mix(in srgb, ${item.styling?.cardTextColor || item.styling?.accentColor || 'var(--color-primary)'} 14%, transparent);
                     `
                     const itemImg = hasAsset(item.image) ? toPicture(item.image, 800) : undefined
+                    const itemVideo = toVideo(item.video, 800)
                     return (
                       <div class="lsa no-repeat w-full" style={cardStyles}>
                         <Card
@@ -215,6 +229,7 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
                             itemImg?.alt ||
                             `JTB Imaginative project snapshot for ${item.title.toLowerCase()}`
                           }
+                          video={itemVideo}
                           imageClass="relative z-10"
                           mediaClass="bg-(--card-media-bg) aspect-square"
                           contentClass="flex h-full flex-col gap-2.5 p-4 text-left sm:p-5 bg-(--card-bg)"

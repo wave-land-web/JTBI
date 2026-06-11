@@ -1,5 +1,19 @@
 ---
+import MuxVideo from './MuxVideo.astro'
 import SanityImage from './SanityImage.astro'
+
+/**
+ * Optional Mux video for the card media box. When an image is also present it
+ * keeps defining the layout box and acts as the poster — the video overlays it
+ * absolutely. Linked cards (`href`) get an ambient "moving thumbnail" (controls
+ * inside an <a> are unusable); unlinked cards get a click-to-play player.
+ */
+export interface CardVideo {
+  playbackId: string
+  /** CSS aspect-ratio value, e.g. "16 / 9" — sizes the box when no image is set. */
+  aspectRatio: string
+  poster?: string
+}
 
 export interface Props {
   title: string
@@ -9,6 +23,7 @@ export interface Props {
   imageHeight?: number
   imageAlt?: string
   imageClass?: string
+  video?: CardVideo
   mediaClass?: string
   contentClass?: string
   showFallback?: boolean
@@ -29,6 +44,7 @@ const {
   imageHeight,
   imageAlt = '',
   imageClass,
+  video,
   mediaClass = '',
   contentClass = '',
   showFallback = false,
@@ -75,9 +91,21 @@ const fallbackImageClasses = `h-full w-full bg-gradient-to-tr from-secondary/10 
             width={imageWidth}
             height={imageHeight}
           />
-        ) : showFallback ? (
+        ) : showFallback && !video ? (
           <div class={fallbackImageClasses} />
         ) : null
+      }
+      {
+        video && (
+          <MuxVideo
+            playbackId={video.playbackId}
+            mode={href ? 'ambient' : 'player'}
+            poster={imageSrc || video.poster}
+            aspectRatio={imageSrc && imageWidth && imageHeight ? undefined : video.aspectRatio}
+            title={title}
+            class="z-20"
+          />
+        )
       }
     </div>
 

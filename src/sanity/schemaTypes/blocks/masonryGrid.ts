@@ -13,7 +13,7 @@ export default defineType({
   type: 'object',
   icon: DashboardIcon,
   description:
-    'Gallery of images displayed in a full-width masonry grid below the hero. Mix of portrait and landscape works best. Recommended: min 1200px on the long edge.',
+    'Gallery of images and videos displayed in a full-width masonry grid below the hero. Mix of portrait and landscape works best. Recommended: min 1200px on the long edge.',
   validation: (Rule) =>
     Rule.custom((value, context) => {
       const doc = context.document as { sixUpGrid?: unknown } | undefined
@@ -27,7 +27,7 @@ export default defineType({
     hiddenField,
     defineField({
       name: 'images',
-      title: 'Images',
+      title: 'Images & Videos',
       type: 'array',
       of: [
         defineArrayMember({
@@ -42,6 +42,7 @@ export default defineType({
             }),
           ],
         }),
+        defineArrayMember({ type: 'videoItem' }),
       ],
       validation: (Rule) => Rule.max(20),
     }),
@@ -55,7 +56,7 @@ export default defineType({
       const count = Array.isArray(images) ? images.length : 0
       return {
         title: 'Masonry Grid',
-        subtitle: `${count} image${count === 1 ? '' : 's'}`,
+        subtitle: `${count} item${count === 1 ? '' : 's'}`,
         media,
       }
     },
