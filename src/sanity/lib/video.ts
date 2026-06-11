@@ -85,7 +85,12 @@ export function videoPosterCropped(playbackId: string, width: number, height: nu
 export type MediaItem = (
   | ({ kind: 'image' } & PictureProps)
   | ({ kind: 'video' } & VideoProps)
-) & { colSpan?: number; rowSpan?: number }
+) & {
+  colSpan?: number
+  rowSpan?: number
+  /** Native-aspect poster for the lightbox when `poster` is cropped to a grid cell. */
+  lightboxPoster?: string
+}
 
 /**
  * Convert a mixed image/video array (projected via `mediaArrayMember`) into

@@ -60,6 +60,18 @@ function initLightboxWrapper(wrapper: HTMLElement) {
 
   // Fires for the close button, backdrop click, AND Esc — stop playback on all.
   dialog.addEventListener('close', () => pauseMedia(dialog))
+
+  // Media-chrome handles arrow-key seeking inside the player but does not stop
+  // propagation; Swiper's Keyboard module listens on document and ignores
+  // defaultPrevented, so it would also change slides (and pause the video).
+  // Stop player-originated keydowns before they reach document. Esc still
+  // closes the dialog (native <dialog> cancel, not a document listener).
+  dialog.addEventListener('keydown', (event) => {
+    const fromPlayer = event
+      .composedPath()
+      .some((t) => t instanceof HTMLElement && t.tagName.toLowerCase() === 'mux-player')
+    if (fromPlayer) event.stopPropagation()
+  })
 }
 
 export function initLightbox(wrapperSelector: string) {

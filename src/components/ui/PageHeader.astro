@@ -87,13 +87,21 @@ const hasCarousel = carouselImages.length > 0
         <div class="hero-carousel swiper absolute inset-0 pointer-events-none select-none">
           <div class="swiper-wrapper">
             {carouselImages.map((item) => (
-              <div class="swiper-slide relative">
+              <div
+                class="swiper-slide relative"
+                data-swiper-autoplay={
+                  item.kind === 'video' && item.duration
+                    ? Math.max(4000, Math.round(item.duration * 1000))
+                    : undefined
+                }
+              >
                 {item.kind === 'video' ? (
                   <MuxVideo
                     playbackId={item.playbackId}
                     mode="ambient"
                     objectFit="contain"
                     poster={item.poster}
+                    preload="metadata"
                     class="select-none"
                   />
                 ) : (
@@ -175,6 +183,33 @@ const hasCarousel = carouselImages.length > 0
   import 'swiper/css'
   import 'swiper/css/effect-fade'
 
+  type AmbientPlayer = HTMLElement & {
+    play?: () => void
+    pause?: () => void
+    currentTime?: number
+  }
+
+  // The fade effect keeps every slide mounted (just at opacity 0), so without
+  // this only-the-active-slide gating, every carousel video would stream and
+  // play simultaneously for the lifetime of the page. Removing the autoplay
+  // attribute hands playback control to this sync (and stops late `loadeddata`
+  // autoplay from re-starting a paused slide); resetting currentTime makes a
+  // video slide start from the top each time it rotates back in.
+  function syncCarouselVideos(swiper: Swiper) {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    swiper.slides.forEach((slide) => {
+      const player = slide.querySelector<AmbientPlayer>('mux-player')
+      if (!player) return
+      player.removeAttribute('autoplay')
+      if (slide.classList.contains('swiper-slide-active')) {
+        if (typeof player.currentTime === 'number') player.currentTime = 0
+        if (!reduceMotion) player.play?.()
+      } else {
+        player.pause?.()
+      }
+    })
+  }
+
   function initHeroCarousel() {
     const heroCarousel = document.querySelector<HTMLElement>('.hero-carousel')
     if (!heroCarousel) return
@@ -187,6 +222,12 @@ const hasCarousel = carouselImages.length > 0
       speed: 1500,
       loop: true,
       allowTouchMove: false,
+      on: {
+        afterInit: (swiper) => {
+          customElements.whenDefined('mux-player').then(() => syncCarouselVideos(swiper))
+        },
+        slideChangeTransitionStart: syncCarouselVideos,
+      },
     })
   }
 

@@ -348,10 +348,12 @@ const getCardVars = (styling: Styling = {}) => {
             }
             const video = toVideo(item.video, cellW, item.alt ?? '')
             if (!video) return []
-            // Crop the poster to the cell like toPictureCropped does for images.
+            // Crop the tile poster to the cell like toPictureCropped does for
+            // images, but keep the native-aspect poster for the lightbox player.
+            const lightboxPoster = video.poster
             video.poster = videoPosterCropped(video.playbackId, cellW, cellH)
             video.height = cellH
-            return [{ kind: 'video' as const, ...video, ...spans }]
+            return [{ kind: 'video' as const, ...video, lightboxPoster, ...spans }]
           })
           return (
             <div class="py-(--site-padding-md)">
