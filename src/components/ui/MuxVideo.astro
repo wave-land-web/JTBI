@@ -28,8 +28,9 @@ interface Props extends Omit<HTMLAttributes<'div'>, 'title'> {
   poster?: string
   /** How the video fills its box. Ambient defaults to `cover`. */
   objectFit?: 'cover' | 'contain'
-  /** Override the mode default (`auto` for ambient, `none` for player) — e.g.
-   * `metadata` for carousel slides so hidden videos don't buffer ahead. */
+  /** Override the mode default (`metadata` for ambient, `none` for player).
+   * Ambient stays at `metadata` so off-screen videos don't eagerly stream the
+   * whole file on load; pass `auto` for an above-the-fold hero if needed. */
   preload?: 'auto' | 'metadata' | 'none'
   /** Accessible name announced for the player (player mode only). */
   title?: string
@@ -78,7 +79,7 @@ const ambientProps = ambient
   stream-type="on-demand"
   poster={poster}
   title={ambient ? undefined : title}
-  preload={preload ?? (ambient ? 'auto' : 'none')}
+  preload={preload ?? (ambient ? 'metadata' : 'none')}
   class:list={[className]}
   style={`display: block; width: 100%; ${sizingStyle}${ambientStyle}`}
   {...ambientProps}
@@ -88,11 +89,15 @@ const ambientProps = ambient
   import '@mux/mux-player'
 
   // Respect prefers-reduced-motion: keep ambient videos paused on the poster.
+  // Removing the `autoplay` attribute is what actually prevents playback — a
+  // lone pause() races (and loses to) mux-player's autoplay-on-canplay. pause()
+  // then covers any instance that already started before the attribute went.
   function settleAmbient() {
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     document
       .querySelectorAll<HTMLElement & { pause?: () => void }>('mux-player[data-ambient]')
       .forEach((el) => {
+        el.removeAttribute('autoplay')
         customElements.whenDefined('mux-player').then(() => el.pause?.())
       })
   }

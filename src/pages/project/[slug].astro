@@ -18,7 +18,7 @@ import { imageWithAlt, mediaArrayMember, muxVideoWithMeta } from '../../sanity/l
 import type { MuxVideo as MuxVideoData, SanityMediaItem } from '../../sanity/lib/types'
 import { hasAsset, toPicture, toPictureCropped } from '../../sanity/lib/urlForImage'
 import { type MediaItem, toMediaItems, toVideo, videoPosterCropped } from '../../sanity/lib/video'
-import { SIX_UP_CELLS, sixUpVideoKey } from '../../sanity/schemaTypes/shared/gridFilled'
+import { SIX_UP_CELLS, sixUpVideoAltKey, sixUpVideoKey } from '../../sanity/schemaTypes/shared/gridFilled'
 
 // --- Types ---------------------------------------------------------------
 
@@ -85,6 +85,12 @@ interface SixUpGridData {
   bottomLeftVideo?: MuxVideoData
   bottomMidLeftVideo?: MuxVideoData
   bottomRightVideo?: MuxVideoData
+  topWideVideoAlt?: string
+  centerTallVideoAlt?: string
+  topRightVideoAlt?: string
+  bottomLeftVideoAlt?: string
+  bottomMidLeftVideoAlt?: string
+  bottomRightVideoAlt?: string
 }
 
 interface Project {
@@ -161,7 +167,13 @@ const { data: project } = await loadQuery<Project | null>({
       topRightVideo ${muxVideoWithMeta},
       bottomLeftVideo ${muxVideoWithMeta},
       bottomMidLeftVideo ${muxVideoWithMeta},
-      bottomRightVideo ${muxVideoWithMeta}
+      bottomRightVideo ${muxVideoWithMeta},
+      topWideVideoAlt,
+      centerTallVideoAlt,
+      topRightVideoAlt,
+      bottomLeftVideoAlt,
+      bottomMidLeftVideoAlt,
+      bottomRightVideoAlt
     },
     body[]{
       ...,
@@ -206,7 +218,8 @@ const masonryItems = toMediaItems(project.masonryGrid?.images, 800)
 const sixUpItems: MediaItem[] = []
 for (const key of SIX_UP_CELLS) {
   const img = project.sixUpGrid?.[key]
-  const video = toVideo(project.sixUpGrid?.[sixUpVideoKey(key)], 800, img?.alt ?? '')
+  const videoAlt = project.sixUpGrid?.[sixUpVideoAltKey(key)]
+  const video = toVideo(project.sixUpGrid?.[sixUpVideoKey(key)], 800, videoAlt || img?.alt || '')
   if (video) sixUpItems.push({ kind: 'video', ...video })
   else if (hasAsset(img)) sixUpItems.push({ kind: 'image', ...toPicture(img, 800) })
 }

@@ -34,6 +34,9 @@ export const SIX_UP_CELLS = [
 /** Key of the sibling mux.video field for a six-up cell. */
 export const sixUpVideoKey = (cell: (typeof SIX_UP_CELLS)[number]) => `${cell}Video` as const
 
+/** Key of the sibling video-description field for a six-up cell. */
+export const sixUpVideoAltKey = (cell: (typeof SIX_UP_CELLS)[number]) => `${cell}VideoAlt` as const
+
 export function isMasonryGridFilled(value: unknown): boolean {
   const v = value as MasonryGridValue | null | undefined
   return (

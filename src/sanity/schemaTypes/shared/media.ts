@@ -42,4 +42,12 @@ export const mediaCellFields = (
     ],
   }),
   videoField(`${name}Video`, `${title} — Video`),
+  defineField({
+    name: `${name}VideoAlt`,
+    title: `${title} — Video Description`,
+    type: 'string',
+    description:
+      'Describes the video for screen readers when this cell has a video but no image. Falls back to the image alt text.',
+    hidden: ({ parent }) => !parent?.[`${name}Video`],
+  }),
 ]
