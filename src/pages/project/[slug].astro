@@ -12,7 +12,8 @@ import SanityImg from '../../components/ui/SanityImage.astro'
 import SixUpMasonryGrid from '../../components/ui/SixUpMasonryGrid.astro'
 import Layout from '../../layouts/Layout.astro'
 import { clamp } from '../../lib/clamp'
-import { sanityClient } from '../../sanity/lib/client'
+import { getDraftModeProps } from '../../sanity/lib/draftMode'
+import { loadQuery } from '../../sanity/lib/loadQuery'
 import { imageWithAlt, mediaArrayMember, muxVideoWithMeta } from '../../sanity/lib/queries'
 import type { MuxVideo as MuxVideoData, SanityMediaItem } from '../../sanity/lib/types'
 import { hasAsset, toPicture, toPictureCropped } from '../../sanity/lib/urlForImage'
@@ -109,9 +110,11 @@ type BodyGroup =
 // --- Data ----------------------------------------------------------------
 
 export async function getStaticPaths() {
-  const projects = await sanityClient.fetch<{ slug: string }[]>(
-    `*[_type == "project"]{ "slug": slug.current }`,
-  )
+  // Build-time path enumeration — always published (only ship pages for
+  // published projects, never draft-only ones).
+  const { data: projects } = await loadQuery<{ slug: string }[]>({
+    query: `*[_type == "project"]{ "slug": slug.current }`,
+  })
   return projects.map((p) => ({ params: { slug: p.slug } }))
 }
 
@@ -129,8 +132,8 @@ const relatedProjectFields = `{
   styling
 }`
 
-const project = await sanityClient.fetch<Project | null>(
-  `*[_type == "project" && slug.current == $slug][0]{
+const { data: project } = await loadQuery<Project | null>({
+  query: `*[_type == "project" && slug.current == $slug][0]{
     title,
     cardImage ${imageWithAlt},
     cardVideo ${muxVideoWithMeta},
@@ -178,8 +181,9 @@ const project = await sanityClient.fetch<Project | null>(
     hideRelatedProjects,
     "relatedProjects": relatedProjects[]->${relatedProjectFields}
   }`,
-  { slug },
-)
+  params: { slug },
+  ...getDraftModeProps(Astro.cookies),
+})
 
 if (!project) {
   return Astro.redirect('/404')
