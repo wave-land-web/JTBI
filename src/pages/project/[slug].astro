@@ -1,21 +1,24 @@
 ---
 import { toHTML } from '@portabletext/to-html'
 import type { PortableTextBlock, TypedObject } from '@portabletext/types'
-import type { SanityImageCrop, SanityImageHotspot } from '@sanity/image-url/lib/types/types'
 import Card from '../../components/ui/Card.astro'
 import ImageGallery from '../../components/ui/ImageGallery.astro'
 import MasonryGrid from '../../components/ui/MasonryGrid.astro'
 import MediaCardRow from '../../components/ui/MediaCardRow.astro'
+import MuxVideo from '../../components/ui/MuxVideo.astro'
 import OverviewCard from '../../components/ui/OverviewCard.astro'
 import PageHeader from '../../components/ui/PageHeader.astro'
 import SanityImg from '../../components/ui/SanityImage.astro'
 import SixUpMasonryGrid from '../../components/ui/SixUpMasonryGrid.astro'
 import Layout from '../../layouts/Layout.astro'
 import { clamp } from '../../lib/clamp'
-import { sanityClient } from '../../sanity/lib/client'
-import { imageWithAlt } from '../../sanity/lib/queries'
-import { hasAsset, toPicture, toPictureCropped, toPictures } from '../../sanity/lib/urlForImage'
-import { SIX_UP_CELLS } from '../../sanity/schemaTypes/shared/gridFilled'
+import { getDraftModeProps } from '../../sanity/lib/draftMode'
+import { loadQuery } from '../../sanity/lib/loadQuery'
+import { imageWithAlt, mediaArrayMember, muxVideoWithMeta } from '../../sanity/lib/queries'
+import type { MuxVideo as MuxVideoData, SanityMediaItem } from '../../sanity/lib/types'
+import { hasAsset, toPicture, toPictureCropped } from '../../sanity/lib/urlForImage'
+import { type MediaItem, toMediaItems, toVideo, videoPosterCropped } from '../../sanity/lib/video'
+import { SIX_UP_CELLS, sixUpVideoAltKey, sixUpVideoKey } from '../../sanity/schemaTypes/shared/gridFilled'
 
 // --- Types ---------------------------------------------------------------
 
@@ -36,22 +39,16 @@ interface MediaCardRowBlock extends TypedObject {
   description?: string
   featureText?: PortableTextBlock[]
   image?: SanityImage
+  video?: MuxVideoData
   href?: string
   ctaLabel?: string
   reversed?: boolean
   styling?: Styling
 }
 
-interface SanityGalleryImage extends SanityImage {
-  hotspot?: SanityImageHotspot
-  crop?: SanityImageCrop
-  colSpan?: number
-  rowSpan?: number
-}
-
 interface ImageGalleryBlock extends TypedObject {
   _type: 'imageGalleryBlock'
-  images?: SanityGalleryImage[]
+  images?: SanityMediaItem[]
   columns?: number
   fullWidth?: boolean
 }
@@ -63,6 +60,7 @@ interface RelatedProject {
   title: string
   description?: string
   cardImage?: SanityImage
+  cardVideo?: MuxVideoData
   href?: string
   slug?: { current: string }
   styling?: Styling
@@ -70,7 +68,7 @@ interface RelatedProject {
 
 interface MasonryGridData {
   hidden?: boolean
-  images?: SanityImage[]
+  images?: SanityMediaItem[]
 }
 
 interface SixUpGridData {
@@ -81,12 +79,26 @@ interface SixUpGridData {
   bottomLeft?: SanityImage
   bottomMidLeft?: SanityImage
   bottomRight?: SanityImage
+  topWideVideo?: MuxVideoData
+  centerTallVideo?: MuxVideoData
+  topRightVideo?: MuxVideoData
+  bottomLeftVideo?: MuxVideoData
+  bottomMidLeftVideo?: MuxVideoData
+  bottomRightVideo?: MuxVideoData
+  topWideVideoAlt?: string
+  centerTallVideoAlt?: string
+  topRightVideoAlt?: string
+  bottomLeftVideoAlt?: string
+  bottomMidLeftVideoAlt?: string
+  bottomRightVideoAlt?: string
 }
 
 interface Project {
   title: string
   cardImage?: SanityImage
+  cardVideo?: MuxVideoData
   heroImage?: SanityImage
+  heroVideo?: MuxVideoData
   styling?: Styling
   projectOverview?: PortableTextBlock[]
   masonryGrid?: MasonryGridData
@@ -104,9 +116,11 @@ type BodyGroup =
 // --- Data ----------------------------------------------------------------
 
 export async function getStaticPaths() {
-  const projects = await sanityClient.fetch<{ slug: string }[]>(
-    `*[_type == "project"]{ "slug": slug.current }`,
-  )
+  // Build-time path enumeration — always published (only ship pages for
+  // published projects, never draft-only ones).
+  const { data: projects } = await loadQuery<{ slug: string }[]>({
+    query: `*[_type == "project"]{ "slug": slug.current }`,
+  })
   return projects.map((p) => ({ params: { slug: p.slug } }))
 }
 
@@ -118,21 +132,27 @@ const relatedProjectFields = `{
   title,
   description,
   cardImage ${imageWithAlt},
+  cardVideo ${muxVideoWithMeta},
   href,
   slug,
   styling
 }`
 
-const project = await sanityClient.fetch<Project | null>(
-  `*[_type == "project" && slug.current == $slug][0]{
+const { data: project } = await loadQuery<Project | null>({
+  query: `*[_type == "project" && slug.current == $slug][0]{
     title,
     cardImage ${imageWithAlt},
+    cardVideo ${muxVideoWithMeta},
     heroImage ${imageWithAlt},
+    heroVideo ${muxVideoWithMeta},
     styling,
     projectOverview,
     masonryGrid {
       hidden,
-      "images": images[asset != null] ${imageWithAlt}
+      "images": images[
+        (_type == "image" && defined(asset)) ||
+        (_type == "videoItem" && defined(video.asset))
+      ] ${mediaArrayMember}
     },
     sixUpGrid {
       hidden,
@@ -141,31 +161,41 @@ const project = await sanityClient.fetch<Project | null>(
       topRight ${imageWithAlt},
       bottomLeft ${imageWithAlt},
       bottomMidLeft ${imageWithAlt},
-      bottomRight ${imageWithAlt}
+      bottomRight ${imageWithAlt},
+      topWideVideo ${muxVideoWithMeta},
+      centerTallVideo ${muxVideoWithMeta},
+      topRightVideo ${muxVideoWithMeta},
+      bottomLeftVideo ${muxVideoWithMeta},
+      bottomMidLeftVideo ${muxVideoWithMeta},
+      bottomRightVideo ${muxVideoWithMeta},
+      topWideVideoAlt,
+      centerTallVideoAlt,
+      topRightVideoAlt,
+      bottomLeftVideoAlt,
+      bottomMidLeftVideoAlt,
+      bottomRightVideoAlt
     },
     body[]{
       ...,
       _type == "imageGalleryBlock" => {
         ...,
-        images[asset != null]{
-          asset,
-          hotspot,
-          crop,
-          "alt": coalesce(alt, asset->altText),
-          colSpan,
-          rowSpan
-        }
+        "images": images[
+          (_type == "image" && defined(asset)) ||
+          (_type == "galleryVideoItem" && defined(video.asset))
+        ] ${mediaArrayMember}
       },
       _type == "mediaCardRowBlock" => {
         ...,
-        image ${imageWithAlt}
+        image ${imageWithAlt},
+        "video": video ${muxVideoWithMeta}
       }
     },
     hideRelatedProjects,
     "relatedProjects": relatedProjects[]->${relatedProjectFields}
   }`,
-  { slug },
-)
+  params: { slug },
+  ...getDraftModeProps(Astro.cookies),
+})
 
 if (!project) {
   return Astro.redirect('/404')
@@ -176,13 +206,26 @@ if (!project) {
 const heroSource = project.heroImage || project.cardImage
 const heroImg = hasAsset(heroSource) ? toPicture(heroSource, 2400) : undefined
 
-const masonryImages = toPictures(project.masonryGrid?.images, 800)
+// Ambient hero video — heroVideo falls back to cardVideo (mirroring the image
+// fallback). Plays only when ready; otherwise the image hero renders as before.
+const heroVideo = toVideo(project.heroVideo ?? project.cardVideo, 1600, heroImg?.alt ?? '')
+if (heroVideo && heroImg) heroVideo.poster = heroImg.src
 
-const sixUpCells = SIX_UP_CELLS.map((key) => project.sixUpGrid?.[key])
-const sixUpImages = sixUpCells.every(hasAsset) ? sixUpCells.map((img) => toPicture(img, 800)) : []
+const masonryItems = toMediaItems(project.masonryGrid?.images, 800)
 
-const showSixUp = sixUpImages.length === 6 && project.sixUpGrid?.hidden !== true
-const showMasonry = !showSixUp && masonryImages.length > 0 && project.masonryGrid?.hidden !== true
+// A cell is filled by its video (when ready) or its image; the grid renders
+// only when all 6 cells resolve.
+const sixUpItems: MediaItem[] = []
+for (const key of SIX_UP_CELLS) {
+  const img = project.sixUpGrid?.[key]
+  const videoAlt = project.sixUpGrid?.[sixUpVideoAltKey(key)]
+  const video = toVideo(project.sixUpGrid?.[sixUpVideoKey(key)], 800, videoAlt || img?.alt || '')
+  if (video) sixUpItems.push({ kind: 'video', ...video })
+  else if (hasAsset(img)) sixUpItems.push({ kind: 'image', ...toPicture(img, 800) })
+}
+
+const showSixUp = sixUpItems.length === 6 && project.sixUpGrid?.hidden !== true
+const showMasonry = !showSixUp && masonryItems.length > 0 && project.masonryGrid?.hidden !== true
 
 const overviewTextBlocks = (project.projectOverview ?? []).filter(
   (b): b is PortableTextBlock => b._type === 'block',
@@ -228,7 +271,7 @@ const getCardVars = (styling: Styling = {}) => {
 <Layout title={`${project.title} | JTB Imaginative LLC`}>
   <PageHeader title={project.title} contentClass="items-start gap-0!" headerClass="pb-0">
     {
-      !heroImg && overviewTextBlocks.length > 0 && (
+      !heroImg && !heroVideo && overviewTextBlocks.length > 0 && (
         <OverviewCard
           overview={overviewTextBlocks}
           {...overviewStyleProps}
@@ -239,16 +282,28 @@ const getCardVars = (styling: Styling = {}) => {
   </PageHeader>
 
   {
-    heroImg && (
+    (heroVideo || heroImg) && (
       <div class="project-hero relative mt-(--site-padding-base) md:mt-(--site-padding-sm)">
-        <SanityImg
-          src={heroImg.src}
-          alt={heroImg.alt}
-          class="w-full h-auto lsa no-repeat object-cover"
-          width={heroImg.width}
-          height={heroImg.height}
-          priority
-        />
+        {heroVideo ? (
+          <MuxVideo
+            playbackId={heroVideo.playbackId}
+            mode="ambient"
+            aspectRatio={heroVideo.aspectRatio}
+            poster={heroVideo.poster}
+            class="w-full lsa no-repeat"
+          />
+        ) : (
+          heroImg && (
+            <SanityImg
+              src={heroImg.src}
+              alt={heroImg.alt}
+              class="w-full h-auto lsa no-repeat object-cover"
+              width={heroImg.width}
+              height={heroImg.height}
+              priority
+            />
+          )
+        )}
         {overviewTextBlocks.length > 0 && (
           <OverviewCard
             overview={overviewTextBlocks}
@@ -260,8 +315,8 @@ const getCardVars = (styling: Styling = {}) => {
     )
   }
 
-  {showSixUp && <SixUpMasonryGrid images={sixUpImages} />}
-  {showMasonry && <MasonryGrid images={masonryImages} />}
+  {showSixUp && <SixUpMasonryGrid images={sixUpItems} />}
+  {showMasonry && <MasonryGrid images={masonryItems} />}
 
   <main id="main-content" class="section space-y-6">
     {
@@ -269,6 +324,7 @@ const getCardVars = (styling: Styling = {}) => {
         if (group.type === 'mediaCardRow') {
           const block = group.blocks[0]
           const blockImg = hasAsset(block.image) ? toPicture(block.image, 1600) : undefined
+          const blockVideo = toVideo(block.video, 1600)
           return (
             <div class="py-(--site-padding-md)">
               <MediaCardRow
@@ -278,6 +334,7 @@ const getCardVars = (styling: Styling = {}) => {
                 imageWidth={blockImg?.width}
                 imageHeight={blockImg?.height}
                 imageAlt={blockImg?.alt || ''}
+                video={blockVideo}
                 accentColor={block.styling?.accentColor}
                 cardBackgroundColor={block.styling?.cardBackgroundColor}
                 cardTextColor={block.styling?.cardTextColor}
@@ -296,19 +353,29 @@ const getCardVars = (styling: Styling = {}) => {
           // on any realistic viewport without producing oversized files for
           // multi-cell features.
           const GALLERY_UNIT = 800
-          const galleryImages = (block.images ?? []).filter(hasAsset).map((img) => {
-            const cols = clamp(1, img.colSpan ?? 1, galleryColumns)
-            const rows = clamp(1, img.rowSpan ?? 1, 4)
-            return {
-              ...toPictureCropped(img, cols * GALLERY_UNIT, rows * GALLERY_UNIT),
-              colSpan: img.colSpan,
-              rowSpan: img.rowSpan,
+          const galleryItems = (block.images ?? []).flatMap((item): MediaItem[] => {
+            const cols = clamp(1, item.colSpan ?? 1, galleryColumns)
+            const rows = clamp(1, item.rowSpan ?? 1, 4)
+            const cellW = cols * GALLERY_UNIT
+            const cellH = rows * GALLERY_UNIT
+            const spans = { colSpan: item.colSpan ?? undefined, rowSpan: item.rowSpan ?? undefined }
+            if (item._type === 'image') {
+              if (!hasAsset(item)) return []
+              return [{ kind: 'image' as const, ...toPictureCropped(item, cellW, cellH), ...spans }]
             }
+            const video = toVideo(item.video, cellW, item.alt ?? '')
+            if (!video) return []
+            // Crop the tile poster to the cell like toPictureCropped does for
+            // images, but keep the native-aspect poster for the lightbox player.
+            const lightboxPoster = video.poster
+            video.poster = videoPosterCropped(video.playbackId, cellW, cellH)
+            video.height = cellH
+            return [{ kind: 'video' as const, ...video, lightboxPoster, ...spans }]
           })
           return (
             <div class="py-(--site-padding-md)">
               <ImageGallery
-                images={galleryImages}
+                images={galleryItems}
                 columns={galleryColumns}
                 fullWidth={block.fullWidth ?? true}
               />
@@ -337,6 +404,7 @@ const getCardVars = (styling: Styling = {}) => {
                   const relImg = hasAsset(related.cardImage)
                     ? toPicture(related.cardImage, 1000)
                     : undefined
+                  const relVideo = toVideo(related.cardVideo, 1000)
                   const relHref = related.slug?.current
                     ? `/project/${related.slug.current}`
                     : related.href || '#'
@@ -351,6 +419,7 @@ const getCardVars = (styling: Styling = {}) => {
                         imageWidth={relImg?.width}
                         imageHeight={relImg?.height}
                         imageAlt={relImg?.alt || related.title}
+                        video={relVideo}
                         imageClass="relative z-10 h-full w-full object-cover"
                         mediaClass="bg-(--card-media-bg) aspect-video"
                         contentClass="flex h-full flex-col gap-2.5 p-4 text-left sm:p-5 bg-(--card-bg)"

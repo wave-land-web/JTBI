@@ -2,6 +2,7 @@ import { ProjectsIcon } from '@sanity/icons'
 import { defineArrayMember, defineField, defineType } from 'sanity'
 import { COLOR_FIELD_DESCRIPTION, cssColorValidation } from './shared/cssColor'
 import { hiddenField } from './shared/hidden'
+import { videoField } from './shared/media'
 import { richTextBlock } from './shared/richText'
 
 export default defineType({
@@ -106,6 +107,7 @@ export default defineType({
         }),
       ],
     }),
+    { ...videoField('cardVideo', 'Card Video'), group: 'card' },
     defineField({
       name: 'featureText',
       title: 'Feature Text',
@@ -168,6 +170,12 @@ export default defineType({
         }),
       ],
     }),
+    {
+      ...videoField('heroVideo', 'Hero Video'),
+      description:
+        'Optional ambient video for the project page hero (plays muted on a loop). When set and finished processing, it plays instead of the Hero Image. Keep the image filled in as a fallback/poster.',
+      group: 'page',
+    },
     defineField({
       name: 'projectOverview',
       title: 'Project Overview',

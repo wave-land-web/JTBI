@@ -9,6 +9,36 @@ export interface SanityImage {
   alt?: string
 }
 
+/**
+ * A Mux video projected via `muxVideoWithMeta` (lib/queries.ts).
+ * Only render when `status === 'ready'` — use `hasPlayableVideo`/`toVideo`
+ * from `lib/video.ts`, which fall back to undefined otherwise.
+ */
+export interface MuxVideo {
+  playbackId?: string | null
+  status?: string | null
+  /** Mux-reported ratio, e.g. "16:9". */
+  aspectRatio?: string | null
+  duration?: number | null
+  thumbTime?: number | null
+}
+
+/** Array member projected via `mediaArrayMember` (image or video wrapper). */
+export interface SanityMediaItem {
+  _type: 'image' | 'videoItem' | 'galleryVideoItem'
+  _key: string
+  // image members
+  asset?: { _type: 'reference'; _ref: string }
+  hotspot?: unknown
+  crop?: unknown
+  alt?: string | null
+  // video members
+  video?: MuxVideo | null
+  // gallery members
+  colSpan?: number | null
+  rowSpan?: number | null
+}
+
 export interface BlockBase {
   _key: string
   sectionId?: string
@@ -18,7 +48,8 @@ export interface HeroBlock extends BlockBase {
   _type: 'heroBlock'
   hidden?: boolean
   backgroundImage?: SanityImage
-  carouselImages?: SanityImage[]
+  backgroundVideo?: MuxVideo
+  carouselImages?: SanityMediaItem[]
   headline1?: string
   headline1Color?: 'light' | 'dark'
   headline2?: string
@@ -36,6 +67,7 @@ export interface ProjectsBlock extends BlockBase {
     description: string
     featureText: PortableTextBlock[]
     cardImage?: SanityImage
+    cardVideo?: MuxVideo
     ctaLabel?: string
     reversed?: boolean
     styling?: { accentColor?: string; cardBackgroundColor?: string; cardTextColor?: string }
@@ -50,6 +82,7 @@ export interface MediaCardRowBlock extends BlockBase {
   title?: string
   description?: string
   image?: SanityImage
+  video?: MuxVideo
   href?: string
   ctaLabel?: string
   reversed?: boolean
@@ -65,6 +98,7 @@ export interface SnapshotsBlock extends BlockBase {
     title: string
     description: string
     image?: SanityImage
+    video?: MuxVideo
     href?: string
     ctaLabel?: string
     styling?: {

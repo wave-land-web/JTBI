@@ -1,13 +1,8 @@
 ---
+import type { MediaItem, VideoProps } from '../../sanity/lib/video'
 import Button from './Button.astro'
+import MuxVideo from './MuxVideo.astro'
 import SanityImage from './SanityImage.astro'
-
-interface CarouselImage {
-  src: string
-  width: number
-  height: number
-  alt: string
-}
 
 interface Props {
   id?: string
@@ -15,7 +10,9 @@ interface Props {
   backgroundImageWidth?: number
   backgroundImageHeight?: number
   backgroundImageAlt?: string
-  carouselImages?: CarouselImage[]
+  /** Ambient background video — takes precedence over the background image. */
+  backgroundVideo?: VideoProps
+  carouselImages?: MediaItem[]
   eyebrow?: string
   headline1?: string
   headline1Color?: 'dark' | 'light'
@@ -36,6 +33,7 @@ const {
   backgroundImageWidth,
   backgroundImageHeight,
   backgroundImageAlt = '',
+  backgroundVideo,
   carouselImages = [],
   eyebrow,
   headline1,
@@ -59,15 +57,27 @@ const hasCarousel = carouselImages.length > 0
   class={`relative flex flex-col justify-center overflow-hidden pt-[calc(var(--nav-height)+var(--site-padding-3xl))] pb-(--site-padding-3xl) ${headerClass || ''}`}
 >
   {
-    backgroundImageSrc && backgroundImageWidth && backgroundImageHeight && !hasCarousel && (
-      <SanityImage
-        src={backgroundImageSrc}
-        alt={backgroundImageAlt}
-        class="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
-        width={backgroundImageWidth}
-        height={backgroundImageHeight}
-        priority
+    backgroundVideo && !hasCarousel ? (
+      <MuxVideo
+        playbackId={backgroundVideo.playbackId}
+        mode="ambient"
+        poster={backgroundImageSrc || backgroundVideo.poster}
+        class="select-none"
       />
+    ) : (
+      backgroundImageSrc &&
+      backgroundImageWidth &&
+      backgroundImageHeight &&
+      !hasCarousel && (
+        <SanityImage
+          src={backgroundImageSrc}
+          alt={backgroundImageAlt}
+          class="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+          width={backgroundImageWidth}
+          height={backgroundImageHeight}
+          priority
+        />
+      )
     )
   }
 
@@ -76,16 +86,34 @@ const hasCarousel = carouselImages.length > 0
       hasCarousel && (
         <div class="hero-carousel swiper absolute inset-0 pointer-events-none select-none">
           <div class="swiper-wrapper">
-            {carouselImages.map((img) => (
-              <div class="swiper-slide">
-                <SanityImage
-                  src={img.src}
-                  alt={img.alt}
-                  class="block h-full w-full object-contain"
-                  width={img.width}
-                  height={img.height}
-                  priority
-                />
+            {carouselImages.map((item) => (
+              <div
+                class="swiper-slide relative"
+                data-swiper-autoplay={
+                  item.kind === 'video' && item.duration
+                    ? Math.max(4000, Math.round(item.duration * 1000))
+                    : undefined
+                }
+              >
+                {item.kind === 'video' ? (
+                  <MuxVideo
+                    playbackId={item.playbackId}
+                    mode="ambient"
+                    objectFit="contain"
+                    poster={item.poster}
+                    preload="metadata"
+                    class="select-none"
+                  />
+                ) : (
+                  <SanityImage
+                    src={item.src}
+                    alt={item.alt}
+                    class="block h-full w-full object-contain"
+                    width={item.width}
+                    height={item.height}
+                    priority
+                  />
+                )}
               </div>
             ))}
           </div>
@@ -155,6 +183,33 @@ const hasCarousel = carouselImages.length > 0
   import 'swiper/css'
   import 'swiper/css/effect-fade'
 
+  type AmbientPlayer = HTMLElement & {
+    play?: () => void
+    pause?: () => void
+    currentTime?: number
+  }
+
+  // The fade effect keeps every slide mounted (just at opacity 0), so without
+  // this only-the-active-slide gating, every carousel video would stream and
+  // play simultaneously for the lifetime of the page. Removing the autoplay
+  // attribute hands playback control to this sync (and stops late `loadeddata`
+  // autoplay from re-starting a paused slide); resetting currentTime makes a
+  // video slide start from the top each time it rotates back in.
+  function syncCarouselVideos(swiper: Swiper) {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    swiper.slides.forEach((slide) => {
+      const player = slide.querySelector<AmbientPlayer>('mux-player')
+      if (!player) return
+      player.removeAttribute('autoplay')
+      if (slide.classList.contains('swiper-slide-active')) {
+        if (typeof player.currentTime === 'number') player.currentTime = 0
+        if (!reduceMotion) player.play?.()
+      } else {
+        player.pause?.()
+      }
+    })
+  }
+
   function initHeroCarousel() {
     const heroCarousel = document.querySelector<HTMLElement>('.hero-carousel')
     if (!heroCarousel) return
@@ -167,6 +222,12 @@ const hasCarousel = carouselImages.length > 0
       speed: 1500,
       loop: true,
       allowTouchMove: false,
+      on: {
+        afterInit: (swiper) => {
+          customElements.whenDefined('mux-player').then(() => syncCarouselVideos(swiper))
+        },
+        slideChangeTransitionStart: syncCarouselVideos,
+      },
     })
   }
 

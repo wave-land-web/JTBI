@@ -1,6 +1,7 @@
 import { DashboardIcon } from '@sanity/icons'
 import { defineField, defineType } from 'sanity'
 import { COLOR_FIELD_DESCRIPTION, cssColorValidation } from './shared/cssColor'
+import { videoField } from './shared/media'
 
 export default defineType({
   name: 'snapshot',
@@ -47,6 +48,7 @@ export default defineType({
         }),
       ],
     }),
+    { ...videoField('video', 'Video'), group: 'content' },
     defineField({
       name: 'href',
       title: 'Link',
