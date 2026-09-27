@@ -86,7 +86,7 @@ const hasCarousel = carouselImages.length > 0
       hasCarousel && (
         <div class="hero-carousel swiper absolute inset-0 pointer-events-none select-none">
           <div class="swiper-wrapper">
-            {carouselImages.map((item) => (
+            {carouselImages.map((item, i) => (
               <div
                 class="swiper-slide relative"
                 data-swiper-autoplay={
@@ -111,7 +111,7 @@ const hasCarousel = carouselImages.length > 0
                     class="block h-full w-full object-contain"
                     width={item.width}
                     height={item.height}
-                    priority
+                    priority={i === 0}
                   />
                 )}
               </div>

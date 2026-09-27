@@ -44,6 +44,7 @@ const { images, columns = 5, fullWidth = true, class: className } = Astro.props
                 width={item.width}
                 height={item.height}
                 class="w-full h-full block object-cover transition-opacity duration-200 group-hover:opacity-85 group-focus-visible:opacity-85"
+                sizes={`(min-width: 768px) ${Math.round((100 * desktopCols) / columns)}vw, ${Math.round((100 * mobileCols) / MOBILE_COLUMNS)}vw`}
               />
               {item.kind === 'video' && <PlayBadge />}
             </button>

@@ -37,6 +37,7 @@ const { images, class: className } = Astro.props
                 width={item.width}
                 height={item.height}
                 class="w-full h-auto block"
+                sizes="33vw"
               />
               {item.kind === 'video' && <PlayBadge />}
             </button>
