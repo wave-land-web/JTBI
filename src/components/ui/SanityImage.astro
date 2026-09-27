@@ -16,6 +16,10 @@
  *
  * Set `priority` for above-the-fold images (e.g. a hero) to load them eagerly
  * with high fetch priority; everything else lazy-loads by default.
+ *
+ * A `srcset` is generated from the CDN URL at standard widths up to the one the
+ * helper requested, so phones don't download desktop-sized files. Pass `sizes`
+ * when the image renders narrower than the viewport (grid cells, cards).
  */
 import type { HTMLAttributes } from 'astro/types'
 
@@ -25,13 +29,46 @@ interface Props extends Omit<HTMLAttributes<'img'>, 'src' | 'width' | 'height'> 
   height: number
   alt: string
   priority?: boolean
+  /** How wide the image renders, for the browser to pick from `srcset`. Defaults to full width. */
+  sizes?: string
 }
 
-const { src, width, height, alt, priority = false, ...rest } = Astro.props
+const { src, width, height, alt, priority = false, sizes = '100vw', ...rest } = Astro.props
+
+const SRCSET_WIDTHS = [320, 480, 640, 800, 1024, 1280, 1600, 2000, 2400]
+
+// Rebuild the Sanity CDN URL at smaller widths, scaling `h` too when the helper cropped
+function buildSrcset(url: string): string | undefined {
+  if (!url.startsWith('https://cdn.sanity.io/')) return undefined
+  const parsed = new URL(url)
+  const maxW = Number(parsed.searchParams.get('w'))
+  if (!maxW) return undefined
+  const h = Number(parsed.searchParams.get('h'))
+  const widths = [...SRCSET_WIDTHS.filter((w) => w < maxW), maxW]
+  return widths
+    .map((w) => {
+      const next = new URL(parsed)
+      next.searchParams.set('w', String(w))
+      if (h) next.searchParams.set('h', String(Math.round((h / maxW) * w)))
+      return `${next.toString()} ${w}w`
+    })
+    .join(', ')
+}
+
+const srcset = buildSrcset(src)
 
 const loadingProps = priority
   ? { loading: 'eager' as const, fetchpriority: 'high' as const, decoding: 'sync' as const }
   : { loading: 'lazy' as const, decoding: 'async' as const }
 ---
 
-<img src={src} alt={alt} width={width} height={height} {...loadingProps} {...rest} />
+<img
+  src={src}
+  srcset={srcset}
+  sizes={srcset ? sizes : undefined}
+  alt={alt}
+  width={width}
+  height={height}
+  {...loadingProps}
+  {...rest}
+/>

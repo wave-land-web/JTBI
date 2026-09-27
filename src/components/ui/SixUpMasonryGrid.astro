@@ -37,6 +37,7 @@ const { images, class: className } = Astro.props
               alt={item.alt}
               width={item.width}
               height={item.height}
+              sizes="(min-width: 768px) 33vw, 50vw"
             />
             {item.kind === 'video' && <PlayBadge />}
           </button>
