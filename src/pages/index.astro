@@ -15,8 +15,13 @@ import type { PageBlock } from '../sanity/lib/types'
 import { hasAsset, toPicture } from '../sanity/lib/urlForImage'
 import { toMediaItems, toVideo } from '../sanity/lib/video'
 
-// Contact section texture: the SVG version is 3 MB of vector dots, so ship a WebP instead
-const ContactBg = await getImage({ src: ContactBgSource, format: 'webp', width: 1200, quality: 60 })
+// Contact section texture: the SVG version is 3 MB of vector dots, so ship a small lazy-loaded AVIF (it sits at 10% opacity, so detail doesn't show)
+const ContactBg = await getImage({
+  src: ContactBgSource,
+  format: 'avif',
+  width: 1000,
+  quality: 40,
+})
 
 const { data: homepage } = await loadQuery<{ pageBuilder?: PageBlock[] } | null>({
   query: `*[_id == "homepage"][0]{
@@ -254,10 +259,13 @@ const blocks: PageBlock[] = homepage?.pageBuilder ?? []
         if (block._type === 'contactBlock') {
           return (
             <section id={block.sectionId || undefined} class="relative max-w-none bg-primary">
-              <div
-                style={`background-image: url(${ContactBg.src}); background-size: cover; background-position: center;`}
-                class="absolute inset-0 opacity-10 pointer-events-none"
-                role="presentation"
+              <img
+                src={ContactBg.src}
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                decoding="async"
+                class="absolute inset-0 h-full w-full object-cover opacity-10 pointer-events-none"
               />
               <div class="wrapper text-left">
                 <header class="space-y-4 mb-8 py-0 text-left relative z-10">
