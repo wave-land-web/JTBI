@@ -1,5 +1,6 @@
 import { defineConfig } from 'sanity'
 import { structureTool } from 'sanity/structure'
+import { media } from 'sanity-plugin-media'
 import { muxInput } from 'sanity-plugin-mux-input'
 import { filterSingletonActions, SINGLETON_TYPES } from './src/sanity/lib/singletonActions'
 import { schema } from './src/sanity/schemaTypes'
@@ -19,7 +20,8 @@ export default defineConfig({
   projectId: 'vs47sslu',
   dataset: 'production',
   title: 'JTBI Content',
-  plugins: [structureTool({ structure }), muxInput({ mp4_support: 'standard' })],
+  // media(): a Media tab for browsing images, tagged by the page they're on.
+  plugins: [structureTool({ structure }), media(), muxInput({ mp4_support: 'standard' })],
   schema,
   name: 'JTBI',
   document: {
