@@ -111,6 +111,13 @@
 }
 
 @layer base {
+  /* Added by `lib/superscript-marks.ts` to every ® and ™ in page text. */
+  .mark-sup {
+    font-size: 0.5em;
+    top: -0.8em;
+    margin-inline-start: 0.05em;
+  }
+
   ::selection {
     @apply bg-primary text-primary-content;
   }
